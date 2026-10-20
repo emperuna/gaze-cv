@@ -14,7 +14,8 @@ Planning and boilerplate only. This repository contains project documentation, a
 - [Project architecture](ARCHITECTURE.md): project areas, session flow, information, responsibilities, and scope.
 - [Development roadmap](ROADMAP.md): checkpoint tasks, owners, dependencies, and completion evidence.
 - [Contributor instructions](AGENTS.md): working conventions, scope, and verification.
-- [Task backlog](TASK.md): task ownership, dependencies, acceptance criteria, and linked GitHub Issues.
+- [Task backlog](TASK.md): self-claimable tasks, dependencies, acceptance criteria, and linked GitHub Issues.
+- [PR automation](docs/automation.md): proposed automatic PR creation, CI, rebases, and main-branch enforcement.
 - [GitHub kanban board](https://github.com/users/emperuna/projects/3/views/2): Status columns and Checkpoint swimlanes.
 
 ## Expected outcome
@@ -23,12 +24,14 @@ A labeled examination video view with seat references, head direction labels, an
 
 ## Team
 
-| Member | Planned ownership |
+| Member | Initial suggested focus |
 | --- | --- |
 | Marc Justin Alberto | Video input, preprocessing, baseline, and feasibility spike |
 | Jose III Aquino | Landmarks, head pose, and direction classification |
 | Jeremy Garin | Seat association, movement events, annotated output, and integration |
 | All members | Code, data labeling, evaluation, documentation, and presentation |
+
+Shared tasks are open to any collaborator; the original focus areas above are advisory. Claim an unassigned Issue before working so two people do not take the same task. Each member still delivers their own individual technical defense.
 
 ## Team and agent onboarding
 
@@ -62,7 +65,7 @@ Preview the initial commands with `python scripts/spike.py --help` or `python sc
 | `tests/` | A README describing future behavior checks; no tests or fixtures yet. |
 | `outputs/` | Evidence placeholder and documentation; no generated runs yet. |
 | `docs/` | Proposal and checkpoint documentation placeholders. |
-| `.github/` | Pull request template; automated workflows are deferred. |
+| `.github/` | PR template, repository automation, tests, and reviewed activation settings. |
 
 Full datasets, model downloads, and session output are ignored in their designated local folders. Only publish samples and evidence with permission. No code license has been selected yet.
 
@@ -70,7 +73,7 @@ Full datasets, model downloads, and session output are ignored in their designat
 
 Create folders when actual work needs them: `models/downloads/` for model acquisition, `outputs/runs/` for generated output, `notebooks/` for exploration, and `tests/fixtures/` for test inputs. Existing ignore rules protect local model downloads and generated runs.
 
-Add `docs/evaluation/` when evaluation protocols and results are prepared around CP2, and `docs/presentation/` when presentation materials exist. Add `.github/workflows/` when executable automated checks exist. A separate development requirements file can be introduced when development tools are selected; setup currently uses only `requirements.txt`.
+Add `docs/evaluation/` when evaluation protocols and results are prepared around CP2, and `docs/presentation/` when presentation materials exist. Repository workflow checks and automation tests now live under `.github/`; their activation and limits are documented in `docs/automation.md`. A separate development requirements file can be introduced when development tools are selected; setup currently uses only `requirements.txt`.
 
 ## Initial data organization
 

@@ -1,16 +1,16 @@
 # Tasks
 
-This is the GAZE backlog derived from [ROADMAP.md](ROADMAP.md) and [PRD.md](PRD.md). All 37 tasks have linked GitHub Issues. Tasks start unclaimed in Backlog; creating Issues does not start application development.
+This is the GAZE backlog derived from [ROADMAP.md](ROADMAP.md) and [PRD.md](PRD.md). All 37 tasks have linked GitHub Issues. Shared backlog tasks are unassigned; the first two administrative Issues were already closed on GitHub and retain their completion attribution. Creating or claiming planning work does not start application development.
 
 <!-- policy: Follow AGENTS.md and the scope authorized in the current conversation.
      policy: Creating this backlog does not authorize implementation, external publication, or a task-draining loop.
      policy: Do not mark work complete without recorded acceptance evidence. -->
 
-The structure follows the [TASKS.md reference](https://tasksmd.github.io/tasks.md/) with project-specific Owner, Status, and Issue fields. The singular filename is intentional, as requested. Discovery tools expecting `TASKS.md` need an explicit file path where supported or a later rename; no command or integration is installed.
+The structure follows the [TASKS.md reference](https://tasksmd.github.io/tasks.md/) with project-specific Assignee, Defense member, Status, and Issue fields. The singular filename is intentional, as requested. Discovery tools expecting `TASKS.md` need an explicit file path where supported or a later rename; no command or integration is installed.
 
 **Priority:** P0 is reserved for urgent breakages; P1 contains required project work; P2 is useful nonblocking work; P3 is optional future work. Only P1 is populated. Checkpoint order and dependencies determine readiness within it. Being scheduled later does not make required work optional.
 
-**Owners:** Marc = Marc Justin Alberto (`marcjustinalbertobscs`); Jose = Jose III Aquino (`fyodorrrrr`); Jeremy = Jeremy Garin (`emperuna`). GitHub usernames were confirmed by the repository owner. Marc and Jose have pending repository invitations, so their intended ownership is recorded in Issue bodies and the Project's Intended owner field while GitHub assignment is unavailable. Jeremy's Issues are assigned to `emperuna`. All members contribute code, labels, evaluation, and presentation. Personal defense preparation accumulates throughout the project; its dependency represents the final rehearsal gate.
+**Claiming:** Shared tasks have no preset owner and are initially unassigned. Any collaborator may claim an unclaimed task once its prerequisites are satisfied and development is authorized. Assign the Issue to the human claimant, re-read the assignment to detect competing claims, and move the card to In Progress when work starts. Current GitHub claims take precedence over the local snapshot. The three individual defenses remain personal responsibilities; helpers do not replace the named student's defense.
 
 **Status:** Backlog, Ready, In Progress, Review, Blocked, Done. Backlog is untriaged; Ready requires satisfied dependencies and accessible inputs; Review requires acceptance review; Done requires verified evidence. `Blocked by` IDs describe dependencies even while an item remains in Backlog. Use `Blocked` for an actual external impediment. No development tasks are pre-claimed. Issue URLs below identify the created work items.
 
@@ -27,12 +27,13 @@ The structure follows the [TASKS.md reference](https://tasksmd.github.io/tasks.m
 - Checkpoint boards: [CP1](https://github.com/users/emperuna/projects/3/views/3), [CP2](https://github.com/users/emperuna/projects/3/views/4), [CP3](https://github.com/users/emperuna/projects/3/views/5), [CP4](https://github.com/users/emperuna/projects/3/views/6), [CP5](https://github.com/users/emperuna/projects/3/views/7), [Defense](https://github.com/users/emperuna/projects/3/views/8).
 - [Repository Issues](https://github.com/emperuna/gaze-cv/issues): one Issue per stable task ID, with checkpoint milestones, labels, acceptance criteria, and verification.
 
-The existing empty Project linked to this repository was reused and named GAZE Development. It remains private. Marc and Jose have Project edit access; their repository invitations remain separate and pending. No unconfirmed course dates were assigned.
+The existing empty Project linked to this repository was reused and named GAZE Development. It remains private. Marc and Jose have Project edit access. Normal repository collaborator access is still required to claim Issues; pending invitations do not reserve shared tasks for anyone. No unconfirmed course dates were assigned.
 
 | Task metadata | GitHub mapping |
 | --- | --- |
 | ID | Issue title prefix and Task ID Project field. |
-| Owner | Actual Assignees when eligible; Intended owner records the confirmed handle while invitations are pending. |
+| Assignee | Live Issue assignee; shared tasks stay unassigned until claimed. |
+| Defense member | Named student for an individual defense; recorded in its Issue body. |
 | Milestone | Repository milestone and Checkpoint Project field. |
 | Tags | Repository labels, plus checkpoint and priority labels. |
 | Priority heading | Priority Project field. |
@@ -42,16 +43,16 @@ The existing empty Project linked to this repository was reused and named GAZE D
 
 Issues and Projects own live team status and assignment; this file owns the versioned task breakdown. Reconcile links and material status changes manually. No continuous Markdown-to-board synchronization or task execution is installed. Search for the stable ID before creating an Issue to avoid duplicates. Review evidence before moving a development task to Done.
 
-After Marc and Jose accept their repository invitations, assign their Issues according to Owner and remove the assignment-pending notes. Pending assignment does not mean their development tasks have started. The GitHub setup Issue remains incomplete until assignment requirements are verified.
+The original per-member allocation is advisory and does not control task eligibility. Remove an active claim when releasing unfinished work and leave a handoff note. Checkpoint grouping, dependencies, acceptance criteria, and review requirements remain unchanged.
 
 Commit and repository pushes remain manual unless separately authorized.
 
 ## P1
 
-- [ ] Confirm course schedule and demonstration constraints
+- [x] Confirm course schedule and demonstration constraints
   - **ID**: cp1-confirm-plan
-  - **Owner**: Jeremy
-  - **Status**: Backlog
+  - **Assignee**: @emperuna (completion attribution)
+  - **Status**: Done
   - **Milestone**: CP1
   - **Tags**: planning
   - **Files**: `ROADMAP.md`, `PRD.md`
@@ -59,21 +60,20 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Acceptance**: Course timezone, submission status, three-seat setup, laptop, and demonstration expectations are recorded; original guide dates stay visible.
   - **Verification**: Review the recorded decisions with the team and reconcile the PRD and roadmap.
 
-- [ ] Prepare the GitHub Issues and Projects board
+- [x] Prepare the GitHub Issues and Projects board
   - **ID**: cp1-project-board
-  - **Owner**: Jeremy
-  - **Status**: Blocked
-  - **Blocked**: Existing repository invitations for fyodorrrrr and marcjustinalbertobscs are pending; verify and apply the 21 remaining assignments after acceptance.
+  - **Assignee**: @emperuna (completion attribution)
+  - **Status**: Done
   - **Milestone**: CP1
   - **Tags**: planning, tooling
   - **Files**: `TASK.md`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/2
-  - **Acceptance**: When GitHub publication is authorized, task Issues are linked by stable ID, owners are mapped to real handles, and checkpoint/status views are available without duplicates.
-  - **Verification**: Compare Issues and board items against the task IDs; verify assignments and checkpoint filters. This requires authorized GitHub access.
+  - **Acceptance**: When GitHub publication is authorized, task Issues are linked by stable ID, shared tasks are available for self-assignment, and checkpoint/status views are available without duplicates.
+  - **Verification**: Compare Issues and board items against the task IDs; verify self-assignment availability and checkpoint filters. This requires authorized GitHub access.
 
 - [ ] Acquire an accessible labeled head-pose sample set
   - **ID**: cp1-data-access
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: data
@@ -84,7 +84,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Define direction meanings and label selected samples
   - **ID**: cp1-label-contract
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: data, documentation
@@ -96,7 +96,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Establish the minimal reproducible vision environment
   - **ID**: cp1-runtime
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: tooling, landmarks
@@ -108,7 +108,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Extract faces and landmarks from the selected images
   - **ID**: cp1-landmarks
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: landmarks
@@ -120,7 +120,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Draw inspectable face and landmark results
   - **ID**: cp1-annotations
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: visualization
@@ -132,7 +132,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Implement the reproducible five-image feasibility spike
   - **ID**: cp1-spike
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: baseline, tooling
@@ -144,7 +144,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Generate the labeled twenty-sample contact sheet
   - **ID**: cp1-contact-sheet
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: data, tooling
@@ -156,7 +156,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Finalize the nine-section proposal and workflow diagram
   - **ID**: cp1-proposal
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: documentation
@@ -168,7 +168,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Review CP1 evidence and rehearse the pitch
   - **ID**: cp1-hand-in
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP1
   - **Tags**: submission, presentation
@@ -180,7 +180,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Establish subject-separated evaluation inputs
   - **ID**: cp2-split-protocol
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: data, evaluation
@@ -192,7 +192,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Implement the geometric direction baseline
   - **ID**: cp2-baseline
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: baseline
@@ -204,7 +204,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Read saved video with source timestamps
   - **ID**: cp2-video
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: video
@@ -216,7 +216,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Demonstrate three-face baseline observations in saved video
   - **ID**: cp2-multi-face
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: integration, visualization
@@ -228,7 +228,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Measure baseline quality and processing speed
   - **ID**: cp2-first-metrics
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: evaluation
@@ -240,7 +240,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Prepare the CP2 progress evidence
   - **ID**: cp2-hand-in
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: submission
@@ -252,7 +252,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Prepare authorized multi-person video labels
   - **ID**: cp3-video-labels
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP3
   - **Tags**: data, seats, temporal
@@ -264,7 +264,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Implement the main head-pose direction approach
   - **ID**: cp3-pose
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP3
   - **Tags**: pose
@@ -276,7 +276,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Associate observations with fixed seat positions
   - **ID**: cp3-seats
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP3
   - **Tags**: seats
@@ -288,7 +288,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Maintain timestamped seat direction histories
   - **ID**: cp3-histories
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP3
   - **Tags**: seats, integration
@@ -300,7 +300,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Compare the baseline and main approaches
   - **ID**: cp3-comparison
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP3
   - **Tags**: evaluation
@@ -312,7 +312,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Prepare core implementation evidence
   - **ID**: cp3-hand-in
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP3
   - **Tags**: submission
@@ -324,7 +324,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Detect sustained and repeated movement events
   - **ID**: cp4-movement
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: temporal
@@ -336,7 +336,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Make session observation settings adjustable and traceable
   - **ID**: cp4-settings
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: configuration
@@ -348,7 +348,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Integrate event review and saved session records
   - **ID**: cp4-export-review
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: visualization, export
@@ -360,7 +360,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Support the live camera workflow
   - **ID**: cp4-camera
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: camera
@@ -372,7 +372,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Evaluate movement events and false alerts during writing
   - **ID**: cp4-event-evaluation
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: evaluation, temporal
@@ -384,7 +384,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Measure the integrated prototype and record fallback decisions
   - **ID**: cp4-performance
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: evaluation, integration
@@ -396,7 +396,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Prepare the integrated progress submission
   - **ID**: cp4-hand-in
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: submission
@@ -408,7 +408,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Freeze settings and complete final held-out evaluation
   - **ID**: cp5-final-evaluation
-  - **Owner**: Jose
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP5
   - **Tags**: evaluation
@@ -420,7 +420,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Verify fresh-clone execution and rehearse the demonstration
   - **ID**: cp5-reproduction
-  - **Owner**: Marc
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP5
   - **Tags**: testing, presentation
@@ -432,7 +432,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Complete the final report and presentation
   - **ID**: cp5-report
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP5
   - **Tags**: documentation, presentation
@@ -444,7 +444,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Prepare Marc personal technical defense
   - **ID**: defense-marc
-  - **Owner**: Marc
+  - **Defense member**: Marc (@marcjustinalbertobscs)
   - **Status**: Backlog
   - **Milestone**: Defense
   - **Tags**: presentation
@@ -456,7 +456,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Prepare Jose personal technical defense
   - **ID**: defense-jose
-  - **Owner**: Jose
+  - **Defense member**: Jose (@fyodorrrrr)
   - **Status**: Backlog
   - **Milestone**: Defense
   - **Tags**: presentation
@@ -468,7 +468,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Prepare Jeremy personal technical defense
   - **ID**: defense-jeremy
-  - **Owner**: Jeremy
+  - **Defense member**: Jeremy (@emperuna)
   - **Status**: Backlog
   - **Milestone**: Defense
   - **Tags**: presentation
@@ -480,7 +480,7 @@ Commit and repository pushes remain manual unless separately authorized.
 
 - [ ] Review the final submission and individual defense readiness
   - **ID**: cp5-hand-in
-  - **Owner**: Jeremy
+  - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP5
   - **Tags**: submission

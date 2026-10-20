@@ -12,7 +12,7 @@ These repository instructions apply to all work in this checkout. Before editing
 
 1. Confirm the repository root, current branch, and working tree with Git. Preserve unrelated local changes and report an active merge/rebase before altering it.
 2. Read this file and the context listed below. Check for applicable nested `AGENTS.md` or `AGENTS.override.md` files before working in a subdirectory. Do not create overrides to bypass the team rules.
-3. Identify the current user's requested scope. If a task is named, find its stable ID in TASK.md, inspect its linked Issue and live Project state when access is available, and check ownership, dependencies, and acceptance criteria. If GitHub is unavailable, disclose that limitation and do not invent a live status.
+3. Identify the current user's requested scope. If a task is named, find its stable ID in TASK.md, inspect its linked Issue and live Project state when access is available, and check current claims, dependencies, and acceptance criteria. If GitHub is unavailable, disclose that limitation and do not invent a live status.
 4. Briefly state the loaded guidance, selected task or onboarding-only scope, prerequisite state, and intended verification. Continue authorized work without requiring another approval merely for this summary.
 5. During onboarding-only sessions, explain the project and rules without implementing features or claiming tasks. Use [CONTRIBUTING.md](CONTRIBUTING.md) for the member startup checklist and prompt.
 
@@ -37,18 +37,22 @@ Use the PRD for behavior, the roadmap for checkpoint obligations, and TASK.md fo
 - Add later folders and dependencies when real work needs them. Preserve ignore rules for private data, downloaded models, and generated runs.
 - Keep the PRD, architecture, roadmap, contributor instructions, and task backlog at the repository root. Do not introduce a web frontend, backend service, database, or training framework without a requirement.
 
-## Ownership and task workflow
+## Shared task claiming
 
-Proposed leads follow the concept paper: Marc Justin Alberto owns input, baseline, and the spike; Jose III Aquino owns landmarks, pose, direction labels, and classifier evaluation; Jeremy Garin owns seat association, histories, review output, and integration. All members contribute code, labeling, evaluation, and presentation. TASK.md uses Marc, Jose, and Jeremy as short owner names. Confirmed GitHub handles are `marcjustinalbertobscs`, `fyodorrrrr`, and `emperuna`, respectively. Marc and Jose have pending repository invitations; intended ownership is recorded until Issue assignment becomes available.
+Shared project tasks have no preset owner. Any repository collaborator can take an unclaimed task when its dependencies and access requirements are satisfied. The concept paper's original module allocation is advisory expertise, not a restriction on who may contribute. Confirmed member handles are `marcjustinalbertobscs`, `fyodorrrrr`, and `emperuna`.
+
+The three individual technical defenses remain personal academic responsibilities. Another member can help prepare material, but the named student must deliver and understand their own defense.
 
 For an authorized development task:
 
-1. Read its acceptance criteria and blockers. Confirm prerequisite evidence before treating it as ready.
-2. Agree on shared inputs and outputs before modifying behavior used by another owner.
-3. Work on one focused task. Update its local Status when it changes; use a unique `(@agent-name)` suffix only while an agent is actively working. Proposed human ownership does not mean the task is claimed.
-4. Keep unrelated edits intact. Avoid simultaneous edits to the same files and large automatic formatting changes.
-5. Verify the behavior and document commands, results, limitations, and the task ID in the change summary.
-6. Use Review until acceptance evidence is checked. Mark Done only when the task's criteria are satisfied. Record blockers by ID or with a concrete external reason.
+1. Read its acceptance criteria, live Issue, Project status, and dependencies. Select an unclaimed task whose prerequisite evidence is satisfied; do not select by a fixed Owner field.
+2. When claiming is authorized, assign the Issue to the requesting human collaborator and re-read it before editing. If another assignee or active claim appears, coordinate first. Do not invent an agent GitHub account or silently take over another person's work.
+3. Move the card to In Progress when work actually starts and update the local Assignee and Status snapshot. Agent-name suffixes are optional temporary session markers, not permanent ownership or a substitute for the human assignee.
+4. Agree on shared inputs and outputs before modifying behavior used by another contributor. Preserve unrelated edits and avoid overlapping changes to the same files.
+5. Verify the behavior and record commands, results, limitations, and the task ID. Use Review until acceptance evidence is checked; use Done only when it is satisfied.
+6. Record dependency IDs or external blocker reasons. If releasing an unfinished task, document remaining work and remove the active claim so someone else can take it.
+
+Ordinary collaborator access is still needed for GitHub assignment and editing; a pending invitation is an access limitation for that person, not a reason to reserve or block shared tasks for them. No automated task picker or claimant is installed.
 
 Do not launch background work or a task-draining loop because a backlog exists. Do not install the reference site's autonomous next-task command as part of this setup. Never create Issues, change a Project, publish, push, or send messages unless the user has authorized that action. The repository owner handles pushes manually unless they explicitly change that instruction. Commit only when requested or required to complete an explicitly authorized Git operation.
 
@@ -58,7 +62,7 @@ Do not launch background work or a task-draining loop because a backlog exists. 
 
 Use kebab-case unique IDs and lowercase tags. Tag vocabulary: `planning`, `data`, `documentation`, `tooling`, `baseline`, `landmarks`, `visualization`, `video`, `evaluation`, `pose`, `seats`, `temporal`, `configuration`, `export`, `camera`, `testing`, `integration`, `presentation`, and `submission`.
 
-Owner, Status, and Issue are project-specific metadata. Keep dependency IDs valid. When a task is completed, retain its checked block until completion evidence and its Issue link, if any, are recorded. This is a deliberate adaptation for team review; completed tasks may later be archived or removed after dependent tasks are updated. An absent task alone never proves its blocker is satisfied.
+Assignee, Defense member, Status, and Issue are project-specific metadata. Keep dependency IDs valid. When a task is completed, retain its checked block until completion evidence and its Issue link, if any, are recorded. This is a deliberate adaptation for team review; completed tasks may later be archived or removed after dependent tasks are updated. An absent task alone never proves its blocker is satisfied.
 
 GitHub Issues and Projects become the authoritative team assignment and status record once populated. TASK.md remains the versioned task breakdown. Synchronize links and material status changes manually; there is no installed synchronization. Do not claim a board was updated because a Markdown file changed.
 
@@ -76,7 +80,7 @@ python -m venv .venv
 
 Installation can download the packaging tool. CV dependencies have not been selected. Both scripts intentionally fail with an unimplemented message without `--help`; help output is not a working feasibility spike.
 
-Run checks appropriate to actual changes. For documentation, check links and `git diff --check`. For future application behavior, add meaningful checks for direction conventions, timing, missing observations, association ambiguity, and comparable evaluation. No automated test suite or CI workflow exists yet; do not report a passing suite or create empty tests. Routine checks should not require private footage, a camera, or full dataset downloads. State any checks that could not be performed.
+Run checks appropriate to actual changes. For documentation, check links and `git diff --check`. For future application behavior, add meaningful checks for direction conventions, timing, missing observations, association ambiguity, and comparable evaluation. Repository workflow checks and automation tests are defined in .github; they become active after the setup PR is merged. Run `python .github/automation.py check` and `python -m unittest discover -s .github/tests -v` for repository automation. There is no application test suite yet; do not report CV features as tested by these checks or create empty tests. Routine checks should not require private footage, a camera, or full dataset downloads. State any checks that could not be performed.
 
 ## Data and evaluation rules
 
@@ -86,11 +90,17 @@ Use session time for movement duration and make missing observations explicit. T
 
 ## Commit and collaboration conventions
 
-Use Conventional Commit subjects: `type(scope): imperative summary`. Relevant types are `feat`, `fix`, `docs`, `test`, `refactor`, and `chore`; scope names should describe the affected area, such as `planning`, `onboarding`, `baseline`, or `evaluation`.
+Use Conventional Commit subjects: `type(scope): imperative summary`. Relevant types are `feat`, `fix`, `docs`, `test`, `refactor`, `ci`, and `chore`; scope names should describe the affected area, such as `planning`, `onboarding`, `baseline`, or `evaluation`.
 
 Keep commits atomic: one independently understandable change per commit, including its directly related documentation and meaningful checks. Do not bundle unrelated cleanup, generated output, or someone else's changes. Inspect staged paths and `git diff --cached --check` before committing. Reference the stable task ID and Issue in the commit body or PR description when applicable. A conventional subject does not replace acceptance evidence.
 
-For new team work, use a focused branch such as `docs/cp1-proposal` or `feat/cp2-baseline`, based on an agreed task. Submit a PR for review rather than rewriting shared main history. Use each member's own Git identity. Do not create commits or pushes until authorized by the user; an explicit commit-and-push request authorizes those actions for its stated scope.
+For new team work, use a focused branch such as `docs/cp1-proposal` or `feat/cp2-baseline`, based on an agreed task. Push only task branches when authorized; Auto PR creates or reuses their PR after the automation setup is activated. Complete the PR description and wait for required checks and peer review. Never bypass the main ruleset or push directly to main for ordinary work. Use each member's own Git identity. Do not create commits or pushes until authorized by the user; an explicit commit-and-push request authorizes those actions for its stated scope.
+
+## Automatic branch maintenance
+
+Read [docs/automation.md](docs/automation.md) for activation status and limitations. Once active, main updates trigger isolated rebases of open same-repository PR branches and explicit CI reruns. The configured bot is authorized to rewrite those feature branches only with an exact force-with-lease check; this is not permission for agents to force-push main or discard another contributor's work. Fork PRs are skipped, and conflicts require a documented human resolution.
+
+Fetch and reconcile a bot-rebased feature branch before further pushes, preserving local-only changes. Do not blindly reset or force-push a stale branch. PR creation, checks, peer review, and branch rules provide integration gates; AGENTS.md remains guidance rather than an enforcement mechanism. Existing GitHub status workflows are separate from this Git branch automation.
 
 ## Git and checkpoint handling
 

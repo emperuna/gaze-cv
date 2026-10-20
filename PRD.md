@@ -109,6 +109,8 @@ Targets are proposed success criteria, not achieved results. Tune thresholds on 
 
 ## Team ownership
 
+The following allocation records suggested focus areas from the concept paper. Shared work is not restricted to these members; any collaborator can claim an unassigned task. Individual technical defenses remain personal responsibilities.
+
 | Owner | Modules and evidence |
 | --- | --- |
 | Marc Justin Alberto | Input, preprocessing, baseline, reproducible five-image spike, and output evidence. |
