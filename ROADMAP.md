@@ -4,6 +4,8 @@ Status: Planned work as of 21 October 2026. Repository boilerplate exists; appli
 
 This roadmap breaks the [PRD](PRD.md) into checkpoint deliverables for the project team. It follows the supplied Milestone 1 checkpoint guide and the concept paper's proposed allocation of features. The guide defines checkpoint names, dates, marks, and submission expectations; the tasks and completion gates below are the project's proposed plan.
 
+The [task backlog](TASK.md) turns these milestones into individually assignable work items with stable IDs. [AGENTS.md](AGENTS.md) defines contribution and verification conventions. The task file links the created Issues and the [checkpoint kanban board](https://github.com/users/emperuna/projects/3/views/2). Board updates and Markdown status reconciliation remain manual; no continuous synchronization is installed.
+
 ## Checkpoint schedule
 
 All hand-ins are due at 11:30 PM in the course timezone, which needs confirmation. Dates follow the supplied guide's October and November schedule. The guide accepts late hand-ins marked late and retains the Friday class check. Confirm actual submission status and any revised arrangements with the instructor; this roadmap does not change deadlines.

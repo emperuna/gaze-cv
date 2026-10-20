@@ -13,6 +13,9 @@ Planning and boilerplate only. This repository contains project documentation, a
 - [Product requirements](PRD.md): scope, user workflow, functional requirements, acceptance criteria, evaluation, and milestones.
 - [Project architecture](ARCHITECTURE.md): project areas, session flow, information, responsibilities, and scope.
 - [Development roadmap](ROADMAP.md): checkpoint tasks, owners, dependencies, and completion evidence.
+- [Contributor instructions](AGENTS.md): working conventions, scope, and verification.
+- [Task backlog](TASK.md): task ownership, dependencies, acceptance criteria, and linked GitHub Issues.
+- [GitHub kanban board](https://github.com/users/emperuna/projects/3/views/2): Status columns and Checkpoint swimlanes.
 
 ## Expected outcome
 
