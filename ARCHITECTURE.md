@@ -58,6 +58,8 @@ If movement histories or event review cannot be completed, the minimum demonstra
 
 ## Team organization
 
+The following allocation records suggested focus areas from the concept paper. Shared work is not restricted to these members; any collaborator can claim an unassigned task. Individual technical defenses remain personal responsibilities.
+
 | Member | Primary responsibility |
 | --- | --- |
 | Marc Justin Alberto | Input preparation, the reference approach, and the initial feasibility demonstration. |

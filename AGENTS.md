@@ -12,7 +12,7 @@ These repository instructions apply to all work in this checkout. Before editing
 
 1. Confirm the repository root, current branch, and working tree with Git. Preserve unrelated local changes and report an active merge/rebase before altering it.
 2. Read this file and the context listed below. Check for applicable nested `AGENTS.md` or `AGENTS.override.md` files before working in a subdirectory. Do not create overrides to bypass the team rules.
-3. Identify the current user's requested scope. If a task is named, find its stable ID in TASK.md, inspect its linked Issue and live Project state when access is available, and check ownership, dependencies, and acceptance criteria. If GitHub is unavailable, disclose that limitation and do not invent a live status.
+3. Identify the current user's requested scope. If a task is named, find its stable ID in TASK.md, inspect its linked Issue and live Project state when access is available, and check current claims, dependencies, and acceptance criteria. If GitHub is unavailable, disclose that limitation and do not invent a live status.
 4. Briefly state the loaded guidance, selected task or onboarding-only scope, prerequisite state, and intended verification. Continue authorized work without requiring another approval merely for this summary.
 5. During onboarding-only sessions, explain the project and rules without implementing features or claiming tasks. Use [CONTRIBUTING.md](CONTRIBUTING.md) for the member startup checklist and prompt.
 
@@ -37,18 +37,22 @@ Use the PRD for behavior, the roadmap for checkpoint obligations, and TASK.md fo
 - Add later folders and dependencies when real work needs them. Preserve ignore rules for private data, downloaded models, and generated runs.
 - Keep the PRD, architecture, roadmap, contributor instructions, and task backlog at the repository root. Do not introduce a web frontend, backend service, database, or training framework without a requirement.
 
-## Ownership and task workflow
+## Shared task claiming
 
-Proposed leads follow the concept paper: Marc Justin Alberto owns input, baseline, and the spike; Jose III Aquino owns landmarks, pose, direction labels, and classifier evaluation; Jeremy Garin owns seat association, histories, review output, and integration. All members contribute code, labeling, evaluation, and presentation. TASK.md uses Marc, Jose, and Jeremy as short owner names. Confirmed GitHub handles are `marcjustinalbertobscs`, `fyodorrrrr`, and `emperuna`, respectively. Marc and Jose have pending repository invitations; intended ownership is recorded until Issue assignment becomes available.
+Shared project tasks have no preset owner. Any repository collaborator can take an unclaimed task when its dependencies and access requirements are satisfied. The concept paper's original module allocation is advisory expertise, not a restriction on who may contribute. Confirmed member handles are `marcjustinalbertobscs`, `fyodorrrrr`, and `emperuna`.
+
+The three individual technical defenses remain personal academic responsibilities. Another member can help prepare material, but the named student must deliver and understand their own defense.
 
 For an authorized development task:
 
-1. Read its acceptance criteria and blockers. Confirm prerequisite evidence before treating it as ready.
-2. Agree on shared inputs and outputs before modifying behavior used by another owner.
-3. Work on one focused task. Update its local Status when it changes; use a unique `(@agent-name)` suffix only while an agent is actively working. Proposed human ownership does not mean the task is claimed.
-4. Keep unrelated edits intact. Avoid simultaneous edits to the same files and large automatic formatting changes.
-5. Verify the behavior and document commands, results, limitations, and the task ID in the change summary.
-6. Use Review until acceptance evidence is checked. Mark Done only when the task's criteria are satisfied. Record blockers by ID or with a concrete external reason.
+1. Read its acceptance criteria, live Issue, Project status, and dependencies. Select an unclaimed task whose prerequisite evidence is satisfied; do not select by a fixed Owner field.
+2. When claiming is authorized, assign the Issue to the requesting human collaborator and re-read it before editing. If another assignee or active claim appears, coordinate first. Do not invent an agent GitHub account or silently take over another person's work.
+3. Move the card to In Progress when work actually starts and update the local Assignee and Status snapshot. Agent-name suffixes are optional temporary session markers, not permanent ownership or a substitute for the human assignee.
+4. Agree on shared inputs and outputs before modifying behavior used by another contributor. Preserve unrelated edits and avoid overlapping changes to the same files.
+5. Verify the behavior and record commands, results, limitations, and the task ID. Use Review until acceptance evidence is checked; use Done only when it is satisfied.
+6. Record dependency IDs or external blocker reasons. If releasing an unfinished task, document remaining work and remove the active claim so someone else can take it.
+
+Ordinary collaborator access is still needed for GitHub assignment and editing; a pending invitation is an access limitation for that person, not a reason to reserve or block shared tasks for them. No automated task picker or claimant is installed.
 
 Do not launch background work or a task-draining loop because a backlog exists. Do not install the reference site's autonomous next-task command as part of this setup. Never create Issues, change a Project, publish, push, or send messages unless the user has authorized that action. The repository owner handles pushes manually unless they explicitly change that instruction. Commit only when requested or required to complete an explicitly authorized Git operation.
 
@@ -58,7 +62,7 @@ Do not launch background work or a task-draining loop because a backlog exists. 
 
 Use kebab-case unique IDs and lowercase tags. Tag vocabulary: `planning`, `data`, `documentation`, `tooling`, `baseline`, `landmarks`, `visualization`, `video`, `evaluation`, `pose`, `seats`, `temporal`, `configuration`, `export`, `camera`, `testing`, `integration`, `presentation`, and `submission`.
 
-Owner, Status, and Issue are project-specific metadata. Keep dependency IDs valid. When a task is completed, retain its checked block until completion evidence and its Issue link, if any, are recorded. This is a deliberate adaptation for team review; completed tasks may later be archived or removed after dependent tasks are updated. An absent task alone never proves its blocker is satisfied.
+Assignee, Defense member, Status, and Issue are project-specific metadata. Keep dependency IDs valid. When a task is completed, retain its checked block until completion evidence and its Issue link, if any, are recorded. This is a deliberate adaptation for team review; completed tasks may later be archived or removed after dependent tasks are updated. An absent task alone never proves its blocker is satisfied.
 
 GitHub Issues and Projects become the authoritative team assignment and status record once populated. TASK.md remains the versioned task breakdown. Synchronize links and material status changes manually; there is no installed synchronization. Do not claim a board was updated because a Markdown file changed.
 

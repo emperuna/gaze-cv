@@ -14,7 +14,7 @@ Planning and boilerplate only. This repository contains project documentation, a
 - [Project architecture](ARCHITECTURE.md): project areas, session flow, information, responsibilities, and scope.
 - [Development roadmap](ROADMAP.md): checkpoint tasks, owners, dependencies, and completion evidence.
 - [Contributor instructions](AGENTS.md): working conventions, scope, and verification.
-- [Task backlog](TASK.md): task ownership, dependencies, acceptance criteria, and linked GitHub Issues.
+- [Task backlog](TASK.md): self-claimable tasks, dependencies, acceptance criteria, and linked GitHub Issues.
 - [GitHub kanban board](https://github.com/users/emperuna/projects/3/views/2): Status columns and Checkpoint swimlanes.
 
 ## Expected outcome
@@ -23,12 +23,14 @@ A labeled examination video view with seat references, head direction labels, an
 
 ## Team
 
-| Member | Planned ownership |
+| Member | Initial suggested focus |
 | --- | --- |
 | Marc Justin Alberto | Video input, preprocessing, baseline, and feasibility spike |
 | Jose III Aquino | Landmarks, head pose, and direction classification |
 | Jeremy Garin | Seat association, movement events, annotated output, and integration |
 | All members | Code, data labeling, evaluation, documentation, and presentation |
+
+Shared tasks are open to any collaborator; the original focus areas above are advisory. Claim an unassigned Issue before working so two people do not take the same task. Each member still delivers their own individual technical defense.
 
 ## Team and agent onboarding
 

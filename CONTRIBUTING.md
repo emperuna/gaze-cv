@@ -8,7 +8,7 @@ Start here when joining the repository or opening it with a coding agent. GAZE i
 2. Clone the repository, or update an existing clean checkout with `git pull --ff-only`. If you have local work or Git reports a divergence, inspect it before proceeding; do not reset or force-push.
 3. Open the repository root in your editor or coding agent. Confirm that the root contains AGENTS.md, TASK.md, and README.md.
 4. Use your own GitHub account and Git author identity so your contributions remain attributable. Follow the [README setup](README.md#getting-started) when an environment is needed.
-5. Read AGENTS.md and its linked planning documents. Find your intended tasks in TASK.md and confirm live assignments and dependencies in GitHub. Marc and Jose's Issue assignments remain pending until their repository invitations are accepted and the assignment follow-up is completed.
+5. Read AGENTS.md and its linked planning documents. Choose from the unclaimed shared tasks in TASK.md and confirm live claims and dependencies in GitHub. There are no preset module owners. Repository invitation acceptance is still required for normal collaborator assignment access.
 
 ## Verify the agent has loaded the rules
 
@@ -22,7 +22,7 @@ Read and follow the root AGENTS.md and any applicable nested instructions.
 Read README.md, PRD.md, ARCHITECTURE.md, ROADMAP.md, and TASK.md.
 Confirm the repository root and summarize the active instruction sources,
 the current boilerplate limits, and the verification and Git conventions.
-My GitHub username is <your-handle>. Identify my intended tasks and their
+My GitHub username is <your-handle>. Identify unclaimed shared tasks and their
 prerequisites, checking live Issue assignments when access is available.
 Do not implement features, claim tasks, commit, push, or change GitHub state.
 ```
@@ -31,13 +31,13 @@ Check that its answer identifies AGENTS.md, the four package files and two scrip
 
 ## Start one authorized task
 
-Select a task whose prerequisites are satisfied, confirm ownership, and create a focused branch from an up-to-date base. Recheck live assignment if the local Markdown snapshot is stale. Do not claim a task already being handled by another member.
+Any collaborator may select an unclaimed shared task whose prerequisites are satisfied. When claiming is authorized, assign yourself to the Issue, re-read the assignment to detect competing claims, move it to In Progress when starting, and create a focused branch from an up-to-date base. Update the local task snapshot. Do not take over a task already being handled by another member. Individual defense tasks remain the named students' responsibilities.
 
 A later implementation request can be explicit:
 
 ```text
 Follow AGENTS.md. Work only on task <task-id> from TASK.md and its linked
-Issue. Check ownership and prerequisites first, then implement the authorized
+Issue. Check live claims and prerequisites first, then implement the authorized
 scope and run appropriate verification. Preserve unrelated work. Report
 acceptance evidence and limitations. Do not commit or push unless I ask.
 ```

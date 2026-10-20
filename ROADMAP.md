@@ -21,6 +21,8 @@ All hand-ins are due at 11:30 PM in the course timezone, which needs confirmatio
 
 The guide has five project checkpoints plus a separately marked individual defense, totaling 100 points. The 50% and 80% checkpoint names are progress review stages, not percentages to infer from completed task counts.
 
+Task leads below reflect the original suggested allocation, not exclusive ownership. Any collaborator may claim unassigned shared work; prerequisites and acceptance criteria determine readiness. Individual defenses remain personal responsibilities. Live claims are recorded in GitHub Issues.
+
 ## Starting position and priorities
 
 The repository contains project documentation, an initial local Git commit, and project boilerplate. GitHub publication remains a manual step for the repository owner. Data acquisition, a running feasibility demonstration, per-member contributions, and checkpoint submissions are not established by the current repository.
@@ -60,7 +62,7 @@ Add GitHub workflows when runnable checks exist. Introduce separate development 
 
 **Dependencies:** Scope agreement and access to permitted sample data.
 
-| Work item | Lead | Completion evidence |
+| Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Check the proposal against all nine required sections. | All members | Proposal PDF with measurable targets, baseline, main approach, workflow diagram, owners, timeline, risks, and fallback. |
 | Acquire real data and document its source and permissions. | All members; Jose coordinates labels | Available sample files, label explanation, counts by class, and documented conditions. |
@@ -85,7 +87,7 @@ Unlabeled LFW images can demonstrate an operation but cannot supply head-directi
 
 **Dependencies:** CP1 data access and reproducible execution. Relevant requirements: FR01, FR02, early FR03 and FR08, and initial FR11.
 
-| Work item | Lead | Completion evidence |
+| Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Establish repeatable saved-video input. | Marc | A selected clip opens and completes processing; unreadable input receives an understandable message. |
 | Demonstrate multiple-face observation. | Marc with Jose | A representative view shows at least three visible faces observed at once, with missed detections recorded. |
@@ -109,7 +111,7 @@ The 80% accuracy and 10 FPS goals remain final targets. CP2 should establish hon
 
 **Dependencies:** CP2 baseline and labeled direction data. Seat evaluation also requires authorized, labeled multi-person footage. Relevant requirements: FR03, FR04, initial FR05 and FR10, and FR11.
 
-| Work item | Lead | Completion evidence |
+| Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Produce the four directions with the main approach. | Jose | Labeled output examples, documented direction conventions, and initial results. |
 | Associate observations with fixed seats. | Jeremy | A three-person clip demonstrates seat references; ambiguous observations remain unassigned. |
@@ -132,7 +134,7 @@ The 80% accuracy and 10 FPS goals remain final targets. CP2 should establish hon
 
 **Dependencies:** Reliable direction observations, seat histories, and labeled movement intervals. Relevant requirements: FR05 through FR10, completion of live input in FR01, and expanded FR11.
 
-| Work item | Lead | Completion evidence |
+| Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Distinguish brief, sustained, and repeated movements. | Jeremy with Jose | Labeled sequences demonstrate each behavior, with gaps excluded from continuous duration. |
 | Make observation settings adjustable and traceable. | Jeremy with Jose | Two documented settings produce explainable differences and are saved with the session. |
@@ -156,7 +158,7 @@ The 80% accuracy and 10 FPS goals remain final targets. CP2 should establish hon
 
 **Dependencies:** CP4 results and a confirmed final demonstration scope. Relevant requirements: all FR01–FR11, or an explicitly documented fallback with incomplete requirements listed.
 
-| Work item | Lead | Completion evidence |
+| Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Freeze evaluation settings and complete held-out evaluation. | Jose coordinates; all members evaluate | Final baseline comparison, accuracy, macro-F1, coverage, processing speed, and video-based measures where supported. |
 | Verify the agreed workflow from a fresh clone. | Marc and Jeremy; all members rehearse | Reproduction instructions work with documented data and model acquisition steps. |
