@@ -6,6 +6,18 @@ GAZE is a classroom head movement review aid using one fixed camera. Head moveme
 
 The repository currently contains boilerplate only. Package modules contain descriptions, and scripts expose help and report that their features are unimplemented. Creating or updating the task backlog does not authorize application development. Work on the scope requested in the current conversation; start implementation tasks only when the user requests development work.
 
+## Start every agent session
+
+These repository instructions apply to all work in this checkout. Before editing:
+
+1. Confirm the repository root, current branch, and working tree with Git. Preserve unrelated local changes and report an active merge/rebase before altering it.
+2. Read this file and the context listed below. Check for applicable nested `AGENTS.md` or `AGENTS.override.md` files before working in a subdirectory. Do not create overrides to bypass the team rules.
+3. Identify the current user's requested scope. If a task is named, find its stable ID in TASK.md, inspect its linked Issue and live Project state when access is available, and check ownership, dependencies, and acceptance criteria. If GitHub is unavailable, disclose that limitation and do not invent a live status.
+4. Briefly state the loaded guidance, selected task or onboarding-only scope, prerequisite state, and intended verification. Continue authorized work without requiring another approval merely for this summary.
+5. During onboarding-only sessions, explain the project and rules without implementing features or claiming tasks. Use [CONTRIBUTING.md](CONTRIBUTING.md) for the member startup checklist and prompt.
+
+Root AGENTS.md is the canonical instruction source. Agents that do not discover it automatically must be told to read and follow it explicitly. Tool support and user review are needed; this file is guidance rather than technical enforcement.
+
 ## Read before working
 
 - [README.md](README.md): current layout and setup.
@@ -71,6 +83,14 @@ Run checks appropriate to actual changes. For documentation, check links and `gi
 Verify dataset access and permissions before relying on it. Record sources, licenses, class counts, label conventions, and subject-separated development/test splits. BIWI access remains unverified; unlabeled LFW images cannot establish direction accuracy. Multi-person footage is required for seat and temporal validation.
 
 Use session time for movement duration and make missing observations explicit. Tune on development data and freeze settings before held-out evaluation. Compare methods on identical inputs, report missed detections, and report hardware and conditions with FPS. The PRD's 80% accuracy and 10 FPS values are targets, not achieved results. State limitations and keep instructor review central.
+
+## Commit and collaboration conventions
+
+Use Conventional Commit subjects: `type(scope): imperative summary`. Relevant types are `feat`, `fix`, `docs`, `test`, `refactor`, and `chore`; scope names should describe the affected area, such as `planning`, `onboarding`, `baseline`, or `evaluation`.
+
+Keep commits atomic: one independently understandable change per commit, including its directly related documentation and meaningful checks. Do not bundle unrelated cleanup, generated output, or someone else's changes. Inspect staged paths and `git diff --cached --check` before committing. Reference the stable task ID and Issue in the commit body or PR description when applicable. A conventional subject does not replace acceptance evidence.
+
+For new team work, use a focused branch such as `docs/cp1-proposal` or `feat/cp2-baseline`, based on an agreed task. Submit a PR for review rather than rewriting shared main history. Use each member's own Git identity. Do not create commits or pushes until authorized by the user; an explicit commit-and-push request authorizes those actions for its stated scope.
 
 ## Git and checkpoint handling
 

@@ -30,6 +30,10 @@ A labeled examination video view with seat references, head direction labels, an
 | Jeremy Garin | Seat association, movement events, annotated output, and integration |
 | All members | Code, data labeling, evaluation, documentation, and presentation |
 
+## Team and agent onboarding
+
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) before starting your first task. It includes access checks, a read-only agent startup prompt, task selection, conventional naming, and review expectations. [AGENTS.md](AGENTS.md) is the canonical repository guidance; verify your agent has loaded it before authorizing edits.
+
 ## Getting started
 
 Read the PRD and project architecture for the planned capabilities, responsibilities, and evaluation goals.
