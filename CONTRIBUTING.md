@@ -58,4 +58,8 @@ Each commit should have one clear purpose and include its directly related docum
 
 ## Request review
 
-Use the PR template to state scope, linked task, verification results, and limitations. Include whether repository guidance was loaded by your agent. Reviewers check the task acceptance criteria, relevant AGENTS.md rules, and the evidence before moving work to Done. Commit and push only when authorized; no application CI suite exists yet.
+Use the PR template to state scope, linked task, verification results, and limitations. Include whether repository guidance was loaded by your agent. Reviewers check the task acceptance criteria, relevant AGENTS.md rules, and the evidence before moving work to Done. Commit and push task branches only when authorized. After activation, Auto PR opens or reuses the PR; Repository checks must pass and a different collaborator must approve under the reviewed main ruleset. Do not bypass main protections. The checks cover repository consistency and automation, not unimplemented CV features.
+
+## Branch automation
+
+Read [docs/automation.md](docs/automation.md) for the setup's activation state, exact checks, and conflict handling. Once activated, each main update rebases open same-repository PR branches and dispatches CI on updated heads. Fetch and reconcile your local branch before pushing again, preserving local-only changes. Fork PRs and conflicting rebases need manual handling. Human review and merge remain explicit; there is no automatic PR approval or merge.

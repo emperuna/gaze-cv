@@ -54,7 +54,7 @@ Keep model acquisition notes, the test plan, the evidence placeholder, proposal 
 
 Add notebooks only for actual exploration and test fixtures only when executable tests need inputs. When evaluation work begins around CP2, create `docs/evaluation/` and document permissions, labels, subject splits, comparison procedures, missing predictions, hardware, and event matching rules before final testing. Create `docs/presentation/` for the final report, slides, demo instructions, contribution summary, results, and limitations when those materials are prepared.
 
-Add GitHub workflows when runnable checks exist. Introduce separate development requirements when actual development tools are chosen. These deferred folders and tools do not change the checkpoint deliverables.
+Repository automation checks now exist under `.github/`; [the automation guide](docs/automation.md) records activation status and the limits of those checks. Add application checks as behavior is implemented. Introduce separate development requirements when actual development tools are chosen. These deferred folders and tools do not change the checkpoint deliverables.
 
 ## CP1 Proposal and feasibility
 

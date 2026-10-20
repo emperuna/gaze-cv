@@ -80,7 +80,7 @@ python -m venv .venv
 
 Installation can download the packaging tool. CV dependencies have not been selected. Both scripts intentionally fail with an unimplemented message without `--help`; help output is not a working feasibility spike.
 
-Run checks appropriate to actual changes. For documentation, check links and `git diff --check`. For future application behavior, add meaningful checks for direction conventions, timing, missing observations, association ambiguity, and comparable evaluation. No automated test suite or CI workflow exists yet; do not report a passing suite or create empty tests. Routine checks should not require private footage, a camera, or full dataset downloads. State any checks that could not be performed.
+Run checks appropriate to actual changes. For documentation, check links and `git diff --check`. For future application behavior, add meaningful checks for direction conventions, timing, missing observations, association ambiguity, and comparable evaluation. Repository workflow checks and automation tests are defined in .github; they become active after the setup PR is merged. Run `python .github/automation.py check` and `python -m unittest discover -s .github/tests -v` for repository automation. There is no application test suite yet; do not report CV features as tested by these checks or create empty tests. Routine checks should not require private footage, a camera, or full dataset downloads. State any checks that could not be performed.
 
 ## Data and evaluation rules
 
@@ -90,11 +90,17 @@ Use session time for movement duration and make missing observations explicit. T
 
 ## Commit and collaboration conventions
 
-Use Conventional Commit subjects: `type(scope): imperative summary`. Relevant types are `feat`, `fix`, `docs`, `test`, `refactor`, and `chore`; scope names should describe the affected area, such as `planning`, `onboarding`, `baseline`, or `evaluation`.
+Use Conventional Commit subjects: `type(scope): imperative summary`. Relevant types are `feat`, `fix`, `docs`, `test`, `refactor`, `ci`, and `chore`; scope names should describe the affected area, such as `planning`, `onboarding`, `baseline`, or `evaluation`.
 
 Keep commits atomic: one independently understandable change per commit, including its directly related documentation and meaningful checks. Do not bundle unrelated cleanup, generated output, or someone else's changes. Inspect staged paths and `git diff --cached --check` before committing. Reference the stable task ID and Issue in the commit body or PR description when applicable. A conventional subject does not replace acceptance evidence.
 
-For new team work, use a focused branch such as `docs/cp1-proposal` or `feat/cp2-baseline`, based on an agreed task. Submit a PR for review rather than rewriting shared main history. Use each member's own Git identity. Do not create commits or pushes until authorized by the user; an explicit commit-and-push request authorizes those actions for its stated scope.
+For new team work, use a focused branch such as `docs/cp1-proposal` or `feat/cp2-baseline`, based on an agreed task. Push only task branches when authorized; Auto PR creates or reuses their PR after the automation setup is activated. Complete the PR description and wait for required checks and peer review. Never bypass the main ruleset or push directly to main for ordinary work. Use each member's own Git identity. Do not create commits or pushes until authorized by the user; an explicit commit-and-push request authorizes those actions for its stated scope.
+
+## Automatic branch maintenance
+
+Read [docs/automation.md](docs/automation.md) for activation status and limitations. Once active, main updates trigger isolated rebases of open same-repository PR branches and explicit CI reruns. The configured bot is authorized to rewrite those feature branches only with an exact force-with-lease check; this is not permission for agents to force-push main or discard another contributor's work. Fork PRs are skipped, and conflicts require a documented human resolution.
+
+Fetch and reconcile a bot-rebased feature branch before further pushes, preserving local-only changes. Do not blindly reset or force-push a stale branch. PR creation, checks, peer review, and branch rules provide integration gates; AGENTS.md remains guidance rather than an enforcement mechanism. Existing GitHub status workflows are separate from this Git branch automation.
 
 ## Git and checkpoint handling
 
