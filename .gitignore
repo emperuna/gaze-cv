@@ -1,0 +1,36 @@
+# Local operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local editor settings and temporary files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Python environments, packaging, and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Local datasets, model downloads, and generated session output
+/data/raw/
+/data/processed/
+/models/downloads/
+/outputs/runs/

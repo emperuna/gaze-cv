@@ -1,0 +1,2 @@
+# Install the local package. Runtime CV dependencies will be added during feasibility work.
+-e .
