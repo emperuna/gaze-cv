@@ -1,0 +1,83 @@
+{
+  "steps": "shared BGR->RGB, shrink only if width>1280; these 384px samples need no shrink",
+  "samples": [
+    {
+      "input_color": "BGR",
+      "model_color": "RGB",
+      "dtype": "uint8",
+      "original_size": [
+        384,
+        288
+      ],
+      "prepared_size": [
+        384,
+        288
+      ],
+      "resize": "aspect-preserving shrink only; INTER_AREA",
+      "normalization": "none; MediaPipe performs internal model normalization",
+      "sample_id": "pointing04-person01145+0-15",
+      "bgr_pixel": [
+        79,
+        86,
+        106
+      ],
+      "rgb_pixel": [
+        106,
+        86,
+        79
+      ]
+    },
+    {
+      "input_color": "BGR",
+      "model_color": "RGB",
+      "dtype": "uint8",
+      "original_size": [
+        384,
+        288
+      ],
+      "prepared_size": [
+        384,
+        288
+      ],
+      "resize": "aspect-preserving shrink only; INTER_AREA",
+      "normalization": "none; MediaPipe performs internal model normalization",
+      "sample_id": "pointing04-person01142+0-60",
+      "bgr_pixel": [
+        116,
+        122,
+        151
+      ],
+      "rgb_pixel": [
+        151,
+        122,
+        116
+      ]
+    },
+    {
+      "input_color": "BGR",
+      "model_color": "RGB",
+      "dtype": "uint8",
+      "original_size": [
+        384,
+        288
+      ],
+      "prepared_size": [
+        384,
+        288
+      ],
+      "resize": "aspect-preserving shrink only; INTER_AREA",
+      "normalization": "none; MediaPipe performs internal model normalization",
+      "sample_id": "pointing04-person01148+0+30",
+      "bgr_pixel": [
+        105,
+        113,
+        143
+      ],
+      "rgb_pixel": [
+        143,
+        113,
+        105
+      ]
+    }
+  ]
+}

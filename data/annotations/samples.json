@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "dataset": "pointing04-cp2-moderate-v1",
+  "source_url": "http://crowley-coutaz.fr/Head%20Pose%20Image%20Database.html",
+  "archive_sha256": "5629cb428f38c65ba0220f480ea53ba859f56fbfc5a34e7396a981f0485ed209",
+  "direction_convention": "Subject-relative, unmirrored: positive yaw left, positive pitch down",
+  "label_policy": {
+    "down_pitch_min": 30,
+    "turn_yaw_min": 30,
+    "forward_max_abs_yaw": 15,
+    "forward_max_abs_pitch": 15,
+    "mixed_pose_precedence": "down",
+    "source_to_canonical": "yaw=-pan; pitch=-tilt"
+  },
+  "samples": [
+    {
+      "id": "pointing04-person01145+0-15",
+      "image": "data/samples/pointing04/person01145+0-15.jpg",
+      "subject": "person01",
+      "source": "pointing04/person01/series1",
+      "split": "validation",
+      "label": "forward",
+      "yaw": 15,
+      "pitch": 0,
+      "sha256": "77113751097123bc8a33193fd547091f36708029f29f263f4f517df080c4c258"
+    },
+    {
+      "id": "pointing04-person01142+0-60",
+      "image": "data/samples/pointing04/person01142+0-60.jpg",
+      "subject": "person01",
+      "source": "pointing04/person01/series1",
+      "split": "validation",
+      "label": "left",
+      "yaw": 60,
+      "pitch": 0,
+      "sha256": "314ca5a3bd03c4de03d577453ab6187d84e7e5eb13f7eddbd4a826ce393746f3"
+    },
+    {
+      "id": "pointing04-person01148+0+30",
+      "image": "data/samples/pointing04/person01148+0+30.jpg",
+      "subject": "person01",
+      "source": "pointing04/person01/series1",
+      "split": "validation",
+      "label": "right",
+      "yaw": -30,
+      "pitch": 0,
+      "sha256": "5e1186ad2f1cc93f55e9e9d6f5f25529c90d1eb266d527c5bc610f12cf375cd7"
+    },
+    {
+      "id": "pointing04-person01106-60-15",
+      "image": "data/samples/pointing04/person01106-60-15.jpg",
+      "subject": "person01",
+      "source": "pointing04/person01/series1",
+      "split": "validation",
+      "label": "down",
+      "yaw": 15,
+      "pitch": 60,
+      "sha256": "4cfdc238fca24ca8b4a72a449de85ee32b4a8f35aebd792dc7aa9af2566d63ea"
+    },
+    {
+      "id": "pointing04-person02145+0-15",
+      "image": "data/samples/pointing04/person02145+0-15.jpg",
+      "subject": "person02",
+      "source": "pointing04/person02/series1",
+      "split": "validation",
+      "label": "forward",
+      "yaw": 15,
+      "pitch": 0,
+      "sha256": "ce64957b4fe06e4817cd20400038331986535a16e971841a3d1f5bb954defc5d"
+    },
+    {
+      "id": "pointing04-person02142+0-60",
+      "image": "data/samples/pointing04/person02142+0-60.jpg",
+      "subject": "person02",
+      "source": "pointing04/person02/series1",
+      "split": "validation",
+      "label": "left",
+      "yaw": 60,
+      "pitch": 0,
+      "sha256": "b4529b087e76d3a73c280e585929001bea983336e1a33230773ee2932722fa88"
+    },
+    {
+      "id": "pointing04-person02148+0+30",
+      "image": "data/samples/pointing04/person02148+0+30.jpg",
+      "subject": "person02",
+      "source": "pointing04/person02/series1",
+      "split": "validation",
+      "label": "right",
+      "yaw": -30,
+      "pitch": 0,
+      "sha256": "ce3ca48f81514c205e75c187961326801a1da9560a16b080a30692ca4e863a25"
+    },
+    {
+      "id": "pointing04-person02106-60-15",
+      "image": "data/samples/pointing04/person02106-60-15.jpg",
+      "subject": "person02",
+      "source": "pointing04/person02/series1",
+      "split": "validation",
+      "label": "down",
+      "yaw": 15,
+      "pitch": 60,
+      "sha256": "65b0804182afa6377d99042c912def6bbc84d781f10bdaa07884c9300462be99"
+    },
+    {
+      "id": "pointing04-person03145+0-15",
+      "image": "data/samples/pointing04/person03145+0-15.jpg",
+      "subject": "person03",
+      "source": "pointing04/person03/series1",
+      "split": "validation",
+      "label": "forward",
+      "yaw": 15,
+      "pitch": 0,
+      "sha256": "f2e2f2fc1f08fdda00bcba82333c0be3cc6dd1cb6553413f86595dbf865eb1cc"
+    },
+    {
+      "id": "pointing04-person03142+0-60",
+      "image": "data/samples/pointing04/person03142+0-60.jpg",
+      "subject": "person03",
+      "source": "pointing04/person03/series1",
+      "split": "validation",
+      "label": "left",
+      "yaw": 60,
+      "pitch": 0,
+      "sha256": "506b439e0f1d265f9bb601508c3980872da1b1ec34af24b004af418eafec1603"
+    },
+    {
+      "id": "pointing04-person03148+0+30",
+      "image": "data/samples/pointing04/person03148+0+30.jpg",
+      "subject": "person03",
+      "source": "pointing04/person03/series1",
+      "split": "validation",
+      "label": "right",
+      "yaw": -30,
+      "pitch": 0,
+      "sha256": "c7e91f53d1efe6ec31088fb9724a352962fa17aa1c669cc38dbf3b4c66ca0e17"
+    },
+    {
+      "id": "pointing04-person03106-60-15",
+      "image": "data/samples/pointing04/person03106-60-15.jpg",
+      "subject": "person03",
+      "source": "pointing04/person03/series1",
+      "split": "validation",
+      "label": "down",
+      "yaw": 15,
+      "pitch": 60,
+      "sha256": "a5924b16722f6aa35d682032f687f71ace051574f5c94381e40f8cb13cf74247"
+    },
+    {
+      "id": "pointing04-person04145+0-15",
+      "image": "data/samples/pointing04/person04145+0-15.jpg",
+      "subject": "person04",
+      "source": "pointing04/person04/series1",
+      "split": "validation",
+      "label": "forward",
+      "yaw": 15,
+      "pitch": 0,
+      "sha256": "91f5d81bf80a0c1b2248cc63a254e2b08c703d56fa0c935265ebcfa3b6b50c51"
+    },
+    {
+      "id": "pointing04-person04142+0-60",
+      "image": "data/samples/pointing04/person04142+0-60.jpg",
+      "subject": "person04",
+      "source": "pointing04/person04/series1",
+      "split": "validation",
+      "label": "left",
+      "yaw": 60,
+      "pitch": 0,
+      "sha256": "bb8246b92a1b8428e502732e6026847466fad80909570d5072b75a8bd08584ec"
+    },
+    {
+      "id": "pointing04-person04148+0+30",
+      "image": "data/samples/pointing04/person04148+0+30.jpg",
+      "subject": "person04",
+      "source": "pointing04/person04/series1",
+      "split": "validation",
+      "label": "right",
+      "yaw": -30,
+      "pitch": 0,
+      "sha256": "ed6d640bf23a353782d77f92c9d5164c227f9035be10e829251b8e403c710ebe"
+    },
+    {
+      "id": "pointing04-person04106-60-15",
+      "image": "data/samples/pointing04/person04106-60-15.jpg",
+      "subject": "person04",
+      "source": "pointing04/person04/series1",
+      "split": "validation",
+      "label": "down",
+      "yaw": 15,
+      "pitch": 60,
+      "sha256": "7bedd4e0fa5a4489bd07e89b9a778cf14c3647eb05e05a9dfb4b33915d5538e2"
+    },
+    {
+      "id": "pointing04-person05145+0-15",
+      "image": "data/samples/pointing04/person05145+0-15.jpg",
+      "subject": "person05",
+      "source": "pointing04/person05/series1",
+      "split": "validation",
+      "label": "forward",
+      "yaw": 15,
+      "pitch": 0,
+      "sha256": "e3e8c3c35d5cf8db667fd8ea21d3cc01ee2eba52292b02c854526cd6f64e705a"
+    },
+    {
+      "id": "pointing04-person05142+0-60",
+      "image": "data/samples/pointing04/person05142+0-60.jpg",
+      "subject": "person05",
+      "source": "pointing04/person05/series1",
+      "split": "validation",
+      "label": "left",
+      "yaw": 60,
+      "pitch": 0,
+      "sha256": "49447cd8ea35fbcf1291f275cfa273a7bc086ab8de3889f6edc1bee4788aaf48"
+    },
+    {
+      "id": "pointing04-person05148+0+30",
+      "image": "data/samples/pointing04/person05148+0+30.jpg",
+      "subject": "person05",
+      "source": "pointing04/person05/series1",
+      "split": "validation",
+      "label": "right",
+      "yaw": -30,
+      "pitch": 0,
+      "sha256": "0d1d42abb06e0c495809b135176e90177b44a3d2b45459626b65f0ebc8855c24"
+    },
+    {
+      "id": "pointing04-person05106-60-15",
+      "image": "data/samples/pointing04/person05106-60-15.jpg",
+      "subject": "person05",
+      "source": "pointing04/person05/series1",
+      "split": "validation",
+      "label": "down",
+      "yaw": 15,
+      "pitch": 60,
+      "sha256": "d72b00a8edf0d7814231b7bdc6bc04a959096e739e701fc538c0389bfa006dfe"
+    }
+  ]
+}

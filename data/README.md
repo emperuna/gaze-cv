@@ -1,41 +1,26 @@
 # Project data
 
-This folder is boilerplate only. No dataset, sample images, or labels have been acquired through the scaffold.
+The CP2 image baseline uses an acquired, source-labeled subset of the **Pointing04 Head Pose Image Database**, replacing the unverified BIWI acquisition plan for this checkpoint. The [data card](../docs/evaluation/data-card.md) records permissions, labels, limits, and exact counts. No training is performed.
 
-## Initial organization
+| Location | Contents |
+| --- | --- |
+| `samples/pointing04/` | Twenty permitted validation images with attribution, five subjects and all four directions. |
+| `annotations/pointing04.json` | Reproducible 360-image manifest: 240 validation and 120 locked test images. |
+| `annotations/samples.json` | The twenty checked-in examples, using the same IDs and labels. |
+| `annotations/spike_ids.json` | Five validation IDs for the feasibility demonstration. |
+| `raw/pointing04/` | Ignored original archive and extracted dataset; retrieve with the preparation command. |
 
-```text
-data/
-    README.md
-    samples/
-        .gitkeep
-    annotations/
-        .gitkeep
+From the repository root after installing the project:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/prepare_data.py
+.\.venv\Scripts\python.exe scripts/make_contact_sheet.py
 ```
 
-| Location | Purpose |
-| --- | --- |
-| `samples/` | A small selection of real images for the five-image spike and labeled contact sheet. Publish only samples with redistribution permission. |
-| `annotations/` | Labels describing the samples, followed by subject split manifests when evaluation begins. Choose the label format after inspecting the actual dataset. |
+Preparation downloads 28.5 MB, verifies a pinned SHA256, extracts JPEG regular files with size and path limits, and recreates manifests and the twenty sample copies deterministically. Use `--offline` to reuse the verified local archive. It never runs code from the dataset. The original author host serves HTTP and currently has a mismatched HTTPS certificate; the downloader uses the explicit original HTTP URL and verifies the reviewed archive hash rather than disabling TLS checks.
 
-The empty `.gitkeep` files preserve the folders in Git; they contain no project data. Generated contact sheets and annotated screenshots belong in `outputs/evidence/`, rather than among the input samples.
+Validation contains persons 01-10 and both available series; locked test contains persons 11-15 and both series. No person, series, or identical image crosses these groups. The manifest validator checks this before selecting a split. Detector failure never determines sample inclusion. Keep test results out of threshold tuning; test labels are available for reproducibility but aggregate test predictions are deferred until final frozen evaluation.
 
-## Data acquisition and evaluation
+Angles and labels are subject-relative in an **unmirrored** image: positive yaw means the person's left (toward image right), and positive pitch means down. Source filenames provide the prescribed target pose: `yaw = -pan`, `pitch = -tilt`. These are nominal target annotations, not measured precise 3D rotations. Upward-only poses have no project class and are excluded. The data card details the moderate-angle subset and down-first mixed-pose policy.
 
-Before evaluation, record the source, access date, permissions, annotation meanings, class counts, conditions, and subject splits. BIWI is the planned pose-data source in the PRD; access remains unverified. LFW smoke-test images do not provide direction ground truth. Multi-person and temporal evaluation require separately authorized labeled video.
-
-Create `raw/` only when original datasets or footage are acquired. Create `processed/` only if derived inputs need to be saved. Both folders are absent from the initial scaffold, and their existing Git ignore rules remain in place for future local use. Keep private footage and full datasets out of the public repository; check permissions before publishing samples or annotations.
-
-## CP2 data card and split evidence
-
-Prepare a one-page data card here when data is acquired; these notes are requirements, not a completed card. Include:
-
-- Sources, dataset versions/access dates, licences, redistribution limits, and acquisition instructions.
-- Acquired sample counts per direction class and per split, plus subject and recording/source counts.
-- How ground-truth labels were derived, checked, and corrected, including mixed poses and unknown observations.
-- Image dimensions and relevant capture conditions; known coverage gaps such as lighting, angles, and occlusion.
-- Applied preprocessing and references to permitted before/after evidence.
-
-Store reproducible validation and locked test manifests in annotations/; add a training manifest if training is introduced. Each subject and recording/source must stay within one split, including frames from the same video. Record the split rationale and verify no group overlap; the guide's 70/15/15 example is optional. Use validation data for tuning and CP2 results. Do not use test results for tuning; reserve aggregate test scoring for the final frozen evaluation. A class demonstration may process a teacher-selected test image without changing settings from its output.
-
-No train/val/test folder duplication is required if manifests suit the chosen tools. Keep full data and private footage out of Git and record how a permitted fresh clone can obtain the required inputs. See [the evaluation plan](../docs/evaluation/README.md).
+Contact sheets are display evidence, not extra independent evaluation samples. Saved multi-person footage has separate provenance and limitations in [the video notes](../docs/evaluation/video.md). Pointing04 images cannot validate classroom behavior, seat identity, or movement events. Keep full datasets, private footage, and generated runs out of Git.
