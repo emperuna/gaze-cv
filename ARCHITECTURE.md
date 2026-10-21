@@ -69,7 +69,7 @@ The following allocation records suggested focus areas from the concept paper. S
 
 ## Project evidence and review
 
-The concept paper establishes the proposed direction. The PRD defines what the project must deliver. Checkpoint evidence will show what has actually been completed, including sample data, demonstration outputs, measurements, and limitations.
+The concept paper establishes the proposed direction. The PRD defines what the project must deliver. Checkpoint evidence will show what has actually been completed, including sample data, demonstration outputs, measurements, and limitations. For CP2, the Milestone 2 guide requires prepared data with a data card, visible preprocessing evidence, an image-to-output prototype that another member can reproduce, validation results, and an effort-weighted progress report. The three-face video demonstration remains an additional GAZE commitment. These are planned deliverables, not completed work.
 
 Labeled head-pose images support direction evaluation. Multi-student video is needed to evaluate seat consistency and movement histories. Ordinary writing should be included when reviewing unwanted alerts.
 

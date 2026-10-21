@@ -1,6 +1,6 @@
 # Tasks
 
-This is the GAZE backlog derived from [ROADMAP.md](ROADMAP.md) and [PRD.md](PRD.md). All 37 tasks have linked GitHub Issues. Shared backlog tasks are unassigned; the first two administrative Issues were already closed on GitHub and retain their completion attribution. Creating or claiming planning work does not start application development.
+This is the GAZE backlog derived from [ROADMAP.md](ROADMAP.md) and [PRD.md](PRD.md). All 40 tasks have linked GitHub Issues; CP2 has nine planned tasks aligned with the Milestone 2 guide. Shared backlog tasks are unassigned; the first two administrative Issues were already closed on GitHub and retain their completion attribution. Creating or claiming planning work does not start application development.
 
 <!-- policy: Follow AGENTS.md and the scope authorized in the current conversation.
      policy: Creating this backlog does not authorize implementation, external publication, or a task-draining loop.
@@ -14,7 +14,7 @@ The structure follows the [TASKS.md reference](https://tasksmd.github.io/tasks.m
 
 **Status:** Backlog, Ready, In Progress, Review, Blocked, Done. Backlog is untriaged; Ready requires satisfied dependencies and accessible inputs; Review requires acceptance review; Done requires verified evidence. `Blocked by` IDs describe dependencies even while an item remains in Backlog. Use `Blocked` for an actual external impediment. No development tasks are pre-claimed. Issue URLs below identify the created work items.
 
-**Dates:** Use the original schedule in ROADMAP.md. CP1's listed deadline has passed and CP2 is next as of 21 October 2026. Confirm submission status, timezone, and revised arrangements before assigning board dates; do not infer completion from tags or commit messages.
+**Dates:** Use the original schedule in ROADMAP.md. CP1's listed deadline has passed and CP2 is next as of 22 October 2026. Confirm submission status, timezone, and revised arrangements before assigning board dates; do not infer completion from tags or commit messages.
 
 **Paths:** Files identify relevant or future locations, not a request to create empty files now. Keep the simplified scaffold until authorized implementation needs more modules.
 
@@ -178,17 +178,29 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Acceptance**: All CP1 gates are checked, every member has a contribution from their own account, the three-minute pitch is rehearsed, and the actual hand-in commit is identified. A tag name alone is insufficient.
   - **Verification**: Walk through ROADMAP CP1 gates and demonstrate the spike and contact sheet; repository owner handles tagging/pushing when authorized.
 
-- [ ] Establish subject-separated evaluation inputs
+- [ ] Prepare the data card and source-separated evaluation inputs
   - **ID**: cp2-split-protocol
   - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: data, evaluation
-  - **Files**: `data/annotations/`, `docs/evaluation/`
+  - **Files**: `data/README.md`, `data/annotations/`, `docs/evaluation/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/12
   - **Blocked by**: cp1-label-contract
-  - **Acceptance**: Development and held-out samples are separated by subject; sample selection, coverage accounting, and metrics are documented without test-set tuning.
-  - **Verification**: Check subject intersections are empty and validate the split manifests against available labeled samples.
+  - **Acceptance**: A committed one-page data card records sources/licences, acquired class and split counts, label creation/checks, image sizes, gaps, and preprocessing. Reproducible manifests separate validation and locked test data by subject and recording/source; add a separate training split if training is introduced. Document selection, coverage accounting, and the test-lock policy; no test-based tuning.
+  - **Verification**: Validate manifests against acquired labeled files, check subject and recording/source intersections are empty, reconcile counts with the data card, and record the chosen split rationale.
+
+- [ ] Implement reusable preprocessing and record its effects
+  - **ID**: cp2-preprocessing
+  - **Assignee**: Unassigned
+  - **Status**: Backlog
+  - **Milestone**: CP2
+  - **Tags**: tooling, evaluation
+  - **Files**: `src/gaze/`, `tests/`, `outputs/evidence/`, `docs/evaluation/`
+  - **Issue**: https://github.com/emperuna/gaze-cv/issues/39
+  - **Blocked by**: cp1-runtime, cp1-label-contract
+  - **Acceptance**: Reusable functions in src/gaze perform only justified image preparation, with documented size, colour, and coordinate conventions. Prediction and evaluation import the same functions; training does too if introduced. Commit permitted before/after sample strips for each applied step. Any fitted preprocessing uses training data only, and augmentation, if used, is training-only.
+  - **Verification**: Check input/output shape, colour and coordinate handling with real permitted samples; inspect each before/after strip and verify the same functions are used by prediction and evaluation when integrated.
 
 - [ ] Implement the geometric direction baseline
   - **ID**: cp2-baseline
@@ -196,11 +208,23 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Status**: Backlog
   - **Milestone**: CP2
   - **Tags**: baseline
-  - **Files**: `src/gaze/baseline.py`, `tests/`
+  - **Files**: `src/gaze/baseline.py`, `tests/`, `docs/evaluation/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/13
-  - **Blocked by**: cp1-landmarks, cp1-label-contract
-  - **Acceptance**: Usable observations produce forward/left/right/down predictions using documented rules; missing observations remain unknown.
-  - **Verification**: Check examples for all four directions, decision boundaries, and missing observations using meaningful behavior checks.
+  - **Blocked by**: cp1-landmarks, cp1-label-contract, cp2-preprocessing, cp2-split-protocol
+  - **Acceptance**: Usable observations produce forward/left/right/down predictions using documented geometric rules and recorded threshold settings; missing observations remain unknown. Choose thresholds on validation data only and preserve the locked test split.
+  - **Verification**: Check all four directions, decision boundaries, mirroring/mixed-pose conventions, and missing observations; record settings and the validation inputs used for tuning.
+
+- [ ] Run one image through the annotated baseline prototype
+  - **ID**: cp2-image-prototype
+  - **Assignee**: Unassigned
+  - **Status**: Backlog
+  - **Milestone**: CP2
+  - **Tags**: integration, visualization
+  - **Files**: `scripts/`, `src/gaze/`, `README.md`, `outputs/evidence/`
+  - **Issue**: https://github.com/emperuna/gaze-cv/issues/40
+  - **Blocked by**: cp2-baseline, cp1-annotations
+  - **Acceptance**: One documented command accepts an image and output location, calls shared preprocessing and the baseline, and saves a readable annotated result. Missing or unusable observations are shown explicitly; invalid input produces an understandable error. The same command accepts an arbitrary eligible test image during class.
+  - **Verification**: Run the command on permitted labeled examples and a missing/unreadable input; inspect saved annotations and confirm this is executable behavior rather than help output or screenshots alone.
 
 - [ ] Read saved video with source timestamps
   - **ID**: cp2-video
@@ -211,22 +235,22 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Files**: `scripts/`, `src/gaze/`, `tests/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/14
   - **Blocked by**: cp1-runtime
-  - **Acceptance**: Saved footage is read reproducibly with source timestamps and understandable invalid-input handling; processing speed does not alter session time.
-  - **Verification**: Process a known clip, inspect timestamp order, and exercise missing or unreadable input.
+  - **Acceptance**: As a GAZE-specific CP2 commitment, authorized saved footage is read reproducibly with source timestamps and understandable invalid-input handling; processing speed does not alter session time. Record clip access and permitted use.
+  - **Verification**: Process a known authorized clip, inspect timestamp order, and exercise missing or unreadable input.
 
-- [ ] Demonstrate three-face baseline observations in saved video
+- [ ] Demonstrate three-face observations and measure video FPS
   - **ID**: cp2-multi-face
   - **Assignee**: Unassigned
   - **Status**: Backlog
   - **Milestone**: CP2
-  - **Tags**: integration, visualization
-  - **Files**: `src/gaze/visualization.py`, `scripts/`, `outputs/evidence/`
+  - **Tags**: integration, visualization, evaluation
+  - **Files**: `src/gaze/visualization.py`, `scripts/`, `outputs/evidence/`, `docs/evaluation/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/15
-  - **Blocked by**: cp2-video, cp2-baseline, cp1-annotations
-  - **Acceptance**: A permitted representative clip shows at least three simultaneously visible faces with baseline labels; misses are recorded and no stable seat tracking is claimed yet.
-  - **Verification**: Review selected simultaneous frames and saved output against the source clip.
+  - **Blocked by**: cp2-video, cp2-image-prototype, cp2-split-protocol
+  - **Acceptance**: As a GAZE-specific CP2 commitment, a permitted representative clip shows at least three simultaneously visible faces with baseline labels. Record missed observations and reproducible FPS with hardware, resolution, face count, frame count, and timing scope; no stable seat tracking is claimed yet. The 10 FPS goal remains a final target.
+  - **Verification**: Review simultaneous frames against the source clip and rerun the documented timing procedure. Include failures in reporting and keep timing separate from image validation accuracy.
 
-- [ ] Measure baseline quality and processing speed
+- [ ] Measure baseline quality on the validation split
   - **ID**: cp2-first-metrics
   - **Assignee**: Unassigned
   - **Status**: Backlog
@@ -234,11 +258,23 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Tags**: evaluation
   - **Files**: `scripts/`, `src/gaze/`, `docs/evaluation/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/16
-  - **Blocked by**: cp2-split-protocol, cp2-baseline, cp2-multi-face
-  - **Acceptance**: Initial accuracy, macro-F1, confusion matrix, coverage, and FPS are reproducible; hardware, resolution, face count, and timing scope are recorded.
-  - **Verification**: Rerun the documented measurement procedure on the same evaluation inputs and verify failures are included in reporting.
+  - **Blocked by**: cp2-split-protocol, cp2-image-prototype
+  - **Acceptance**: Validation accuracy, macro-F1, confusion matrix, coverage, and failed-observation counts are reproducible using the shared preprocessing. Record manifest, label mapping, thresholds, metric denominators, command, environment, and results. Do not score the locked test split for tuning. Image metrics do not depend on video integration; video FPS belongs to cp2-multi-face.
+  - **Verification**: Rerun the measurement on the exact validation inputs and settings; reconcile eligible, predicted, and missing counts and inspect representative errors. Verify no test results informed changes.
 
-- [ ] Prepare the CP2 progress evidence
+- [ ] Verify the image prototype from a fresh clone on CPU
+  - **ID**: cp2-reproduction
+  - **Assignee**: Unassigned
+  - **Status**: Backlog
+  - **Milestone**: CP2
+  - **Tags**: testing, tooling
+  - **Files**: `requirements.txt`, `pyproject.toml`, `models/README.md`, `README.md`, `docs/checkpoints/`
+  - **Issue**: https://github.com/emperuna/gaze-cv/issues/41
+  - **Blocked by**: cp2-image-prototype, cp2-split-protocol
+  - **Acceptance**: Runtime dependencies are pinned to verified compatible versions and model retrieval/version instructions are documented without committing large weights. Another member follows README steps from a fresh clone and new environment on a laptop CPU, obtains permitted input/assets, and saves a real annotated output. Record Python/OS/hardware, dependency versions, commands, verifier, and outcome; do not claim an unperformed check.
+  - **Verification**: Follow only the documented setup and image command in a clean folder/environment and inspect the resulting output. Verify required assets are retrievable and record any failure or missing prerequisite.
+
+- [ ] Prepare the CP2 progress report and class review
   - **ID**: cp2-hand-in
   - **Assignee**: Unassigned
   - **Status**: Backlog
@@ -246,9 +282,9 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Tags**: submission
   - **Files**: `docs/checkpoints/`, `README.md`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/17
-  - **Blocked by**: cp1-hand-in, cp2-first-metrics
-  - **Acceptance**: The baseline, three-face demonstration, measurements, unfinished work, and actual hand-in commit are documented against CP2 gates.
-  - **Verification**: Review all CP2 gates and reproduce the demonstration; use cp2-50 only for the actual authorized hand-in.
+  - **Blocked by**: cp1-hand-in, cp2-first-metrics, cp2-multi-face, cp2-reproduction
+  - **Acceptance**: All Milestone 2 and GAZE CP2 gates map to repository evidence. The report lists proposal tasks, actual contributors, status, evidence, agreed effort weights, completion calculated as completed weight over total planned weight, blockers, revised dates, and remaining work. Each member can explain code they wrote; the team can rerun validation and process a teacher-selected test image without tuning. Identify the actual hand-in commit.
+  - **Verification**: Review ROADMAP CP2 gates, audit the weighted calculation and evidence, inspect the fresh-clone record, and rehearse individual code explanations and the image/video demonstrations. Use cp2-50 only for the actual separately authorized hand-in; this planning update does not satisfy it.
 
 - [ ] Prepare authorized multi-person video labels
   - **ID**: cp3-video-labels
@@ -307,7 +343,7 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Files**: `docs/evaluation/`, `scripts/`, `src/gaze/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/22
   - **Blocked by**: cp3-pose, cp2-first-metrics
-  - **Acceptance**: Both methods use identical labeled inputs and failure accounting; report accuracy, macro-F1, confusion matrices, coverage, and representative errors.
+  - **Acceptance**: Both methods use identical validation inputs, label mapping, preprocessing, and failure accounting; report accuracy, macro-F1, confusion matrices, coverage, and representative errors. Keep the final test split locked until settings are frozen for final evaluation.
   - **Verification**: Rerun both methods on the documented inputs and audit comparable denominators and settings.
 
 - [ ] Prepare core implementation evidence

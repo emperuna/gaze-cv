@@ -18,6 +18,10 @@ Planning and boilerplate only. This repository contains project documentation, a
 - [PR automation](docs/automation.md): proposed automatic PR creation, CI, rebases, and main-branch enforcement.
 - [GitHub kanban board](https://github.com/users/emperuna/projects/3/views/2): Status columns and Checkpoint swimlanes.
 
+## CP2 planning
+
+The [roadmap](ROADMAP.md#cp2-baseline-and-initial-progress) now follows the Milestone 2 guide: prepared source-separated data and a data card, reusable preprocessing evidence, a one-command image baseline, validation measurements, pinned CPU setup verified from a fresh clone, and an effort-weighted progress report. GAZE also retains its three-face saved-video demonstration and FPS measurement. These are planned acceptance criteria; no prototype or evidence is supplied by this documentation update. See [checkpoint evidence expectations](docs/checkpoints/README.md).
+
 ## Expected outcome
 
 A labeled examination video view with seat references, head direction labels, and timestamped movement records for instructor review.
@@ -73,7 +77,7 @@ Full datasets, model downloads, and session output are ignored in their designat
 
 Create folders when actual work needs them: `models/downloads/` for model acquisition, `outputs/runs/` for generated output, `notebooks/` for exploration, and `tests/fixtures/` for test inputs. Existing ignore rules protect local model downloads and generated runs.
 
-Add `docs/evaluation/` when evaluation protocols and results are prepared around CP2, and `docs/presentation/` when presentation materials exist. Repository workflow checks and automation tests now live under `.github/`; their activation and limits are documented in `docs/automation.md`. A separate development requirements file can be introduced when development tools are selected; setup currently uses only `requirements.txt`.
+The [evaluation plan](docs/evaluation/README.md) documents CP2 preparation and reporting expectations; no measurements exist yet. Add `docs/presentation/` when presentation materials exist. Repository workflow checks and automation tests now live under `.github/`; their activation and limits are documented in `docs/automation.md`. A separate development requirements file can be introduced when development tools are selected; setup currently uses only `requirements.txt`.
 
 ## Initial data organization
 
@@ -83,7 +87,7 @@ Create the ignored `data/raw/` folder when datasets are acquired and `data/proce
 
 ## Initial scripts
 
-`scripts/` contains `spike.py`, `make_contact_sheet.py`, and [its README](scripts/README.md). Both commands remain boilerplate for the CP1 evidence tasks. Add video and evaluation commands around CP2 and live-camera support around CP4 when their behavior is developed.
+`scripts/` contains `spike.py`, `make_contact_sheet.py`, and [its README](scripts/README.md). Both commands remain boilerplate for the CP1 evidence tasks. Add image prediction, video, and evaluation commands around CP2 and live-camera support around CP4 when their behavior is developed.
 
 ## Initial package organization
 
@@ -104,6 +108,6 @@ src/gaze/
 | `baseline.py` | Produce initial direction predictions from simple facial geometry, including the baseline's direction rules. |
 | `visualization.py` | Draw face regions, landmarks, and direction labels for inspection. |
 
-When implemented, `scripts/spike.py` will load five images, call these modules, and save the annotated results. Small image preparation steps can stay beside the code that needs them.
+When implemented, `scripts/spike.py` will load five images, call these modules, and save the annotated results. During CP2 implementation, image preparation must be reusable functions under src/gaze used consistently by prediction and evaluation (and training if introduced), with before/after evidence for each applied step. Introduce a separate preprocessing module only when working behavior needs it.
 
-Add separate modules when working behavior needs them: video input and evaluation around CP2, the main pose approach and seat association around CP3, and movement histories and event exports around CP4. Configuration loading, shared records, shared direction rules, and a session coordinator can be introduced when their responsibilities become clear. The broader capabilities remain planned in the roadmap; empty modules are not required in advance.
+Add separate modules when working behavior needs them: shared preprocessing, image prediction, video input, and evaluation around CP2, the main pose approach and seat association around CP3, and movement histories and event exports around CP4. Configuration loading, shared records, shared direction rules, and a session coordinator can be introduced when their responsibilities become clear. The broader capabilities remain planned in the roadmap; empty modules are not required in advance.
