@@ -84,9 +84,9 @@ Run checks appropriate to actual changes. For documentation, check links and `gi
 
 ## Data and evaluation rules
 
-Verify dataset access and permissions before relying on it. Record sources, licenses, class counts, label conventions, and subject-separated development/test splits. BIWI access remains unverified; unlabeled LFW images cannot establish direction accuracy. Multi-person footage is required for seat and temporal validation.
+Verify dataset access and permissions before relying on it. Record a one-page data card with sources, licenses, class/split counts, label creation/checks, image sizes, known gaps, and preprocessing. Maintain validation and locked test manifests separated by subject and recording/source; add a distinct training split if training is introduced. BIWI access remains unverified; unlabeled LFW images cannot establish direction accuracy. Multi-person footage is required for seat and temporal validation.
 
-Use session time for movement duration and make missing observations explicit. Tune on development data and freeze settings before held-out evaluation. Compare methods on identical inputs, report missed detections, and report hardware and conditions with FPS. The PRD's 80% accuracy and 10 FPS values are targets, not achieved results. State limitations and keep instructor review central.
+Use session time for movement duration and make missing observations explicit. Tune on validation data and freeze settings before final held-out evaluation. CP2 measurements and the CP3 comparison use validation data; a teacher-selected test-image demonstration must not drive tuning. Share preprocessing functions under src/gaze across prediction, evaluation, and training if introduced, and record before/after evidence. CP2 also requires pinned dependencies, a verified fresh-clone CPU prototype run, and an evidence-backed effort-weighted progress report; planning or workflow checks alone do not satisfy these gates. Compare methods on identical inputs, report missed detections, and report hardware and conditions with FPS. The PRD's 80% accuracy and 10 FPS values are targets, not achieved results. State limitations and keep instructor review central.
 
 ## Commit and collaboration conventions
 
