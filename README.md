@@ -4,7 +4,7 @@ GAZE is a local computer vision prototype for reviewing visible head movements. 
 
 ## Current state
 
-Working CPU prototype on branch `feat/cp2-baseline`, with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. This is implementation evidence, not a completed academic submission. The held-out test split remains locked. The current machine is a desktop; laptop performance and another human member's reproduction remain unverified.
+Working CPU prototype merged into `main` through [PR #44](https://github.com/emperuna/gaze-cv/pull/44), with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. This is implementation evidence, not a completed academic submission. The held-out test split remains locked. The current machine is a desktop; laptop performance and another human member's reproduction remain unverified.
 
 - [Product requirements](PRD.md), [project architecture](ARCHITECTURE.md), [roadmap](ROADMAP.md), and [task backlog](TASK.md).
 - [Contributor setup](CONTRIBUTING.md) and [agent instructions](AGENTS.md).
@@ -81,7 +81,7 @@ Seat IDs identify regions, not people. Missing and ambiguous observations become
 git diff --check
 ```
 
-Application unit tests use synthetic/local temporary inputs without downloading models or datasets. Actual model/data runs are separate recorded integration evidence. The updated CI definition on this branch installs pinned dependencies and runs application and repository tests when published; no remote application CI run is claimed before that push. Passing checks does not imply classroom performance or academic completion.
+Application unit tests use synthetic/local temporary inputs without downloading models or datasets. Actual model/data runs are separate recorded integration evidence. GitHub CI passed for PR #44 with pinned dependency installation and both application and repository tests. Current Issue decisions and remaining work are recorded in the [post-merge acceptance audit](docs/checkpoints/task-reconciliation.md). Passing checks does not imply classroom performance or academic completion.
 
 ## Organization and collaboration
 

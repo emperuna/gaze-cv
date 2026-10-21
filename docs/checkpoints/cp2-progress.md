@@ -1,6 +1,6 @@
 # CP2 implementation and progress evidence
 
-Status: Reviewed implementation on `feat/cp2-baseline`, 22 October 2026, prepared as atomic Conventional Commits for pull-request review. The refreshed validation reports identify source revision `827679e` and implementation hashes; later documentation commits do not change that measured code. No merge, checkpoint tag, academic submission, or final held-out result is claimed.
+Status: Implementation merged through [PR #44](https://github.com/emperuna/gaze-cv/pull/44) on 22 October 2026 (Asia/Shanghai). Validation artifacts retain their original measured source revision/hashes; rebased merge commit IDs do not change those source bytes. The [post-merge acceptance audit](task-reconciliation.md) records current task decisions. No checkpoint tag, academic submission, or final held-out result is claimed.
 
 ## Delivered technical scope
 
@@ -77,7 +77,7 @@ The three agents' implementation work is assistance for the current human collab
 
 ## Team tracking snapshot
 
-Twenty-one implementation Issues/cards are assigned to @emperuna in Review, with implementation evidence and remaining limits recorded in the checkpoint report. Publication updates link these Issues to the review PR. CP1 hand-in, CP2 hand-in, and human fresh-clone verification remain Blocked with the actual missing evidence recorded. No implementation Issue was closed, no personal contribution was attributed to another student, and no checkpoint tag was created. The local TASK.md snapshot and live Project statuses were verified to agree.
+After the authorized acceptance reconciliation, 19 tasks are Done (17 newly closed technical Issues plus the two existing administrative completions), 6 are Ready, 13 remain Backlog, and 2 hand-in tasks remain Blocked. No Review task remains solely because PR #44 was not linked with closing keywords. See [per-Issue reasons and remaining requirements](task-reconciliation.md). Human/laptop verification and fresh-clone spike checks are actionable Ready work; team/hand-in gates remain incomplete. Existing member attribution is preserved and unfinished shared claims are released. No checkpoint tag or overall percentage is inferred.
 
 ## Implementation review fixes
 
