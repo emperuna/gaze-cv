@@ -1,0 +1,101 @@
+{
+  "input": "data\\samples\\pointing04\\person01145+0-15.jpg",
+  "pipeline": {
+    "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+    "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; locked test untouched",
+    "thresholds": {
+      "yaw": 0.18,
+      "down": 0.4,
+      "min_eye_span": 0.015
+    },
+    "max_width": 1280,
+    "mirrored_input": false,
+    "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+    "bbox_convention": "original-image pixels (x,y,width,height)",
+    "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+    "detector": {
+      "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+      "mediapipe_version": "0.10.32",
+      "model_path": "F:\\Projects\\Code\\repos\\gaze-cv\\models\\downloads\\face_landmarker.task",
+      "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+      "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      "max_faces": 10,
+      "detection_confidence_threshold": 0.5,
+      "face_presence_threshold": 0.5,
+      "landmark_indices": {
+        "left_eye": 263,
+        "right_eye": 33,
+        "nose": 1,
+        "chin": 152,
+        "mouth_right": 61,
+        "mouth_left": 291
+      },
+      "tile_grid": 1,
+      "tiling": "full frame",
+      "face_order": "frame-local detector order; no association or persistent identity"
+    }
+  },
+  "result": {
+    "width": 384,
+    "height": 288,
+    "detections": [
+      {
+        "bbox": [
+          81,
+          58,
+          133,
+          156
+        ],
+        "direction": "forward",
+        "landmarks": {
+          "left_eye": [
+            0.5241278409957886,
+            0.3679116368293762
+          ],
+          "right_eye": [
+            0.3184300661087036,
+            0.3662577271461487
+          ],
+          "nose": [
+            0.4557390809059143,
+            0.4891371726989746
+          ],
+          "chin": [
+            0.4380306005477905,
+            0.7420431971549988
+          ],
+          "mouth_right": [
+            0.3765021562576294,
+            0.6016752123832703
+          ],
+          "mouth_left": [
+            0.4906250238418579,
+            0.5965226292610168
+          ]
+        },
+        "scores": {
+          "horizontal_offset": 0.1702053890278068,
+          "nose_down_ratio": 0.3248870719212177,
+          "eye_span": 0.20570151498152736
+        },
+        "unavailable_reason": null
+      }
+    ],
+    "processing_ms": 13.453400002617855,
+    "preprocessing": {
+      "input_color": "BGR",
+      "model_color": "RGB",
+      "dtype": "uint8",
+      "original_size": [
+        384,
+        288
+      ],
+      "prepared_size": [
+        384,
+        288
+      ],
+      "resize": "aspect-preserving shrink only; INTER_AREA",
+      "normalization": "none; MediaPipe performs internal model normalization"
+    }
+  }
+}
