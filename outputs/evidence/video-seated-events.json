@@ -1,0 +1,905 @@
+{
+  "status": "Real-video execution evidence; event semantics tested mechanically, event accuracy unvalidated",
+  "summary": {
+    "schema_version": 1,
+    "run_label": "fourpeople-seated-events",
+    "input": "data\\raw\\video\\FourPeople_1280x720_60.webm",
+    "input_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+    "environment": {
+      "os": "Windows-10-10.0.19045-SP0",
+      "python": "3.12.10",
+      "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+      "machine": "AMD64",
+      "logical_cpus": 12,
+      "dependencies": {
+        "numpy": "2.2.6",
+        "opencv-contrib-python": "4.11.0.86",
+        "mediapipe": "0.10.32"
+      }
+    },
+    "pipeline": {
+      "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+      "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; no test data used for default selection",
+      "thresholds": {
+        "yaw": 0.18,
+        "down": 0.4,
+        "min_eye_span": 0.015
+      },
+      "max_width": 1280,
+      "mirrored_input": false,
+      "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+      "bbox_convention": "original-image pixels (x,y,width,height)",
+      "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+      "detector": {
+        "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+        "mediapipe_version": "0.10.32",
+        "model_path": "F:\\Projects\\Code\\repos\\gaze-cv\\models\\downloads\\face_landmarker.task",
+        "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+        "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        "max_faces": 10,
+        "detection_confidence_threshold": 0.5,
+        "face_presence_threshold": 0.5,
+        "landmark_indices": {
+          "left_eye": 263,
+          "right_eye": 33,
+          "nose": 1,
+          "chin": 152,
+          "mouth_right": 61,
+          "mouth_left": 291
+        },
+        "tile_grid": 2,
+        "tiling": "square max-dimension/grid, 50% overlap, edge aligned; bbox IoU > .3 suppression",
+        "face_order": "frame-local detector order; no association or persistent identity"
+      }
+    },
+    "source": {
+      "width": 1280,
+      "height": 720,
+      "fps": 60.0,
+      "advertised_frames": 601,
+      "timebase": "constant frame rate: zero-based frame_index / source_fps",
+      "last_timestamp_seconds": 10.0,
+      "processed_duration_seconds": 10.016666666666667
+    },
+    "processed_frames": 601,
+    "stopped_at_requested_limit": false,
+    "decoded_fewer_than_advertised": false,
+    "face_count_histogram": {
+      "1": 1,
+      "2": 53,
+      "3": 180,
+      "4": 367
+    },
+    "frames_with_at_least_three_faces": 547,
+    "detected_observations": 2115,
+    "unknown_observations": 44,
+    "direction_counts": {
+      "right": 391,
+      "left": 586,
+      "forward": 926,
+      "down": 168,
+      "unknown": 44
+    },
+    "expected_face_count": 4,
+    "count_deficit_observations": 289,
+    "reference_note": "Fixed count deficits do not establish matched recall, identities or direction accuracy.",
+    "timing": {
+      "warmup_frames": 5,
+      "measured_frames": 596,
+      "measured_seconds": 54.02386129996739,
+      "processing_fps": 11.032162190160957,
+      "inference_seconds": 47.26950070000021,
+      "inference_fps": 12.608552897196086,
+      "scope": "Per-frame decode, preprocessing, detection, classification, optional seat/history/event updates, annotation, AVI encoding, buffered JSON write and optional evidence image save; excludes model initialization, warmup frames, final flush, final history/event export and summary/hash writing.",
+      "elapsed_before_summary_seconds": 54.535443299999315
+    },
+    "evidence_frame": "outputs\\evidence\\video-seated-events.jpg",
+    "seat_configuration": {
+      "schema_version": 1,
+      "source": "data/raw/video/FourPeople_1280x720_60.webm",
+      "source_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+      "coordinate_space": "normalized unmirrored source image; roi=[left,top,right,bottom]",
+      "reference_resolution": [
+        1280,
+        720
+      ],
+      "annotation_method": "Coarse fixed head regions and approximate head-center reference points manually inspected on source frames, independently of detector results.",
+      "limitations": "Six reviewed frames only; positions, not identities. Not exhaustive bounding-box, direction, movement-event, or classroom ground truth.",
+      "seats": [
+        {
+          "id": "seat-1",
+          "roi": [
+            0.15,
+            0.28,
+            0.34,
+            0.62
+          ]
+        },
+        {
+          "id": "seat-2",
+          "roi": [
+            0.35,
+            0.28,
+            0.55,
+            0.62
+          ]
+        },
+        {
+          "id": "seat-3",
+          "roi": [
+            0.57,
+            0.28,
+            0.77,
+            0.62
+          ]
+        },
+        {
+          "id": "seat-4",
+          "roi": [
+            0.79,
+            0.2,
+            1.0,
+            0.62
+          ]
+        }
+      ],
+      "reviewed_frames": [
+        {
+          "frame_index": 0,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.24,
+              0.43
+            ],
+            "seat-2": [
+              0.435,
+              0.455
+            ],
+            "seat-3": [
+              0.656,
+              0.405
+            ],
+            "seat-4": [
+              0.918,
+              0.36
+            ]
+          }
+        },
+        {
+          "frame_index": 120,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.24,
+              0.4
+            ],
+            "seat-2": [
+              0.425,
+              0.4
+            ],
+            "seat-3": [
+              0.65,
+              0.405
+            ],
+            "seat-4": [
+              0.92,
+              0.34
+            ]
+          }
+        },
+        {
+          "frame_index": 240,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.24,
+              0.41
+            ],
+            "seat-2": [
+              0.43,
+              0.43
+            ],
+            "seat-3": [
+              0.65,
+              0.435
+            ],
+            "seat-4": [
+              0.915,
+              0.39
+            ]
+          }
+        },
+        {
+          "frame_index": 360,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.255,
+              0.45
+            ],
+            "seat-2": [
+              0.435,
+              0.5
+            ],
+            "seat-3": [
+              0.65,
+              0.43
+            ],
+            "seat-4": [
+              0.9,
+              0.41
+            ]
+          }
+        },
+        {
+          "frame_index": 480,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.255,
+              0.45
+            ],
+            "seat-2": [
+              0.435,
+              0.48
+            ],
+            "seat-3": [
+              0.65,
+              0.5
+            ],
+            "seat-4": [
+              0.9,
+              0.42
+            ]
+          }
+        },
+        {
+          "frame_index": 599,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.255,
+              0.45
+            ],
+            "seat-2": [
+              0.435,
+              0.48
+            ],
+            "seat-3": [
+              0.65,
+              0.5
+            ],
+            "seat-4": [
+              0.91,
+              0.38
+            ]
+          }
+        }
+      ]
+    },
+    "seat_history_file": "seat_history.json",
+    "movement_events_file": "events.json",
+    "limitations": [
+      "CFR inputs only; VFR timestamps are not supported.",
+      "No person identities or misconduct inference; event accuracy remains unvalidated.",
+      "Seat association and observation histories require explicit seat configuration."
+    ]
+  },
+  "seat_counts": {
+    "seat-1": {
+      "observations": 601,
+      "valid": 566,
+      "unknown": 35,
+      "first_timestamp": 0.0,
+      "last_timestamp": 10.0,
+      "first_gap_context": [
+        {
+          "seat_id": "seat-1",
+          "timestamp_seconds": 0.9333333333333333,
+          "direction": "left",
+          "valid": true,
+          "reason": null,
+          "detection_index": 2,
+          "segment_id": 0,
+          "continuous_seconds": 0.9333333333333333
+        },
+        {
+          "seat_id": "seat-1",
+          "timestamp_seconds": 0.95,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-1",
+          "timestamp_seconds": 0.9666666666666667,
+          "direction": "left",
+          "valid": true,
+          "reason": null,
+          "detection_index": 2,
+          "segment_id": 1,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-1",
+          "timestamp_seconds": 0.9833333333333333,
+          "direction": "left",
+          "valid": true,
+          "reason": null,
+          "detection_index": 0,
+          "segment_id": 1,
+          "continuous_seconds": 0.016666666666666607
+        }
+      ]
+    },
+    "seat-2": {
+      "observations": 601,
+      "valid": 557,
+      "unknown": 44,
+      "first_timestamp": 0.0,
+      "last_timestamp": 10.0,
+      "first_gap_context": [
+        {
+          "seat_id": "seat-2",
+          "timestamp_seconds": 0.6833333333333333,
+          "direction": "left",
+          "valid": true,
+          "reason": null,
+          "detection_index": 2,
+          "segment_id": 0,
+          "continuous_seconds": 0.6833333333333333
+        },
+        {
+          "seat_id": "seat-2",
+          "timestamp_seconds": 0.7,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-2",
+          "timestamp_seconds": 0.7166666666666667,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-2",
+          "timestamp_seconds": 0.7333333333333333,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        }
+      ]
+    },
+    "seat-3": {
+      "observations": 601,
+      "valid": 527,
+      "unknown": 74,
+      "first_timestamp": 0.0,
+      "last_timestamp": 10.0,
+      "first_gap_context": [
+        {
+          "seat_id": "seat-3",
+          "timestamp_seconds": 0.016666666666666666,
+          "direction": "left",
+          "valid": true,
+          "reason": null,
+          "detection_index": 3,
+          "segment_id": 0,
+          "continuous_seconds": 0.016666666666666666
+        },
+        {
+          "seat_id": "seat-3",
+          "timestamp_seconds": 0.03333333333333333,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-3",
+          "timestamp_seconds": 0.05,
+          "direction": "left",
+          "valid": true,
+          "reason": null,
+          "detection_index": 3,
+          "segment_id": 1,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-3",
+          "timestamp_seconds": 0.06666666666666667,
+          "direction": "left",
+          "valid": true,
+          "reason": null,
+          "detection_index": 3,
+          "segment_id": 1,
+          "continuous_seconds": 0.016666666666666663
+        }
+      ]
+    },
+    "seat-4": {
+      "observations": 601,
+      "valid": 421,
+      "unknown": 180,
+      "first_timestamp": 0.0,
+      "last_timestamp": 10.0,
+      "first_gap_context": [
+        {
+          "seat_id": "seat-4",
+          "timestamp_seconds": 0.9666666666666667,
+          "direction": "right",
+          "valid": true,
+          "reason": null,
+          "detection_index": 0,
+          "segment_id": 10,
+          "continuous_seconds": 0.01666666666666672
+        },
+        {
+          "seat_id": "seat-4",
+          "timestamp_seconds": 0.9833333333333333,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-4",
+          "timestamp_seconds": 1.0,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        },
+        {
+          "seat_id": "seat-4",
+          "timestamp_seconds": 1.0166666666666666,
+          "direction": "unknown",
+          "valid": false,
+          "reason": "missing",
+          "detection_index": null,
+          "segment_id": null,
+          "continuous_seconds": 0.0
+        }
+      ]
+    }
+  },
+  "movement_output": {
+    "settings": {
+      "min_duration": 2.0,
+      "repetition_count": 3,
+      "repetition_window": 10.0,
+      "max_gap": 0.5
+    },
+    "events": [
+      {
+        "seat_id": "seat-4",
+        "event_type": "repeated_movement",
+        "direction": "right",
+        "start_time": 0.0,
+        "end_time": 0.7,
+        "duration": 0.7,
+        "repetition_count": 3,
+        "observed_at": 0.7
+      },
+      {
+        "seat_id": "seat-4",
+        "event_type": "repeated_movement",
+        "direction": "right",
+        "start_time": 0.7666666666666667,
+        "end_time": 0.95,
+        "duration": 0.18333333333333324,
+        "repetition_count": 3,
+        "observed_at": 0.95
+      },
+      {
+        "seat_id": "seat-3",
+        "event_type": "repeated_movement",
+        "direction": "left",
+        "start_time": 1.4333333333333333,
+        "end_time": 1.65,
+        "duration": 0.21666666666666656,
+        "repetition_count": 3,
+        "observed_at": 1.65
+      },
+      {
+        "seat_id": "seat-2",
+        "event_type": "repeated_movement",
+        "direction": "left",
+        "start_time": 0.7666666666666667,
+        "end_time": 3.6166666666666667,
+        "duration": 2.85,
+        "repetition_count": 3,
+        "observed_at": 3.6166666666666667
+      },
+      {
+        "seat_id": "seat-1",
+        "event_type": "repeated_movement",
+        "direction": "left",
+        "start_time": 3.8833333333333333,
+        "end_time": 4.766666666666667,
+        "duration": 0.8833333333333333,
+        "repetition_count": 3,
+        "observed_at": 4.766666666666667
+      },
+      {
+        "seat_id": "seat-1",
+        "event_type": "repeated_movement",
+        "direction": "left",
+        "start_time": 4.883333333333334,
+        "end_time": 5.016666666666667,
+        "duration": 0.13333333333333286,
+        "repetition_count": 3,
+        "observed_at": 5.016666666666667
+      },
+      {
+        "seat_id": "seat-2",
+        "event_type": "repeated_movement",
+        "direction": "left",
+        "start_time": 4.95,
+        "end_time": 5.1,
+        "duration": 0.14999999999999947,
+        "repetition_count": 3,
+        "observed_at": 5.1
+      },
+      {
+        "seat_id": "seat-2",
+        "event_type": "repeated_movement",
+        "direction": "down",
+        "start_time": 5.216666666666667,
+        "end_time": 5.433333333333334,
+        "duration": 0.21666666666666679,
+        "repetition_count": 3,
+        "observed_at": 5.433333333333334
+      },
+      {
+        "seat_id": "seat-3",
+        "event_type": "repeated_movement",
+        "direction": "left",
+        "start_time": 5.35,
+        "end_time": 5.55,
+        "duration": 0.20000000000000018,
+        "repetition_count": 3,
+        "observed_at": 5.55
+      },
+      {
+        "seat_id": "seat-1",
+        "event_type": "repeated_movement",
+        "direction": "left",
+        "start_time": 5.283333333333333,
+        "end_time": 5.733333333333333,
+        "duration": 0.4500000000000002,
+        "repetition_count": 3,
+        "observed_at": 5.733333333333333
+      },
+      {
+        "seat_id": "seat-3",
+        "event_type": "repeated_movement",
+        "direction": "down",
+        "start_time": 6.966666666666667,
+        "end_time": 7.05,
+        "duration": 0.08333333333333304,
+        "repetition_count": 3,
+        "observed_at": 7.05
+      },
+      {
+        "seat_id": "seat-3",
+        "event_type": "repeated_movement",
+        "direction": "down",
+        "start_time": 7.5,
+        "end_time": 9.283333333333333,
+        "duration": 1.7833333333333332,
+        "repetition_count": 3,
+        "observed_at": 9.283333333333333
+      }
+    ],
+    "semantics": "source-time head movement observations for instructor review; no misconduct inference",
+    "validation": "rule behavior tested on synthetic sequences; real event accuracy unvalidated",
+    "input_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+    "pipeline": {
+      "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+      "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; no test data used for default selection",
+      "thresholds": {
+        "yaw": 0.18,
+        "down": 0.4,
+        "min_eye_span": 0.015
+      },
+      "max_width": 1280,
+      "mirrored_input": false,
+      "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+      "bbox_convention": "original-image pixels (x,y,width,height)",
+      "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+      "detector": {
+        "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+        "mediapipe_version": "0.10.32",
+        "model_path": "F:\\Projects\\Code\\repos\\gaze-cv\\models\\downloads\\face_landmarker.task",
+        "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+        "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        "max_faces": 10,
+        "detection_confidence_threshold": 0.5,
+        "face_presence_threshold": 0.5,
+        "landmark_indices": {
+          "left_eye": 263,
+          "right_eye": 33,
+          "nose": 1,
+          "chin": 152,
+          "mouth_right": 61,
+          "mouth_left": 291
+        },
+        "tile_grid": 2,
+        "tiling": "square max-dimension/grid, 50% overlap, edge aligned; bbox IoU > .3 suppression",
+        "face_order": "frame-local detector order; no association or persistent identity"
+      }
+    },
+    "seat_configuration": {
+      "schema_version": 1,
+      "source": "data/raw/video/FourPeople_1280x720_60.webm",
+      "source_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+      "coordinate_space": "normalized unmirrored source image; roi=[left,top,right,bottom]",
+      "reference_resolution": [
+        1280,
+        720
+      ],
+      "annotation_method": "Coarse fixed head regions and approximate head-center reference points manually inspected on source frames, independently of detector results.",
+      "limitations": "Six reviewed frames only; positions, not identities. Not exhaustive bounding-box, direction, movement-event, or classroom ground truth.",
+      "seats": [
+        {
+          "id": "seat-1",
+          "roi": [
+            0.15,
+            0.28,
+            0.34,
+            0.62
+          ]
+        },
+        {
+          "id": "seat-2",
+          "roi": [
+            0.35,
+            0.28,
+            0.55,
+            0.62
+          ]
+        },
+        {
+          "id": "seat-3",
+          "roi": [
+            0.57,
+            0.28,
+            0.77,
+            0.62
+          ]
+        },
+        {
+          "id": "seat-4",
+          "roi": [
+            0.79,
+            0.2,
+            1.0,
+            0.62
+          ]
+        }
+      ],
+      "reviewed_frames": [
+        {
+          "frame_index": 0,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.24,
+              0.43
+            ],
+            "seat-2": [
+              0.435,
+              0.455
+            ],
+            "seat-3": [
+              0.656,
+              0.405
+            ],
+            "seat-4": [
+              0.918,
+              0.36
+            ]
+          }
+        },
+        {
+          "frame_index": 120,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.24,
+              0.4
+            ],
+            "seat-2": [
+              0.425,
+              0.4
+            ],
+            "seat-3": [
+              0.65,
+              0.405
+            ],
+            "seat-4": [
+              0.92,
+              0.34
+            ]
+          }
+        },
+        {
+          "frame_index": 240,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.24,
+              0.41
+            ],
+            "seat-2": [
+              0.43,
+              0.43
+            ],
+            "seat-3": [
+              0.65,
+              0.435
+            ],
+            "seat-4": [
+              0.915,
+              0.39
+            ]
+          }
+        },
+        {
+          "frame_index": 360,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.255,
+              0.45
+            ],
+            "seat-2": [
+              0.435,
+              0.5
+            ],
+            "seat-3": [
+              0.65,
+              0.43
+            ],
+            "seat-4": [
+              0.9,
+              0.41
+            ]
+          }
+        },
+        {
+          "frame_index": 480,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.255,
+              0.45
+            ],
+            "seat-2": [
+              0.435,
+              0.48
+            ],
+            "seat-3": [
+              0.65,
+              0.5
+            ],
+            "seat-4": [
+              0.9,
+              0.42
+            ]
+          }
+        },
+        {
+          "frame_index": 599,
+          "visible_seats": [
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4"
+          ],
+          "head_centers": {
+            "seat-1": [
+              0.255,
+              0.45
+            ],
+            "seat-2": [
+              0.435,
+              0.48
+            ],
+            "seat-3": [
+              0.65,
+              0.5
+            ],
+            "seat-4": [
+              0.91,
+              0.38
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Office meeting proxy, not examination ground truth",
+    "Fixed regions identify positions, not people",
+    "Twelve repeated-movement outputs include very short episodes consistent with baseline label jitter; these are not verified real movement events",
+    "No event precision/recall or false-alert measurement is established"
+  ]
+}
