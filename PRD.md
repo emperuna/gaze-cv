@@ -1,6 +1,6 @@
 # GAZE Product Requirements Draft
 
-Status: Draft for team review. Prepared on 21 October 2026.
+Status: Draft for team review. Updated on 22 October 2026; CP2 aligned with the Milestone 2 guide.
 
 GAZE will help instructors review head movements during classroom examinations. The semester prototype will detect multiple visible faces, estimate head direction, associate observations with fixed seats, and record sustained or repeated movements. This draft translates the concept paper into project goals, user needs, and measurable requirements.
 
@@ -8,6 +8,7 @@ GAZE will help instructors review head movements during classroom examinations. 
 
 - `Mamaw_ConceptPaper.pdf`, pages 1–4: project scope, algorithms, data plan, responsibilities, targets, and risks.
 - `Milestone 1 - Checkpoint Guide.pdf`, pages 1–3: proposal outline, feasibility evidence, repository expectations, and checkpoint dates.
+- `Milestone 2 - Checkpoint Guide.pdf`, pages 1-3: reproducible environment, prepared data, preprocessing evidence, validation baseline, runnable prototype, progress report, and CP2 review gates.
 
 These documents are the planning basis. Their descriptions of future work do not establish completed functionality or evaluation results.
 
@@ -82,7 +83,7 @@ BIWI Kinect Head Pose Database is the planned primary source for labeled head-po
 
 The 20 low-resolution LFW samples described in the paper may support a toolchain smoke test. They have no ground-truth pose labels and cannot establish direction-classification accuracy or replace labeled pose data.
 
-Before declaring the dataset ready, record the accessible source, license and redistribution conditions, acquired counts per class, annotation format, selected samples, and lighting/view limitations. Derive direction labels from pose annotations using documented angle thresholds and a rule for mixed poses, such as down-and-left. Separate development and held-out test data by subject. If model training is introduced, add a distinct training split without subject overlap.
+Before declaring the dataset ready, record the accessible source, license and redistribution conditions, acquired counts per class, annotation format, selected samples, and lighting/view limitations. Derive direction labels from pose annotations using documented angle thresholds and a rule for mixed poses, such as down-and-left. Identify validation data for baseline measurements and threshold tuning, and a locked held-out test split for final scoring. Keep the same subject and recording/source within one split. If model training is introduced, add a distinct training split without source overlap. Commit a one-page data card covering sources/licences, acquired counts per class and split, label creation/checks, image sizes, gaps, and preprocessing; retain reproducible split manifests.
 
 Create a contact sheet of at least 20 real samples with meaningful labels. Keep smoke-test samples clearly separated from evidence for direction evaluation. Multi-student seat association and temporal rules require separate licensed or consent-based staged video with seat and movement interval annotations; BIWI alone cannot validate them.
 
@@ -96,7 +97,7 @@ Create a contact sheet of at least 20 real samples with meaningful labels. Keep 
 | Event precision and recall | Measure when labeled video permits; define event matching and time tolerance before testing. |
 | False alerts during writing | Report on labeled writing intervals with the amount of evaluated footage. |
 
-Targets are proposed success criteria, not achieved results. Tune thresholds on development data and freeze them before final held-out evaluation. Movement duration must reflect elapsed time in the observed session, regardless of processing speed.
+Targets are proposed success criteria, not achieved results. At CP2, report reproducible validation accuracy and macro-F1, plus confusion matrix, coverage, and failures; use validation data for the CP3 comparison as well. Tune thresholds on validation data and freeze them before final held-out evaluation. The class demonstration may run a teacher-selected test image, but its output must not be used to tune settings or reported as the aggregate validation measurement. Movement duration must reflect elapsed time in the observed session, regardless of processing speed.
 
 ## Reliability and data handling
 
@@ -127,7 +128,7 @@ The guide lists the following deadlines at 11:30 PM. It does not state a timezon
 | Checkpoint | Hand in by | Planned evidence | Tag |
 | --- | --- | --- | --- |
 | CP1 | 15 October | Nine-section proposal, acquired data, labeled 20-sample contact sheet, runnable five-image spike and screenshot, README, individual commits. | `cp1-proposal` |
-| CP2 | 22 October | Baseline, multi-face detection, and initial measurements. | `cp2-50` |
+| CP2 | 22 October | Pinned CPU setup, data card and source-separated splits, shared preprocessing with before/after evidence, runnable image baseline and validation results, effort-weighted report, plus GAZE three-face video/FPS evidence. | `cp2-50` |
 | CP3 | 29 October | Core pose classification, seat association, and initial tests. | `cp3-core` |
 | CP4 | 12 November | Temporal rules, error analysis, FPS measurements, and interface integration. | `cp4-80` |
 | Final | 19 November | Team demonstration, report, reproducible execution, and individual technical defense preparation; presentations begin 20 November. | `v1.0` |

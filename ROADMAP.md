@@ -1,8 +1,8 @@
 # GAZE Development Roadmap
 
-Status: Planned work as of 21 October 2026. Repository boilerplate exists; application features remain unimplemented.
+Status: Planned work as of 22 October 2026. Repository boilerplate exists; application features remain unimplemented.
 
-This roadmap breaks the [PRD](PRD.md) into checkpoint deliverables for the project team. It follows the supplied Milestone 1 checkpoint guide and the concept paper's proposed allocation of features. The guide defines checkpoint names, dates, marks, and submission expectations; the tasks and completion gates below are the project's proposed plan.
+This roadmap breaks the [PRD](PRD.md) into checkpoint deliverables for the project team. It follows the supplied Milestone 1 checkpoint guide for the schedule and general submission expectations, Milestone 2 - Checkpoint Guide.pdf (pages 1-3) for the CP2 completion requirements, and the concept paper for GAZE's scope. The CP2 section distinguishes course requirements from additional GAZE commitments; other feature allocations remain the project's proposed plan.
 
 The [task backlog](TASK.md) turns these milestones into individually assignable work items with stable IDs. [AGENTS.md](AGENTS.md) defines contribution and verification conventions. The task file links the created Issues and the [checkpoint kanban board](https://github.com/users/emperuna/projects/3/views/2). Board updates and Markdown status reconciliation remain manual; no continuous synchronization is installed.
 
@@ -13,19 +13,19 @@ All hand-ins are due at 11:30 PM in the course timezone, which needs confirmatio
 | Phase | Hand-in date | Class check | Points | Intended outcome | Hand-in tag |
 | --- | --- | --- | --- | --- | --- |
 | CP1 | 15 October | 16 October | 10 | Proposal, data evidence, and feasibility demonstration. | `cp1-proposal` |
-| CP2 | 22 October | 23 October | 15 | Working baseline, multiple-face observation, and first measurements. | `cp2-50` |
+| CP2 | 22 October | 23 October | 15 | Reproducible image prototype, prepared data, preprocessing evidence, validation baseline, and GAZE video evidence. | `cp2-50` |
 | CP3 | 29 October | 30 October | 15 | Core direction classification and seat association with initial tests. | `cp3-core` |
 | CP4 | 12 November | 13 November | 20 | Movement histories, review events, integrated outputs, and performance evidence. | `cp4-80` |
 | CP5 | 19 November | Presentations from 20 November | 30 | Final team presentation and live demonstration. | `v1.0` |
 | Individual defense | 19 November | During the team's presentation slot | 10 | Each member explains and defends their contribution. | Same final submission |
 
-The guide has five project checkpoints plus a separately marked individual defense, totaling 100 points. The 50% and 80% checkpoint names are progress review stages, not percentages to infer from completed task counts.
+The guide has five project checkpoints plus a separately marked individual defense, totaling 100 points. The 50% and 80% checkpoint names do not establish actual completion. Milestone 2 requires a reported completion percentage calculated from completed tasks weighted by effort; document the scope, weights, and evidence rather than counting every task equally.
 
 Task leads below reflect the original suggested allocation, not exclusive ownership. Any collaborator may claim unassigned shared work; prerequisites and acceptance criteria determine readiness. Individual defenses remain personal responsibilities. Live claims are recorded in GitHub Issues.
 
 ## Starting position and priorities
 
-The repository contains project documentation, an initial local Git commit, and project boilerplate. GitHub publication remains a manual step for the repository owner. Data acquisition, a running feasibility demonstration, per-member contributions, and checkpoint submissions are not established by the current repository.
+The repository has been published on GitHub and contains project documentation, repository automation, and application boilerplate. Repository pushes remain manual unless separately authorized. Data acquisition, a running feasibility demonstration, per-member contributions, and checkpoint submissions are not established by the current repository.
 
 CP1's listed deadline has passed, and CP2 is due on 22 October. Address missing CP1 prerequisites before treating CP2 as achievable. If the evidence cannot be completed by the listed deadline, report the actual state and agree on arrangements with the instructor. Keep the original checkpoint dates visible.
 
@@ -44,15 +44,15 @@ The initial `data/` folder contains [acquisition notes](data/README.md) and empt
 
 The `configs/` folder contains only [planning notes](configs/README.md). Add configuration files when working behavior needs adjustable settings: direction thresholds during baseline experiments, seat regions around CP3, and movement rules around CP4. No configuration loader or calibrated defaults exist yet.
 
-The initial `scripts/` folder contains only `spike.py`, `make_contact_sheet.py`, and its README. Both scripts are boilerplate for CP1. Add video and evaluation commands when CP2 work begins and live-camera support around CP4; these future entry points are not included in the initial scaffold.
+The initial `scripts/` folder contains only `spike.py`, `make_contact_sheet.py`, and its README. Both scripts are boilerplate for CP1. Add image prediction, video, and evaluation commands when CP2 work begins and live-camera support around CP4; these future entry points are not included in the initial scaffold.
 
-The initial `src/gaze/` scaffold contains only `__init__.py`, `landmarks.py`, `baseline.py`, and `visualization.py`, with no implemented behavior. The first spike will coordinate image loading and result saving. Add modules as checkpoint work needs them: video input and evaluation for CP2, the main pose approach and seat association for CP3, and movement histories and exports for CP4. This is an incremental organization plan, not completed functionality; the [README](README.md#initial-package-organization) explains the initial responsibilities.
+The initial `src/gaze/` scaffold contains only `__init__.py`, `landmarks.py`, `baseline.py`, and `visualization.py`, with no implemented behavior. The first spike will coordinate image loading and result saving. Add modules as checkpoint work needs them: reusable preprocessing, image prediction, video input, and evaluation for CP2, the main pose approach and seat association for CP3, and movement histories and exports for CP4. This is an incremental organization plan, not completed functionality; the [README](README.md#initial-package-organization) explains the initial responsibilities.
 
 ## Supporting folders and tooling
 
 Keep model acquisition notes, the test plan, the evidence placeholder, proposal documentation, checkpoint documentation, and the pull request template in the initial scaffold. Create model download and generated run folders only when assets or output exist; their ignore rules remain in place.
 
-Add notebooks only for actual exploration and test fixtures only when executable tests need inputs. When evaluation work begins around CP2, create `docs/evaluation/` and document permissions, labels, subject splits, comparison procedures, missing predictions, hardware, and event matching rules before final testing. Create `docs/presentation/` for the final report, slides, demo instructions, contribution summary, results, and limitations when those materials are prepared.
+Add notebooks only for actual exploration and test fixtures only when executable tests need inputs. The [evaluation plan](docs/evaluation/README.md) now defines CP2 evidence expectations; actual manifests, settings, and results remain future work. Document permissions, labels, subject/recording splits, comparison procedures, missing predictions, hardware, and event matching rules before the relevant evaluation. Create `docs/presentation/` for the final report, slides, demo instructions, contribution summary, results, and limitations when those materials are prepared.
 
 Repository automation checks now exist under `.github/`; [the automation guide](docs/automation.md) records activation status and the limits of those checks. Add application checks as behavior is implemented. Introduce separate development requirements when actual development tools are chosen. These deferred folders and tools do not change the checkpoint deliverables.
 
@@ -83,27 +83,44 @@ Unlabeled LFW images can demonstrate an operation but cannot supply head-directi
 
 ## CP2 Baseline and initial progress
 
-**Outcome:** Show a working reference approach and demonstrate observation of multiple visible faces.
+**Outcome:** A fresh clone can process an image into an annotated baseline output on a laptop CPU, backed by prepared data, visible preprocessing evidence, and a reproducible validation measurement.
 
-**Dependencies:** CP1 data access and reproducible execution. Relevant requirements: FR01, FR02, early FR03 and FR08, and initial FR11.
+**Dependencies:** CP1 data access, agreed labels, and reproducible execution. Relevant requirements: FR01, FR02, early FR03 and FR08, and initial FR11. Shared tasks remain available to any collaborator; the contacts elsewhere in this roadmap are advisory.
 
-| Work item | Suggested contact | Completion evidence |
+**Course requirements from the Milestone 2 guide:**
+
+| Work item | Completion evidence | Task ID |
 | --- | --- | --- |
-| Establish repeatable saved-video input. | Marc | A selected clip opens and completes processing; unreadable input receives an understandable message. |
-| Demonstrate multiple-face observation. | Marc with Jose | A representative view shows at least three visible faces observed at once, with missed detections recorded. |
-| Establish reference direction predictions. | Marc with Jose | Baseline output examples for forward, left, right, and down, using agreed label meanings. |
-| Define the evaluation sample selection and subject split. | Jose; all members label | Documented development and held-out groups with no subject overlap. |
-| Present the first preview and measurements. | Jeremy integrates; all members review | Labeled examples, initial accuracy and processing-speed measurements, and an explanation of failures. |
+| Establish prepared, source-separated data. | A committed one-page data card and manifests identify validation and locked test groups, class/split counts, label checks, image sizes, gaps, licences, and preprocessing. Keep each subject and recording within one split; add training data if training is introduced. | `cp2-split-protocol` |
+| Implement reusable preprocessing. | Functions under `src/gaze/` are imported by prediction and evaluation, and by training if introduced. Commit before/after strips for each applied step; explain choices without adding irrelevant techniques. | `cp2-preprocessing` |
+| Establish the geometric direction baseline. | Documented rules produce forward/left/right/down or unknown, with threshold settings chosen using validation data only. | `cp2-baseline` |
+| Run an image prototype. | One documented command accepts an image and saves an annotated output; invalid input is understandable. The command supports a teacher-selected test image during class. | `cp2-image-prototype` |
+| Measure baseline quality. | Reproducible validation accuracy and macro-F1, plus GAZE's confusion matrix, coverage, and failure counts; retain the exact manifest, settings, and command. | `cp2-first-metrics` |
+| Verify clean CPU execution. | Pinned runtime dependencies, documented model retrieval, and another member's fresh-clone run on a laptop CPU produce an actual output. Help text or package imports are insufficient. | `cp2-reproduction` |
+| Prepare the progress report and class review. | Proposal tasks, contributors, status, evidence, effort-weighted completion, blockers, revised dates, and each member's explanation of code they wrote. Identify the actual hand-in commit for `cp2-50`. | `cp2-hand-in` |
+
+**Additional GAZE commitments retained for CP2:**
+
+| Work item | Completion evidence | Task ID |
+| --- | --- | --- |
+| Establish repeatable saved-video input. | An authorized clip processes using source timestamps with understandable invalid-input handling. | `cp2-video` |
+| Demonstrate three-face baseline observations and measure speed. | A permitted representative clip shows three simultaneously visible faces with direction labels; report misses and FPS with hardware, resolution, face count, and timing scope. No stable seat tracking is claimed yet. | `cp2-multi-face` |
 
 **Completion gate:**
 
-- [ ] Saved input and the baseline run using documented steps.
-- [ ] Evidence shows at least three visible faces in the same scene.
-- [ ] Initial measurements identify the data, conditions, and laptop used.
-- [ ] The progress summary separates demonstrated features from incomplete ones.
-- [ ] The actual hand-in commit is identified for `cp2-50`.
+- [ ] A committed data card and reproducible manifests establish validation and source-separated locked test data; test results have not been used for tuning.
+- [ ] Reusable preprocessing lives in `src/gaze/`, is used by the prototype and evaluation, and has committed before/after evidence.
+- [ ] One image input produces a saved annotated baseline output using a documented command.
+- [ ] Validation accuracy and macro-F1 can be reproduced, with settings, confusion matrix, coverage, and failure accounting recorded.
+- [ ] A fresh clone plus README steps installs pinned dependencies, retrieves required assets, and runs the prototype on a laptop CPU.
+- [ ] GAZE's saved-video demonstration shows at least three visible faces and records FPS and missed observations under stated conditions.
+- [ ] The progress report matches repository evidence and includes contributors, an effort-weighted completion calculation, blockers, and revised target dates.
+- [ ] Each member can open and explain code they wrote; the team can run a teacher-selected test image without tuning from its output.
+- [ ] The actual hand-in commit is identified for `cp2-50`; tagging or pushing requires separate authorization.
 
-The 80% accuracy and 10 FPS goals remain final targets. CP2 should establish honest initial measurements rather than claim those goals are already met.
+Image validation depends on prepared data, preprocessing, and the image prototype; it does not wait for video integration. Video input can proceed alongside this path, with FPS evidence completed under `cp2-multi-face`. Hand-in requires both paths and fresh-clone verification. Detailed reporting expectations are in [the evaluation plan](docs/evaluation/README.md) and [checkpoint evidence notes](docs/checkpoints/README.md).
+
+The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms are illustrative. Use a layout and split justified by the actual data; no training split is required for a baseline that does not train. The 80% accuracy and 10 FPS goals remain final project targets, not minimum CP2 scores. Seat association, histories, movement events, live-camera support, and polished interfaces remain later work. Screenshots alone cannot satisfy the runnable-prototype requirement.
 
 ## CP3 Core implementation and testing
 
@@ -117,7 +134,7 @@ The 80% accuracy and 10 FPS goals remain final targets. CP2 should establish hon
 | Associate observations with fixed seats. | Jeremy | A three-person clip demonstrates seat references; ambiguous observations remain unassigned. |
 | Establish timestamped seat histories. | Jeremy | A short session history preserves observation order and identifies gaps. |
 | Handle missing or unreliable observations. | Jose and Jeremy | Examples of a hidden face, temporary disappearance, and return without invented continuous movement. |
-| Compare the baseline and main approaches. | Jose coordinates; all members review | Accuracy, macro-F1, confusion matrix, and detection coverage on the same evaluation inputs. |
+| Compare the baseline and main approaches. | Jose coordinates; all members review | Accuracy, macro-F1, confusion matrix, and detection coverage on the same validation inputs; keep final test scoring locked. |
 | Review common errors. | All members | Examples of wrong directions, missed faces, and seat association failures, with next actions. |
 
 **Completion gate:**
