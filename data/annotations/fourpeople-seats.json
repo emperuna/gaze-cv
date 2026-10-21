@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "source": "data/raw/video/FourPeople_1280x720_60.webm",
+  "source_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+  "coordinate_space": "normalized unmirrored source image; roi=[left,top,right,bottom]",
+  "reference_resolution": [
+    1280,
+    720
+  ],
+  "annotation_method": "Coarse fixed head regions and visible-seat lists manually inspected on source frames, independently of detector results. No exact head centers or bounding boxes are ground truth.",
+  "limitations": "Six reviewed frames only; positions, not identities. Not exhaustive bounding-box, direction, movement-event, or classroom ground truth.",
+  "seats": [
+    {
+      "id": "seat-1",
+      "roi": [
+        0.15,
+        0.28,
+        0.34,
+        0.62
+      ]
+    },
+    {
+      "id": "seat-2",
+      "roi": [
+        0.35,
+        0.28,
+        0.55,
+        0.62
+      ]
+    },
+    {
+      "id": "seat-3",
+      "roi": [
+        0.57,
+        0.28,
+        0.77,
+        0.62
+      ]
+    },
+    {
+      "id": "seat-4",
+      "roi": [
+        0.79,
+        0.2,
+        1.0,
+        0.62
+      ]
+    }
+  ],
+  "reviewed_frames": [
+    {
+      "frame_index": 0,
+      "visible_seats": [
+        "seat-1",
+        "seat-2",
+        "seat-3",
+        "seat-4"
+      ]
+    },
+    {
+      "frame_index": 120,
+      "visible_seats": [
+        "seat-1",
+        "seat-2",
+        "seat-3",
+        "seat-4"
+      ]
+    },
+    {
+      "frame_index": 240,
+      "visible_seats": [
+        "seat-1",
+        "seat-2",
+        "seat-3",
+        "seat-4"
+      ]
+    },
+    {
+      "frame_index": 360,
+      "visible_seats": [
+        "seat-1",
+        "seat-2",
+        "seat-3",
+        "seat-4"
+      ]
+    },
+    {
+      "frame_index": 480,
+      "visible_seats": [
+        "seat-1",
+        "seat-2",
+        "seat-3",
+        "seat-4"
+      ]
+    },
+    {
+      "frame_index": 599,
+      "visible_seats": [
+        "seat-1",
+        "seat-2",
+        "seat-3",
+        "seat-4"
+      ]
+    }
+  ]
+}

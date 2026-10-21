@@ -1,0 +1,360 @@
+{
+  "status": "Measured development-worktree proxy evidence; not a checkpoint hand-in or laptop result",
+  "hardware_note": "AMD Ryzen 5 5600X 6-Core Processor, 12 logical CPUs; read from Windows processor registry. This is a desktop.",
+  "timing_note": "Three sequential runs; five warmup frames excluded per run. Concurrent application activity was not controlled.",
+  "code_state": {
+    "base_commit": "5e129595070df689f49b4c88f8e8bcd99355bd9c",
+    "implementation": "uncommitted working tree; rerun after accepted implementation commit for submission evidence"
+  },
+  "processing_fps_median": 10.950515855371064,
+  "processing_fps_mean": 10.846623493791773,
+  "reviewed_detection_frames": [
+    {
+      "frame_index": 0,
+      "foreground_visible": 4,
+      "foreground_matches": 4,
+      "missed_foreground": 0,
+      "observed_extras": 0
+    },
+    {
+      "frame_index": 120,
+      "foreground_visible": 4,
+      "foreground_matches": 4,
+      "missed_foreground": 0,
+      "observed_extras": 0
+    },
+    {
+      "frame_index": 240,
+      "foreground_visible": 4,
+      "foreground_matches": 4,
+      "missed_foreground": 0,
+      "observed_extras": 0
+    },
+    {
+      "frame_index": 360,
+      "foreground_visible": 4,
+      "foreground_matches": 4,
+      "missed_foreground": 0,
+      "observed_extras": 0
+    },
+    {
+      "frame_index": 480,
+      "foreground_visible": 4,
+      "foreground_matches": 4,
+      "missed_foreground": 0,
+      "observed_extras": 0
+    },
+    {
+      "frame_index": 599,
+      "foreground_visible": 4,
+      "foreground_matches": 2,
+      "missed_foreground": 2,
+      "observed_extras": 0
+    }
+  ],
+  "review_note": "Visual overlay audit only on six selected frames; no direction ground truth or exhaustive matched boxes. Full-clip count deficits are diagnostic, not recall.",
+  "runs": [
+    {
+      "schema_version": 1,
+      "run_label": "fourpeople-tiled-run-1",
+      "input": "data\\raw\\video\\FourPeople_1280x720_60.webm",
+      "input_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+      "environment": {
+        "os": "Windows-10-10.0.19045-SP0",
+        "python": "3.12.10",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "machine": "AMD64",
+        "logical_cpus": 12,
+        "dependencies": {
+          "numpy": "2.2.6",
+          "opencv-contrib-python": "4.11.0.86",
+          "mediapipe": "0.10.32"
+        }
+      },
+      "pipeline": {
+        "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+        "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; locked test untouched",
+        "thresholds": {
+          "yaw": 0.18,
+          "down": 0.4,
+          "min_eye_span": 0.015
+        },
+        "max_width": 1280,
+        "mirrored_input": false,
+        "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+        "bbox_convention": "original-image pixels (x,y,width,height)",
+        "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+        "detector": {
+          "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+          "mediapipe_version": "0.10.32",
+          "model_path": "F:\\Projects\\Code\\repos\\gaze-cv\\models\\downloads\\face_landmarker.task",
+          "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+          "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+          "max_faces": 10,
+          "detection_confidence_threshold": 0.5,
+          "face_presence_threshold": 0.5,
+          "landmark_indices": {
+            "left_eye": 263,
+            "right_eye": 33,
+            "nose": 1,
+            "chin": 152
+          },
+          "tile_grid": 2,
+          "tiling": "square max-dimension/grid, 50% overlap, edge aligned; bbox IoU > .3 suppression",
+          "face_order": "frame-local detector order; no association or persistent identity"
+        }
+      },
+      "source": {
+        "width": 1280,
+        "height": 720,
+        "fps": 60.0,
+        "advertised_frames": 601,
+        "timebase": "constant frame rate: zero-based frame_index / source_fps",
+        "last_timestamp_seconds": 10.0,
+        "processed_duration_seconds": 10.016666666666667
+      },
+      "processed_frames": 601,
+      "stopped_at_requested_limit": false,
+      "decoded_fewer_than_advertised": false,
+      "face_count_histogram": {
+        "1": 1,
+        "2": 53,
+        "3": 180,
+        "4": 367
+      },
+      "frames_with_at_least_three_faces": 547,
+      "detected_observations": 2115,
+      "unknown_observations": 44,
+      "direction_counts": {
+        "right": 391,
+        "left": 586,
+        "forward": 926,
+        "down": 168,
+        "unknown": 44
+      },
+      "expected_face_count": 4,
+      "count_deficit_observations": 289,
+      "reference_note": "Fixed count deficits do not establish matched recall, identities or direction accuracy.",
+      "timing": {
+        "warmup_frames": 5,
+        "measured_frames": 596,
+        "measured_seconds": 53.30652209998152,
+        "processing_fps": 11.180620616782024,
+        "inference_seconds": 46.704577400018024,
+        "inference_fps": 12.761061831163683,
+        "scope": "Per-frame decode, preprocessing, detection, baseline, annotation, AVI encoding, buffered JSON write and optional evidence image save; excludes model initialization, warmup frames, final flush and summary/hash writing.",
+        "elapsed_before_summary_seconds": 53.84014010000101
+      },
+      "evidence_frame": "outputs\\evidence\\video-baseline.jpg",
+      "limitations": [
+        "CFR inputs only; VFR timestamps are not supported.",
+        "No stable identities, seat tracking, temporal events or misconduct inference."
+      ]
+    },
+    {
+      "schema_version": 1,
+      "run_label": "fourpeople-tiled-run-2",
+      "input": "data\\raw\\video\\FourPeople_1280x720_60.webm",
+      "input_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+      "environment": {
+        "os": "Windows-10-10.0.19045-SP0",
+        "python": "3.12.10",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "machine": "AMD64",
+        "logical_cpus": 12,
+        "dependencies": {
+          "numpy": "2.2.6",
+          "opencv-contrib-python": "4.11.0.86",
+          "mediapipe": "0.10.32"
+        }
+      },
+      "pipeline": {
+        "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+        "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; locked test untouched",
+        "thresholds": {
+          "yaw": 0.18,
+          "down": 0.4,
+          "min_eye_span": 0.015
+        },
+        "max_width": 1280,
+        "mirrored_input": false,
+        "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+        "bbox_convention": "original-image pixels (x,y,width,height)",
+        "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+        "detector": {
+          "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+          "mediapipe_version": "0.10.32",
+          "model_path": "F:\\Projects\\Code\\repos\\gaze-cv\\models\\downloads\\face_landmarker.task",
+          "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+          "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+          "max_faces": 10,
+          "detection_confidence_threshold": 0.5,
+          "face_presence_threshold": 0.5,
+          "landmark_indices": {
+            "left_eye": 263,
+            "right_eye": 33,
+            "nose": 1,
+            "chin": 152,
+            "mouth_right": 61,
+            "mouth_left": 291
+          },
+          "tile_grid": 2,
+          "tiling": "square max-dimension/grid, 50% overlap, edge aligned; bbox IoU > .3 suppression",
+          "face_order": "frame-local detector order; no association or persistent identity"
+        }
+      },
+      "source": {
+        "width": 1280,
+        "height": 720,
+        "fps": 60.0,
+        "advertised_frames": 601,
+        "timebase": "constant frame rate: zero-based frame_index / source_fps",
+        "last_timestamp_seconds": 10.0,
+        "processed_duration_seconds": 10.016666666666667
+      },
+      "processed_frames": 601,
+      "stopped_at_requested_limit": false,
+      "decoded_fewer_than_advertised": false,
+      "face_count_histogram": {
+        "1": 1,
+        "2": 53,
+        "3": 180,
+        "4": 367
+      },
+      "frames_with_at_least_three_faces": 547,
+      "detected_observations": 2115,
+      "unknown_observations": 44,
+      "direction_counts": {
+        "right": 391,
+        "left": 586,
+        "forward": 926,
+        "down": 168,
+        "unknown": 44
+      },
+      "expected_face_count": 4,
+      "count_deficit_observations": 289,
+      "reference_note": "Fixed count deficits do not establish matched recall, identities or direction accuracy.",
+      "timing": {
+        "warmup_frames": 5,
+        "measured_frames": 596,
+        "measured_seconds": 54.426659700024175,
+        "processing_fps": 10.950515855371064,
+        "inference_seconds": 47.93332910001118,
+        "inference_fps": 12.433937120379586,
+        "scope": "Per-frame decode, preprocessing, detection, baseline, annotation, AVI encoding, buffered JSON write and optional evidence image save; excludes model initialization, warmup frames, final flush and summary/hash writing.",
+        "elapsed_before_summary_seconds": 54.91012639999826
+      },
+      "evidence_frame": null,
+      "seat_configuration": null,
+      "seat_history_file": null,
+      "limitations": [
+        "CFR inputs only; VFR timestamps are not supported.",
+        "No person identities, temporal movement-event detection or misconduct inference.",
+        "Seat association and observation histories require explicit seat configuration."
+      ]
+    },
+    {
+      "schema_version": 1,
+      "run_label": "fourpeople-tiled-run-3",
+      "input": "data\\raw\\video\\FourPeople_1280x720_60.webm",
+      "input_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+      "environment": {
+        "os": "Windows-10-10.0.19045-SP0",
+        "python": "3.12.10",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "machine": "AMD64",
+        "logical_cpus": 12,
+        "dependencies": {
+          "numpy": "2.2.6",
+          "opencv-contrib-python": "4.11.0.86",
+          "mediapipe": "0.10.32"
+        }
+      },
+      "pipeline": {
+        "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+        "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; locked test untouched",
+        "thresholds": {
+          "yaw": 0.18,
+          "down": 0.4,
+          "min_eye_span": 0.015
+        },
+        "max_width": 1280,
+        "mirrored_input": false,
+        "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+        "bbox_convention": "original-image pixels (x,y,width,height)",
+        "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+        "detector": {
+          "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+          "mediapipe_version": "0.10.32",
+          "model_path": "F:\\Projects\\Code\\repos\\gaze-cv\\models\\downloads\\face_landmarker.task",
+          "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+          "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+          "max_faces": 10,
+          "detection_confidence_threshold": 0.5,
+          "face_presence_threshold": 0.5,
+          "landmark_indices": {
+            "left_eye": 263,
+            "right_eye": 33,
+            "nose": 1,
+            "chin": 152,
+            "mouth_right": 61,
+            "mouth_left": 291
+          },
+          "tile_grid": 2,
+          "tiling": "square max-dimension/grid, 50% overlap, edge aligned; bbox IoU > .3 suppression",
+          "face_order": "frame-local detector order; no association or persistent identity"
+        }
+      },
+      "source": {
+        "width": 1280,
+        "height": 720,
+        "fps": 60.0,
+        "advertised_frames": 601,
+        "timebase": "constant frame rate: zero-based frame_index / source_fps",
+        "last_timestamp_seconds": 10.0,
+        "processed_duration_seconds": 10.016666666666667
+      },
+      "processed_frames": 601,
+      "stopped_at_requested_limit": false,
+      "decoded_fewer_than_advertised": false,
+      "face_count_histogram": {
+        "1": 1,
+        "2": 53,
+        "3": 180,
+        "4": 367
+      },
+      "frames_with_at_least_three_faces": 547,
+      "detected_observations": 2115,
+      "unknown_observations": 44,
+      "direction_counts": {
+        "right": 391,
+        "left": 586,
+        "forward": 926,
+        "down": 168,
+        "unknown": 44
+      },
+      "expected_face_count": 4,
+      "count_deficit_observations": 289,
+      "reference_note": "Fixed count deficits do not establish matched recall, identities or direction accuracy.",
+      "timing": {
+        "warmup_frames": 5,
+        "measured_frames": 596,
+        "measured_seconds": 57.25960520001172,
+        "processing_fps": 10.40873400922223,
+        "inference_seconds": 50.49836509997476,
+        "inference_fps": 11.802362290740733,
+        "scope": "Per-frame decode, preprocessing, detection, baseline, annotation, AVI encoding, buffered JSON write and optional evidence image save; excludes model initialization, warmup frames, final flush and summary/hash writing.",
+        "elapsed_before_summary_seconds": 57.771628400001646
+      },
+      "evidence_frame": null,
+      "seat_configuration": null,
+      "seat_history_file": null,
+      "movement_events_file": null,
+      "limitations": [
+        "CFR inputs only; VFR timestamps are not supported.",
+        "No person identities or misconduct inference; event accuracy remains unvalidated.",
+        "Seat association and observation histories require explicit seat configuration."
+      ]
+    }
+  ]
+}
