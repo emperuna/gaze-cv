@@ -1,6 +1,6 @@
 # GAZE Product Requirements Draft
 
-Status: Draft for team review. Updated on 22 October 2026; CP2 aligned with the Milestone 2 guide.
+Status: Requirements for team review, with implementation evidence as of 22 October 2026. Working image/video and core session behavior are recorded in [the checkpoint report](docs/checkpoints/cp2-progress.md); final targets and academic submission are not claimed.
 
 GAZE will help instructors review head movements during classroom examinations. The semester prototype will detect multiple visible faces, estimate head direction, associate observations with fixed seats, and record sustained or repeated movements. This draft translates the concept paper into project goals, user needs, and measurable requirements.
 
@@ -75,11 +75,11 @@ Unknown and unassigned are processing states, not extra head-direction classes. 
 
 The project consists of session preparation, observation, movement history, and instructor review. [ARCHITECTURE.md](ARCHITECTURE.md) describes how these areas relate and who is responsible for them.
 
-The team will compare a simple reference approach with the proposed main approach on the same labeled examples. Detailed implementation choices will be addressed when development begins.
+The team will compare a simple reference approach with the proposed main approach on the same labeled examples. The checkpoint report records the implemented geometric baseline and approximate PnP comparison, including their validation results and current limitations.
 
 ## Data and evaluation plan
 
-BIWI Kinect Head Pose Database is the planned primary source for labeled head-pose images. The concept paper references <https://huggingface.co/datasets/ETHZurich/biwi_kinect_head_pose> and describes more than 15,000 images from 20 subjects. Acquisition remains unverified, so these are source descriptions rather than available project sample counts.
+BIWI Kinect Head Pose Database is the planned primary source for labeled head-pose images. The concept paper references <https://huggingface.co/datasets/ETHZurich/biwi_kinect_head_pose> and describes more than 15,000 images from 20 subjects. BIWI acquisition remains unverified. The implemented initial alternative is Pointing04: 240 validation images and 120 subject-separated locked test images, plus twenty permitted checked-in validation examples. See the [data card](docs/evaluation/data-card.md) for source permissions, nominal angle labels, fixed selection, and limitations.
 
 The 20 low-resolution LFW samples described in the paper may support a toolchain smoke test. They have no ground-truth pose labels and cannot establish direction-classification accuracy or replace labeled pose data.
 
@@ -144,7 +144,7 @@ At the planning date, the guide's CP1 deadline has passed and CP2 is the next li
 | Downward writing produces movement alerts. | Evaluate writing intervals and tune temporal rules on development data; present events as review prompts. |
 | Tracking or temporal behavior cannot be validated. | Deliver the stated fallback on prerecorded input and identify the unvalidated functions. |
 
-## Decisions to resolve before implementation
+## Decisions requiring team confirmation
 
 1. Confirm the accessible labeled dataset, permissions, class counts, and subject split.
 2. Agree on how direction labels are interpreted, including left and right and movements in more than one direction.

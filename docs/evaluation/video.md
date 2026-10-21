@@ -64,7 +64,7 @@ The [actual first-frame annotation](../../outputs/evidence/video-baseline.jpg) s
 
 An initial untiled full-frame run detected no faces in this clip. Generic overlapping tiling resolves the small-face scale limitation sufficiently for the demonstration, at additional inference cost. The failed diagnostic is retained locally in `outputs/runs/video-run-1/`; it is not used as successful performance evidence.
 
-The [machine-readable benchmark record](../../outputs/evidence/video-benchmark.json) contains all three summaries, exact settings and limitations. Measurements currently refer to the uncommitted development working tree; rerun the accepted implementation commit for final submission provenance.
+The [machine-readable benchmark record](../../outputs/evidence/video-benchmark.json) contains all three summaries, exact settings and limitations. These historical measurements were recorded before the review commits; their embedded code state is retained rather than relabeled. Review fixes add floating-point boundary tolerance, odd-frame padding, and safer output/download handling. Application regression tests cover those changes; rerun video performance on the accepted implementation and target laptop for final submission provenance.
 
 ## Initial integrated diagnostic before repeated-entry dwell
 

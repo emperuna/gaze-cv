@@ -1,113 +1,92 @@
 # GAZE
 
-GAZE is a proposed computer vision system for monitoring head orientation during classroom examinations using one fixed camera. It will label visible students' head directions and record sustained or repeated movements for instructor review.
+GAZE is a local computer vision prototype for reviewing visible head movements. It processes images and saved video, labels head direction, and can associate observations with fixed seat regions. Head movement does not establish cheating; outputs support instructor review.
 
-Head movement does not establish cheating. The instructor remains responsible for interpreting observations.
+## Current state
 
-## Project status
+Working CPU prototype on branch `feat/cp2-baseline`, with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. This is implementation evidence, not a completed academic submission. The held-out test split remains locked. The current machine is a desktop; laptop performance and another human member's reproduction remain unverified.
 
-Planning and boilerplate only. This repository contains project documentation, a Python package skeleton, command-line placeholders, and notes for future configuration. Computer vision features, datasets, evaluation results, and checkpoint evidence have not been implemented or supplied.
+- [Product requirements](PRD.md), [project architecture](ARCHITECTURE.md), [roadmap](ROADMAP.md), and [task backlog](TASK.md).
+- [Contributor setup](CONTRIBUTING.md) and [agent instructions](AGENTS.md).
+- [Data card](docs/evaluation/data-card.md), [evaluation procedure](docs/evaluation/README.md), [video evidence](docs/evaluation/video.md), and [seat/history scope](docs/evaluation/seats.md).
+- [Checkpoint evidence](docs/checkpoints/README.md) and [CP2 implementation report](docs/checkpoints/cp2-progress.md).
+- [GitHub kanban](https://github.com/users/emperuna/projects/3/views/2) and [PR automation](docs/automation.md).
 
-## Planning documents
+## Windows setup on F:
 
-- [Product requirements](PRD.md): scope, user workflow, functional requirements, acceptance criteria, evaluation, and milestones.
-- [Project architecture](ARCHITECTURE.md): project areas, session flow, information, responsibilities, and scope.
-- [Development roadmap](ROADMAP.md): checkpoint tasks, owners, dependencies, and completion evidence.
-- [Contributor instructions](AGENTS.md): working conventions, scope, and verification.
-- [Task backlog](TASK.md): self-claimable tasks, dependencies, acceptance criteria, and linked GitHub Issues.
-- [PR automation](docs/automation.md): proposed automatic PR creation, CI, rebases, and main-branch enforcement.
-- [GitHub kanban board](https://github.com/users/emperuna/projects/3/views/2): Status columns and Checkpoint swimlanes.
-
-## CP2 planning
-
-The [roadmap](ROADMAP.md#cp2-baseline-and-initial-progress) now follows the Milestone 2 guide: prepared source-separated data and a data card, reusable preprocessing evidence, a one-command image baseline, validation measurements, pinned CPU setup verified from a fresh clone, and an effort-weighted progress report. GAZE also retains its three-face saved-video demonstration and FPS measurement. These are planned acceptance criteria; no prototype or evidence is supplied by this documentation update. See [checkpoint evidence expectations](docs/checkpoints/README.md).
-
-## Expected outcome
-
-A labeled examination video view with seat references, head direction labels, and timestamped movement records for instructor review.
-
-## Team
-
-| Member | Initial suggested focus |
-| --- | --- |
-| Marc Justin Alberto | Video input, preprocessing, baseline, and feasibility spike |
-| Jose III Aquino | Landmarks, head pose, and direction classification |
-| Jeremy Garin | Seat association, movement events, annotated output, and integration |
-| All members | Code, data labeling, evaluation, documentation, and presentation |
-
-Shared tasks are open to any collaborator; the original focus areas above are advisory. Claim an unassigned Issue before working so two people do not take the same task. Each member still delivers their own individual technical defense.
-
-## Team and agent onboarding
-
-Follow [CONTRIBUTING.md](CONTRIBUTING.md) before starting your first task. It includes access checks, a read-only agent startup prompt, task selection, conventional naming, and review expectations. [AGENTS.md](AGENTS.md) is the canonical repository guidance; verify your agent has loaded it before authorizing edits.
-
-## Getting started
-
-Read the PRD and project architecture for the planned capabilities, responsibilities, and evaluation goals.
-
-The scaffold declares Python 3.10 or newer. In PowerShell, prepare an environment and install the local package with:
+Run from this repository on F:. The following settings apply only to this PowerShell process and child programs; they do not change Windows configuration. They keep local environments, temporary downloads, and library caches in this project. No administrator shell, global Python install, driver change, or camera permission is required.
 
 ```powershell
+$taskRoot = (Get-Location).Path
+New-Item -ItemType Directory -Force .work/tmp, .work/pip-cache, .work/matplotlib, .work/cache | Out-Null
+$env:TEMP = Join-Path $taskRoot '.work/tmp'
+$env:TMP = $env:TEMP
+$env:PIP_CACHE_DIR = Join-Path $taskRoot '.work/pip-cache'
+$env:MPLCONFIGDIR = Join-Path $taskRoot '.work/matplotlib'
+$env:XDG_CACHE_HOME = Join-Path $taskRoot '.work/cache'
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -c "import gaze; print(gaze.__doc__)"
+.\.venv\Scripts\python.exe scripts/download_model.py
 ```
 
-The package currently has no runtime dependencies. Installing it may require downloading the packaging tool. Computer vision dependencies will be selected and verified during feasibility work.
+The verified environment uses Python 3.12.10, with dependency versions pinned in requirements.txt and build requirements pinned in pyproject.toml. Python 3.10-3.12 compatibility is intended; versions beyond the verified runtime are not established by this run. Model download is bounded, checksum verified, and local; see [model provenance](models/README.md). No training or GPU is required.
 
-Preview the initial commands with `python scripts/spike.py --help` or `python scripts/make_contact_sheet.py --help`. Running a script without `--help` reports that its feature is unimplemented; the scripts cannot process a session yet.
+## Run an image
 
-## Repository layout
+Twenty permitted Pointing04 validation examples are included. For a concrete input path, list them with `Get-ChildItem data/samples -Recurse -Filter *.jpg`, then run:
 
-| Location | Purpose |
-| --- | --- |
-| `src/gaze/` | Four boilerplate files for the initial feasibility work, described below. |
-| `scripts/` | Boilerplate for the five-image spike and labeled contact sheet, plus a README. |
-| `configs/` | A README describing future configuration needs; no settings files yet. |
-| `data/` | Acquisition notes and empty `samples/` and `annotations/` placeholders. |
-| `models/` | A README for future model acquisition; no assets or download folder yet. |
-| `tests/` | A README describing future behavior checks; no tests or fixtures yet. |
-| `outputs/` | Evidence placeholder and documentation; no generated runs yet. |
-| `docs/` | Proposal and checkpoint documentation placeholders. |
-| `.github/` | PR template, repository automation, tests, and reviewed activation settings. |
-
-Full datasets, model downloads, and session output are ignored in their designated local folders. Only publish samples and evidence with permission. No code license has been selected yet.
-
-## Deferred folders and tooling
-
-Create folders when actual work needs them: `models/downloads/` for model acquisition, `outputs/runs/` for generated output, `notebooks/` for exploration, and `tests/fixtures/` for test inputs. Existing ignore rules protect local model downloads and generated runs.
-
-The [evaluation plan](docs/evaluation/README.md) documents CP2 preparation and reporting expectations; no measurements exist yet. Add `docs/presentation/` when presentation materials exist. Repository workflow checks and automation tests now live under `.github/`; their activation and limits are documented in `docs/automation.md`. A separate development requirements file can be introduced when development tools are selected; setup currently uses only `requirements.txt`.
-
-## Initial data organization
-
-`data/` contains [its README](data/README.md), `samples/`, and `annotations/`. The subfolders contain only `.gitkeep` files. Future input examples belong in `samples/`, their labels in `annotations/`, and generated contact sheets or annotated screenshots in `outputs/evidence/`.
-
-Create the ignored `data/raw/` folder when datasets are acquired and `data/processed/` only if saved derived inputs become necessary. Neither folder is part of the initial scaffold.
-
-## Initial scripts
-
-`scripts/` contains `spike.py`, `make_contact_sheet.py`, and [its README](scripts/README.md). Both commands remain boilerplate for the CP1 evidence tasks. Add image prediction, video, and evaluation commands around CP2 and live-camera support around CP4 when their behavior is developed.
-
-## Initial package organization
-
-The package starts with four files. Each contains only a responsibility description; no processing behavior or stable interfaces exist yet.
-
-```text
-src/gaze/
-    __init__.py
-    landmarks.py
-    baseline.py
-    visualization.py
+```powershell
+.\.venv\Scripts\python.exe scripts/predict.py --input data/samples/pointing04/person01145+0-15.jpg --output outputs/runs/example.png
 ```
 
-| File | Planned responsibility |
-| --- | --- |
-| `__init__.py` | Identify the importable `gaze` package. |
-| `landmarks.py` | Find visible faces and usable facial reference points. |
-| `baseline.py` | Produce initial direction predictions from simple facial geometry, including the baseline's direction rules. |
-| `visualization.py` | Draw face regions, landmarks, and direction labels for inspection. |
+Use an actual filename from the list if it differs. The command saves an annotated image and adjacent JSON with settings and observations. Labels are subject-relative forward/left/right/down; unknown observations are explicit. Use `--mirrored` only for input pixels that are already mirrored. Use `--method pose` for the approximate six-point PnP comparison. Pose angles use nominal camera intrinsics and a generic face model; they are not calibrated measurements.
 
-When implemented, `scripts/spike.py` will load five images, call these modules, and save the annotated results. During CP2 implementation, image preparation must be reusable functions under src/gaze used consistently by prediction and evaluation (and training if introduced), with before/after evidence for each applied step. Introduce a separate preprocessing module only when working behavior needs it.
+## Reproduce data and image validation
 
-Add separate modules when working behavior needs them: shared preprocessing, image prediction, video input, and evaluation around CP2, the main pose approach and seat association around CP3, and movement histories and event exports around CP4. Configuration loading, shared records, shared direction rules, and a session coordinator can be introduced when their responsibilities become clear. The broader capabilities remain planned in the roadmap; empty modules are not required in advance.
+```powershell
+.\.venv\Scripts\python.exe scripts/prepare_data.py
+.\.venv\Scripts\python.exe scripts/make_contact_sheet.py --output outputs/runs/contact-sheet.jpg
+.\.venv\Scripts\python.exe scripts/spike.py --output-dir outputs/runs/spike
+.\.venv\Scripts\python.exe scripts/evaluate.py --manifest data/annotations/pointing04.json --output outputs/runs/baseline-validation.json
+.\.venv\Scripts\python.exe scripts/evaluate.py --manifest data/annotations/pointing04.json --method pose --output outputs/runs/pose-validation.json
+```
+
+Acquisition uses the author's permitted source and pins its archive hash. Full data remains in ignored data/raw/. The manifest contains 240 validation images from ten subjects and 120 locked test images from five different subjects. Ground truth comes from source pose annotations, not model predictions. The evaluator intentionally accepts only validation scoring. It counts missing/unknown predictions against overall accuracy and reports coverage separately.
+
+The initial geometric baseline scored 69.17% validation accuracy. A down-direction ratio selected using this validation set raised it to 86.67%, macro-F1 0.8798, coverage 97.5%. The approximate pose method scored 67.50%, macro-F1 0.6734. These are development measurements on a deliberately limited posed subset; the baseline benefited from validation tuning, and none establishes the final held-out 80% target. See the checkpoint report for full limitations and exact artifacts.
+
+## Process saved video
+
+```powershell
+.\.venv\Scripts\python.exe scripts/prepare_video.py
+.\.venv\Scripts\python.exe scripts/process_video.py --input data/raw/video/FourPeople_1280x720_60.webm --output-dir outputs/runs/video-example --tile-grid 2 --expected-faces 4
+```
+
+This public-domain office-meeting clip is a multi-person proxy, not classroom validation. Generic overlapping detector tiles are needed for its smaller faces. Each run writes annotated video, timestamped observations, settings, hardware, and throughput. Choose a new output directory for each run. Source time comes from frame index and source FPS; the current input contract is constant-frame-rate saved video.
+
+For configured fixed-seat histories and optional movement records, use:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/process_video.py --input data/raw/video/FourPeople_1280x720_60.webm --output-dir outputs/runs/seat-example --tile-grid 2 --expected-faces 4 --seats data/annotations/fourpeople-seats.json --events
+```
+
+Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input and a polished review interface remain later work.
+
+## Verification
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe .github/automation.py check
+.\.venv\Scripts\python.exe -m unittest discover -s .github/tests -v
+git diff --check
+```
+
+Application unit tests use synthetic/local temporary inputs without downloading models or datasets. Actual model/data runs are separate recorded integration evidence. The updated CI definition on this branch installs pinned dependencies and runs application and repository tests when published; no remote application CI run is claimed before that push. Passing checks does not imply classroom performance or academic completion.
+
+## Organization and collaboration
+
+Reusable processing lives in src/gaze/: data preparation, preprocessing, landmarks, baseline, pose, visualization, pipeline, evaluation, video, seats, histories, and movement rules. Scripts coordinate those modules. [scripts/README.md](scripts/README.md) lists the commands. Configs remain small; current seat configuration is documented alongside its source annotations.
+
+Full datasets, model binaries, generated runs, project-local caches, and verification environments are ignored. Small permitted samples, manifests, source attribution, reviewed screenshots, and selected measurement summaries provide reproducible evidence. No code license has been selected; data/model permissions are recorded separately.
+
+Any collaborator may claim unassigned work; original focus areas are advisory. Each member must still contribute and explain their own code. Keep atomic Conventional Commits, review PRs, and preserve linear history. The implementation is not automatically committed, pushed, merged, or tagged by running the application.

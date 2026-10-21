@@ -2,7 +2,7 @@
 
 GAZE supports classroom examination supervision by organizing visible head movements into observations that an instructor can review. This document describes the project's main areas, their relationships, and the responsibilities of the people involved.
 
-The project is in the planning stage. [PRD.md](PRD.md) defines its requirements, success targets, and checkpoint deliverables.
+The project has an initial CPU prototype and remains under evaluation. [PRD.md](PRD.md) defines its requirements, success targets, and checkpoint deliverables.
 
 ## People and responsibilities
 
@@ -74,3 +74,7 @@ The concept paper establishes the proposed direction. The PRD defines what the p
 Labeled head-pose images support direction evaluation. Multi-student video is needed to evaluate seat consistency and movement histories. Ordinary writing should be included when reviewing unwanted alerts.
 
 Use only authorized footage and respect dataset permissions. Agree on who can access session records and how long they are retained before collecting classroom footage.
+
+## Current evidence boundary
+
+The prototype now supports image direction observations, saved-video annotation, configured fixed seats, source-time histories, and movement-rule records. Validation images and an office video proxy establish limited technical evidence. Final held-out results, classroom event labels, writing-related false alerts, a target laptop run, and each member's own contribution/defense remain separate obligations. See [the checkpoint report](docs/checkpoints/cp2-progress.md).

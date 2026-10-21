@@ -27,3 +27,10 @@ Agree on relative effort weights before calculating the report. Show the complet
 Use `completion (%) = 100 * sum(weights of evidence-verified completed tasks) / sum(weights of all planned tasks in the stated scope)`. In-progress tasks do not count as completed under this calculation. A CP2-only calculation may be shown separately, clearly labeled; it does not replace overall project progress. Report no percentage until weights and completion evidence have been reviewed.
 
 The 50% checkpoint label, a tag, closed planning Issues, and CI success alone do not establish application progress. If evidence is missing, report it as missing and state the blocker and next target date. Existing course dates remain visible until the instructor confirms revised arrangements.
+
+## Current implementation records
+
+- [CP2 and core implementation progress](cp2-progress.md): actual results, requirement coverage, and remaining hand-in gates.
+- [Independent clean-folder reproduction](reproduction.md): pinned environment/model/data reproduction and its human/Git-clone limitations.
+
+These records describe the reviewed development branch and its recorded source snapshots; no cp2-50 hand-in tag or submission is claimed.

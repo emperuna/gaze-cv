@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-22",
+  "source_revision": "827679e896ea0da8bc4aad3c714b3a56824e8368",
+  "source_sha256": {
+    "src/gaze/baseline.py": "92b882ab3365f4d0db80d9c3ca2a689ef8a2a28f23d9cb6d53008f0020d75765",
+    "src/gaze/data.py": "258cead48560b0e36df531a9b1298ce797042951267bdef8f47f0f8919e07b2d",
+    "src/gaze/evaluation.py": "e3026c23e7b77c19b220ea96fd89313f28cc00861cadc57cf0cb6e11a5a9c522",
+    "src/gaze/events.py": "9d020f53d293110941ef87c5e3d7a08c2374dc0cd5e2e2db9177d4e5e1af55c7",
+    "src/gaze/history.py": "183fab868e71df40919196d2ef47aae53215f2ea2643efc10e0b745eefe2f35b",
+    "src/gaze/landmarks.py": "d1c97e1dcd940a939b4fd20f1ec3591d9c4e535f2f3203b64ed332c11667150c",
+    "src/gaze/pipeline.py": "1e25ee19638ea7ebccd662ee2fabb4ec2e4c7b34941b2f68c7b0c0e38ccfef1a",
+    "src/gaze/pose.py": "b4d7a13851632230cb2021839af0c1f785d45bb02156648bdf775f039597231c",
+    "src/gaze/preprocessing.py": "426cfead056e9c78ff099be7c45331d929b9e0dc16275a54c181679e6e307dbd",
+    "src/gaze/seats.py": "bbc71c263de3252bce867b3cf051a04d795d9cb6250aa7c16b7378db450e03e6",
+    "src/gaze/video.py": "1792078909acba15ec028c3ea76fc07d7e49f5c989ab8bcd05ed2e719f09ab47",
+    "src/gaze/visualization.py": "7d3091bab3a04b5f029273e3b038262b17430c91aaaf36af19b0f6a1c735a2a1",
+    "src/gaze/__init__.py": "8788f1c1a335d11ab201e4bc8658c90daf7a0f4646e68a63d83d10604a835d9a",
+    "scripts/download_model.py": "535d608bad2a1f4fdb4f190fdd417b1b5e49f005d9ff4434d67e1cbbf6677d38",
+    "scripts/evaluate.py": "57086598bc1c2761c5e8a0de9a291ccced810669f2a433acfbb1d95d56310bf7",
+    "scripts/make_contact_sheet.py": "15474de47c4cacf66eca97a2c1e207bb3ebadc7d705d2ed089f6e8e032966a63",
+    "scripts/predict.py": "4f2c0fc76d6f9149c619ec9bafba7774317ef125894e291eeb5712bf455df4a0",
+    "scripts/prepare_data.py": "f7d490261bd4b73572bea7fc14931a61df311a77240f4779463c1d8b10bc7ad7",
+    "scripts/prepare_video.py": "65ad9c38372e898c80f0af3c4f8f10f553b208614031a27c6f1d2572220d569b",
+    "scripts/process_video.py": "d24e55b7e00b091433eb77f60b087ebc9a134ea3a42d7dd58d0b6390dc8a2821",
+    "scripts/spike.py": "121444a1e54b184a3a9838fc995b45048811c77411b310f49202c7e48573ebda",
+    "tests/test_baseline.py": "4530fddec0509f77ba745a97fb782bb22c4f7f4911dac57a77d72911a0a002af",
+    "tests/test_data.py": "90f0f9469c87a13424f301ac3e38611a11a583f0950f495e8ffdbd98c8fec4e3",
+    "tests/test_download_model.py": "2faf67ae6ab7ae9976f441e8fdae313694aa7eae0f8b4002759bccadebb27696",
+    "tests/test_evaluate_cli.py": "58c0da2ed067f45b3f62ef62d7e8c6923217f4e481884dd1ee656bce4e0d78a0",
+    "tests/test_evaluation.py": "86c1004517c20137f18a07165f78fd87737bf20ca76ddcff4282d1100a75060e",
+    "tests/test_events.py": "a328f949a20b2fae0c773114a82b5aadf6e2d5ebd113fe8fee481a2e46a2514a",
+    "tests/test_history.py": "5c3ab72b75f1032e09f09cec88de9220037db7091a4c5c674b5751a763c6b9f1",
+    "tests/test_manifest_validation.py": "ddb869716ed2e75d5c0ff9cfed5dad4d02548d245e0133835654d8b2efebac4d",
+    "tests/test_pipeline.py": "1e4b2ce65ee6eb6e42f7a644ddcf59b538b55fb8f0af012a75d6fdfdb9f94d65",
+    "tests/test_pose.py": "fa0e7bda188df3b594205431ed2fd8da1fc24b273be80709768c7ca69d311390",
+    "tests/test_preprocessing.py": "e8a40aa3448d6df43dc6a75a41149cab517714b91cad8b76c3b3c2240a70d4b6",
+    "tests/test_seats.py": "3d1404f6502725ed845bce74814a3fa679ee5f7cc9eb9bf078774beda3e4a1ca",
+    "tests/test_video.py": "9dafd4f5e3e7039ed82521e2a40bd7d51a68d2cfde9db12bfdd241daba96b78b",
+    "tests/test_video_download.py": "6fe5a40a2f66c8377ca7c76446d19d84a31013f4cc598aad4b98e669431955dd",
+    "requirements.txt": "7f57b5cb75a82b9a3c0b37fef283532e565ae864a78511f774e5b0e81bb65964",
+    "pyproject.toml": "03b32d0a6a9ba026f1daa2edda208b2c8816ee03912f2f099112b9f590915e52",
+    "data/annotations/fourpeople-seats.json": "f29402a96f829e8b2ad40894eff2d89db27ea05ac601bb0ac4d5fed42db7fb01",
+    "data/annotations/pointing04.json": "064b1a2470287403ede19d9a00b5140f734ac8bee983ccaac81cd63535433b98",
+    "data/annotations/samples.json": "82827bcb46524029c7c93d09ed39f6b0a9bbcbbb8712e55d8701518f4cf099b3",
+    "data/annotations/spike_ids.json": "df8fd65bca01cea58de8a6a859d1f92311b92c12f34be723d3d345335cc07b5f"
+  },
+  "scope": "Source refresh in existing independent environment; dependencies and independently downloaded assets retained. Not a fresh Git clone or a human verification.",
+  "checks": [
+    {
+      "arguments": [
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "result": "No broken requirements found.\n"
+    },
+    {
+      "arguments": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "result": "... ok\ntest_odd_source_edges_are_padded_instead_of_silently_truncated (test_video.VideoTests.test_odd_source_edges_are_padded_instead_of_silently_truncated) ... ok\ntest_seat_configuration_is_bound_to_video_when_hash_is_supplied (test_video.VideoTests.test_seat_configuration_is_bound_to_video_when_hash_is_supplied) ... ok\ntest_seat_gaps_and_events_use_video_source_time (test_video.VideoTests.test_seat_gaps_and_events_use_video_source_time) ... ok\ntest_source_time_is_independent_of_processing_time (test_video.VideoTests.test_source_time_is_independent_of_processing_time) ... ok\ntest_existing_mismatched_file_and_partial_are_preserved (test_video_download.VideoDownloadTests.test_existing_mismatched_file_and_partial_are_preserved) ... ok\ntest_oversized_response_fails_before_commit_and_removes_partial (test_video_download.VideoDownloadTests.test_oversized_response_fails_before_commit_and_removes_partial) ... ok\ntest_unicode_target_download_succeeds_with_legacy_console_encoding (test_video_download.VideoDownloadTests.test_unicode_target_download_succeeds_with_legacy_console_encoding) ... ok\n\n----------------------------------------------------------------------\nRan 96 tests in 1.890s\n\nOK\n"
+    },
+    {
+      "arguments": [
+        "scripts/predict.py",
+        "--input",
+        "data/samples/pointing04/person01145+0-15.jpg",
+        "--output",
+        "outputs/evidence/review-baseline.jpg"
+      ],
+      "exit_code": 0,
+      "result": "Saved 'outputs\\\\evidence\\\\review-baseline.jpg'; faces=1; processing_ms=11.61\nW0000 00:00:1792611429.101195   20660 face_landmarker_graph.cc:180] Sets FaceBlendshapesGraph acceleration to xnnpack by default.\nINFO: Created TensorFlow Lite XNNPACK delegate for CPU.\nW0000 00:00:1792611429.106430   17920 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.\nW0000 00:00:1792611429.116243    1768 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.\n"
+    },
+    {
+      "arguments": [
+        "scripts/predict.py",
+        "--input",
+        "data/samples/pointing04/person01145+0-15.jpg",
+        "--method",
+        "pose",
+        "--output",
+        "outputs/evidence/review-pose.jpg"
+      ],
+      "exit_code": 0,
+      "result": "Saved 'outputs\\\\evidence\\\\review-pose.jpg'; faces=1; processing_ms=12.33\nW0000 00:00:1792611430.797894   21296 face_landmarker_graph.cc:180] Sets FaceBlendshapesGraph acceleration to xnnpack by default.\nINFO: Created TensorFlow Lite XNNPACK delegate for CPU.\nW0000 00:00:1792611430.803244    4644 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.\nW0000 00:00:1792611430.813584   16556 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.\n"
+    },
+    {
+      "arguments": [
+        "scripts/make_contact_sheet.py",
+        "--output",
+        "outputs/evidence/review-contact-sheet.jpg"
+      ],
+      "exit_code": 0,
+      "result": "Saved 20 source-labeled validation examples to 'outputs\\\\evidence\\\\review-contact-sheet.jpg'\n"
+    }
+  ]
+}
