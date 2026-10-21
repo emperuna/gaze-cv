@@ -34,3 +34,7 @@ The 50% checkpoint label, a tag, closed planning Issues, and CI success alone do
 - [Independent clean-folder reproduction](reproduction.md): pinned environment/model/data reproduction and its human/Git-clone limitations.
 
 These records describe the reviewed development branch and its recorded source snapshots; no cp2-50 hand-in tag or submission is claimed.
+
+## Post-merge task acceptance
+
+See [the PR #44 acceptance reconciliation](task-reconciliation.md) for closed technical tasks, actionable Ready work, and remaining submission/validation requirements. Issue acceptance and PR merging do not by themselves complete an academic checkpoint.
