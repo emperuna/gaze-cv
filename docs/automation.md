@@ -1,6 +1,6 @@
 # Pull request automation
 
-Status: Proposed in the automation setup PR. Workflow files become the default-branch automation only after this PR is merged. The reviewed ruleset and Actions settings below have not been applied by adding these files.
+Status: Workflow files are merged into the default branch. The repository administrator enabled GitHub's combined Actions PR creation/review-approval setting on 22 October 2026 after explicit approval. Default workflow token permissions remain read-only; individual workflows request the permissions they need. Branch-protection settings are separate and are not changed by this permission fix.
 
 ## Intended contributor flow
 
@@ -47,14 +47,16 @@ GitHub may also show an approval prompt for pull_request runs caused by its buil
 
 ## Activation and enforcement
 
-The initial setup PR is opened manually because default-branch automation does not exist yet. Review the setup and merge it through the existing PR policy. After that, a repository administrator applies the reviewed settings:
+The initial setup PR was opened manually and merged before automatic PR creation became available. The Actions setting below is now applied. Its default token permissions stay read-only; only the combined creation/review-approval capability is enabled. The ruleset command remains a separate administrative action, not part of the Auto PR permission fix:
 
 ```powershell
 gh api --method PUT repos/emperuna/gaze-cv/actions/permissions/workflow --input .github/rulesets/actions.json
 gh api --method PUT repos/emperuna/gaze-cv/rulesets/25500005 --input .github/rulesets/main.json
 ```
 
-The Actions setting allows workflows to create PRs; GitHub combines creation and review-approval capability in this setting, but these workflows never approve PRs. CI retains read-only repository permissions.
+The Actions setting allows workflows to create PRs; GitHub combines creation and review-approval capability in this setting, but these workflows never approve PRs. CI retains read-only repository permissions. The Auto PR and Auto rebase workflows only call the trusted helper for PR creation, branch maintenance, notes, and CI dispatch; there is no review-submission endpoint, APPROVE event, or approval command. Human review remains required by the team's workflow.
+
+If Auto PR fails with HTTP 403 despite its job showing PullRequests write permission, check Settings > Actions > General > Workflow permissions and the combined "Allow GitHub Actions to create and approve pull requests" checkbox. The earlier failure on run 39655741037 occurred while this checkbox was disabled. Keep default token permissions read-only; do not add a personal token or automatic review approval to solve this error. Verify the fix by pushing a branch with a real change and no existing PR, then checking that github-actions[bot] creates exactly one PR and dispatches CI.
 
 The proposed ruleset requires a PR, one approval from a different collaborator, resolved review conversations, and the up-to-date Repository checks result from GitHub Actions. It blocks default-branch deletion and force pushes and removes the current owner bypass. Any eligible collaborator can review another member's PR; no named code owner is required. At least two participating collaborators are needed for peer approval. These administrative changes require explicit activation after review; files alone do not enforce them.
 
