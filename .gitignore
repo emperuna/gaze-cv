@@ -34,3 +34,6 @@ htmlcov/
 /data/processed/
 /models/downloads/
 /outputs/runs/
+
+# Project-local scratch, caches, and verification environments (F: only)
+/.work/

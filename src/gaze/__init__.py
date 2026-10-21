@@ -1,1 +1,1 @@
-"""GAZE package scaffold. Computer vision features are not implemented yet."""
+"""Local head-direction observations for instructor review, never misconduct claims."""
