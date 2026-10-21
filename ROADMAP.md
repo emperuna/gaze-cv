@@ -1,6 +1,6 @@
 # GAZE Development Roadmap
 
-Status: Planned work as of 22 October 2026. Repository boilerplate exists; application features remain unimplemented.
+Status: Implementation in progress as of 22 October 2026. Image/video processing and core session modules now exist; [the checkpoint report](docs/checkpoints/cp2-progress.md) maps measured evidence and remaining gates. Checkboxes below remain acceptance gates, not an automatic claim of submission.
 
 This roadmap breaks the [PRD](PRD.md) into checkpoint deliverables for the project team. It follows the supplied Milestone 1 checkpoint guide for the schedule and general submission expectations, Milestone 2 - Checkpoint Guide.pdf (pages 1-3) for the CP2 completion requirements, and the concept paper for GAZE's scope. The CP2 section distinguishes course requirements from additional GAZE commitments; other feature allocations remain the project's proposed plan.
 
@@ -25,11 +25,11 @@ Task leads below reflect the original suggested allocation, not exclusive owners
 
 ## Starting position and priorities
 
-The repository has been published on GitHub and contains project documentation, repository automation, and application boilerplate. Repository pushes remain manual unless separately authorized. Data acquisition, a running feasibility demonstration, per-member contributions, and checkpoint submissions are not established by the current repository.
+The repository contains documentation, automation, acquired permitted samples, and a working CPU image/video prototype with core session behavior. The [implementation report](docs/checkpoints/cp2-progress.md) records measurements, review fixes, and remaining limits. Per-member contributions, human fresh-clone verification, laptop performance, and checkpoint submissions remain unverified. Pushes require user authorization.
 
 CP1's listed deadline has passed, and CP2 is due on 22 October. Address missing CP1 prerequisites before treating CP2 as achievable. If the evidence cannot be completed by the listed deadline, report the actual state and agree on arrangements with the instructor. Keep the original checkpoint dates visible.
 
-Before development begins, the team should agree on these decisions:
+The team still needs to confirm the following acceptance and demonstration decisions; implementation evidence does not close these gates automatically:
 
 - [ ] Confirm course deadlines, timezone, and prior submission status.
 - [ ] Confirm an accessible labeled dataset and its permitted uses.
@@ -40,21 +40,13 @@ Before development begins, the team should agree on these decisions:
 
 All task checkboxes below represent future work or evidence that needs verification. Completing documentation alone does not complete a development checkpoint.
 
-The initial `data/` folder contains [acquisition notes](data/README.md) and empty `samples/` and `annotations/` placeholders for CP1. No images or labels are supplied. Create an ignored `raw/` folder when data is acquired and `processed/` only when saved derived inputs are needed. Generated contact sheets and annotated screenshots belong in `outputs/evidence/`.
-
-The `configs/` folder contains only [planning notes](configs/README.md). Add configuration files when working behavior needs adjustable settings: direction thresholds during baseline experiments, seat regions around CP3, and movement rules around CP4. No configuration loader or calibrated defaults exist yet.
-
-The initial `scripts/` folder contains only `spike.py`, `make_contact_sheet.py`, and its README. Both scripts are boilerplate for CP1. Add image prediction, video, and evaluation commands when CP2 work begins and live-camera support around CP4; these future entry points are not included in the initial scaffold.
-
-The initial `src/gaze/` scaffold contains only `__init__.py`, `landmarks.py`, `baseline.py`, and `visualization.py`, with no implemented behavior. The first spike will coordinate image loading and result saving. Add modules as checkpoint work needs them: reusable preprocessing, image prediction, video input, and evaluation for CP2, the main pose approach and seat association for CP3, and movement histories and exports for CP4. This is an incremental organization plan, not completed functionality; the [README](README.md#initial-package-organization) explains the initial responsibilities.
+The current package implements data acquisition, shared preprocessing, landmarks, the geometric baseline, an approximate PnP comparison, annotated image/video outputs, validation scoring, fixed-seat association, source-time histories, and tested movement rules. Scripts expose these responsibilities; add further organization only when real work needs it. See [README](README.md) for supported commands and [the data card](docs/evaluation/data-card.md) for acquired inputs.
 
 ## Supporting folders and tooling
 
-Keep model acquisition notes, the test plan, the evidence placeholder, proposal documentation, checkpoint documentation, and the pull request template in the initial scaffold. Create model download and generated run folders only when assets or output exist; their ignore rules remain in place.
+Small permitted samples, manifests, contact sheets, before/after evidence, and selected result reports are versionable. Full data, model downloads, generated video runs, project-local caches, and reproduction environments remain ignored on F:. [Evaluation notes](docs/evaluation/README.md) distinguish validation tuning from final held-out scoring. [Checkpoint evidence](docs/checkpoints/cp2-progress.md) distinguishes implemented behavior, measured results, and external verification still needed.
 
-Add notebooks only for actual exploration and test fixtures only when executable tests need inputs. The [evaluation plan](docs/evaluation/README.md) now defines CP2 evidence expectations; actual manifests, settings, and results remain future work. Document permissions, labels, subject/recording splits, comparison procedures, missing predictions, hardware, and event matching rules before the relevant evaluation. Create `docs/presentation/` for the final report, slides, demo instructions, contribution summary, results, and limitations when those materials are prepared.
-
-Repository automation checks now exist under `.github/`; [the automation guide](docs/automation.md) records activation status and the limits of those checks. Add application checks as behavior is implemented. Introduce separate development requirements when actual development tools are chosen. These deferred folders and tools do not change the checkpoint deliverables.
+CI now runs actual application tests as well as repository consistency/automation tests. No application check alone establishes course hand-in, per-member contributions, laptop performance, final test accuracy, or classroom/event validation.
 
 ## CP1 Proposal and feasibility
 
@@ -120,7 +112,7 @@ Unlabeled LFW images can demonstrate an operation but cannot supply head-directi
 
 Image validation depends on prepared data, preprocessing, and the image prototype; it does not wait for video integration. Video input can proceed alongside this path, with FPS evidence completed under `cp2-multi-face`. Hand-in requires both paths and fresh-clone verification. Detailed reporting expectations are in [the evaluation plan](docs/evaluation/README.md) and [checkpoint evidence notes](docs/checkpoints/README.md).
 
-The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms are illustrative. Use a layout and split justified by the actual data; no training split is required for a baseline that does not train. The 80% accuracy and 10 FPS goals remain final project targets, not minimum CP2 scores. Seat association, histories, movement events, live-camera support, and polished interfaces remain later work. Screenshots alone cannot satisfy the runnable-prototype requirement.
+The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms are illustrative. Use a layout and split justified by the actual data; no training split is required for a baseline that does not train. The 80% accuracy and 10 FPS goals remain final project targets, not minimum CP2 scores. Seat association, histories, and movement rules now have development implementations requiring later checkpoint acceptance. Live-camera support and a polished interactive interface remain later work. Screenshots alone cannot satisfy the runnable-prototype requirement.
 
 ## CP3 Core implementation and testing
 
@@ -213,6 +205,6 @@ A fallback narrows the demonstration; it does not establish that all PRD require
 
 ## Checkpoint hand-in routine
 
-For every checkpoint, summarize completed work, attach reproducible evidence, record measurements and limitations, and identify each member's contribution. Check the submission against the relevant completion gate and tag the actual hand-in commit with the guide's checkpoint tag. The repository owner handles GitHub pushes manually.
+For every checkpoint, summarize completed work, attach reproducible evidence, record measurements and limitations, and identify each member's contribution. Check the submission against the relevant completion gate and tag the actual hand-in commit with the guide's checkpoint tag. GitHub pushes require the repository owner's authorization.
 
-No application tasks or checkpoint tags are completed by adding this roadmap. Development begins after the team reviews the plan and resolves the immediate prerequisites.
+The checklists remain acceptance gates rather than an assertion that implemented work is unstarted. Review the implementation report and linked Issues before checking off a gate; no checkpoint tag or submission is claimed by this roadmap.

@@ -1,19 +1,16 @@
-# Script entry points
+# Command entry points
 
-These two command-line placeholders support the initial CP1 feasibility work. Run either with `--help` to read its intended purpose. Running without `--help` reports that the feature is unimplemented and exits unsuccessfully.
+Run from the repository root using the project interpreter after [README setup](../README.md). Reusable behavior belongs under src/gaze. All commands have --help; help output alone is not execution evidence.
 
-| Script | Planned responsibility |
+| Command | Behavior |
 | --- | --- |
-| `spike.py` | Load five real images, run a project-relevant operation, and save visible results. |
-| `make_contact_sheet.py` | Arrange at least 20 real samples into a labeled grid showing the dataset's variety. |
+| download_model.py | Retrieve the versioned CPU FaceLandmarker asset with bounded size and a fixed SHA256. |
+| prepare_data.py | Acquire the pinned Pointing04 archive, safely extract original JPEGs, and regenerate subject-separated manifests and the small permitted subset. --offline verifies a local archive. |
+| make_contact_sheet.py | Render a source-labeled validation contact sheet with attribution; never overwrite the manifest or source samples. |
+| spike.py | Process five permitted validation images and save annotated results plus metadata. |
+| predict.py | One image to annotated output and JSON; baseline or approximate pose method. |
+| evaluate.py | Score validation images only, with missing observations, metric denominators, manifest/model/code provenance, and a JSON report. Existing reports require --overwrite; input paths remain protected. |
+| prepare_video.py | Retrieve and verify the public-domain FourPeople proxy clip. |
+| process_video.py | Annotate saved CFR video, preserve source timestamps, and export observations/FPS; optional fixed seats, histories, and movement rules. |
 
-The contact sheet will show the input data; the spike will show that it can be processed. Neither script currently loads images, creates output, downloads assets, or supplies checkpoint evidence.
-
-```powershell
-python scripts/spike.py --help
-python scripts/make_contact_sheet.py --help
-```
-
-When implementation begins, the spike will handle image loading and result saving while reusing the planned landmark extraction, baseline direction prediction, and annotation behavior in `src/gaze/`. Keep reusable processing in that package. See the [package organization](../README.md#initial-package-organization) for its current responsibilities.
-
-Image prediction, video processing, and evaluation commands are deferred until CP2. The image prototype must accept one input image and save annotated baseline output through shared preprocessing under src/gaze. Its validation measurements do not wait for video integration; the three-face video task carries FPS evidence. Document the actual commands when implemented, without adding empty entry points now. Live-camera support is planned for CP4. Add those entry points when the corresponding work begins; whether video and camera share a command can be decided then. Their removal from the scaffold does not remove the roadmap requirements.
+Use a new video output directory for each run. Keep full data, model binaries, generated runs, and caches in their ignored local F: paths during this session. Do not use the locked test split for tuning. See [video evidence](../docs/evaluation/video.md) for exact timing scope and [checkpoint report](../docs/checkpoints/cp2-progress.md) for actual results and incomplete verification.

@@ -1,6 +1,6 @@
 # Evaluation plan
 
-Status: CP2 planning only, aligned with Milestone 2 - Checkpoint Guide.pdf (pages 1-3). No acquired dataset, frozen manifests, executable evaluator, or measured results are supplied here. See [the roadmap](../../ROADMAP.md#cp2-baseline-and-initial-progress) and [task backlog](../../TASK.md).
+Status: Protocol and implementation evidence as of 22 October 2026, aligned with Milestone 2 - Checkpoint Guide.pdf (pages 1-3). The data card, frozen split manifests, validation evaluator, and measured reports now exist; final test scoring remains locked. See [the roadmap](../../ROADMAP.md#cp2-baseline-and-initial-progress) and [task backlog](../../TASK.md).
 
 ## Data and splits
 
@@ -25,3 +25,9 @@ Image scoring depends on the image prototype and prepared validation data, not o
 Under cp2-multi-face, use an authorized saved clip with at least three simultaneously visible faces. Record clip selection and permitted use, source timestamps, missed observations, laptop/CPU, OS, dependency versions, resolution, face count, number of frames, elapsed processing time, and which stages timing includes. State warm-up and repeated-run procedures before measuring; save the command and results. Report FPS separately from image accuracy. The 10 FPS goal is a final project target. Seat identity and temporal-event accuracy are not established by this demonstration.
 
 Detailed seat consistency and event matching rules will be specified when their labeled footage and implementation exist. Keep unsupported metrics explicitly unvalidated.
+
+## Recorded development results
+
+The [implementation report](../checkpoints/cp2-progress.md) links the baseline and approximate pose validation runs. Both use the same 240 eligible images and unknown/failure accounting. The baseline down ratio was selected using these validation results; its score is a development estimate, not an independent generalization test. The approximate PnP method uses nominal intrinsics and fixed prior angle thresholds and currently performs worse; retain that result rather than claiming improvement.
+
+The CLI deliberately exposes only validation scoring. Report files include the source Git revision, input/model/settings hashes, and hashes of the implementation files. Refreshed validation reports bind the reviewed source to revision 827679e; their dirty flag includes pending documentation/evidence changes. Verify implementation hashes and refresh measurements after a behavior change before hand-in.

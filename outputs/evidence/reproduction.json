@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-22",
+  "method": "Independent source-copy folder and new virtual environment; not a Git clone or another human team member verification",
+  "existing_raw_data_copied": false,
+  "existing_model_copied": false,
+  "existing_virtual_environment_copied": false,
+  "python": "3.12.10",
+  "os": "Windows-10-10.0.19045-SP0",
+  "cpu_identifier": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+  "write_locations": "All project, environment, downloads, scratch, pip, matplotlib, XDG and Python bytecode cache paths configured on drive F",
+  "source_snapshot_sha256": "c3b6a35efcf9756220db8f4bec7a9b34440aa9d2ded3ce3cc7ef9cf00cf059bd",
+  "source_files_sha256": {
+    "data/annotations/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/annotations/fourpeople-seats.json": "aee5dfbaae7d3f22695dfb1724ca4a15d7b3966db8554265a7c017149fe3f0de",
+    "data/annotations/pointing04.json": "ef9d334f78eeb6f645b6c44a16df52f060d15221d98a8f286bf5a1b448edc5a3",
+    "data/annotations/samples.json": "6e624e5551809e0b1fceda0a89011a4eb407a2ba8ecfbcb8dab1c214bcd28094",
+    "data/annotations/spike_ids.json": "da56ea07af0cbaed92d09e48233e3c0ce18a9b0fbd3e57df97d2f8f3b707c213",
+    "data/samples/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/samples/pointing04/person01106-60-15.jpg": "4cfdc238fca24ca8b4a72a449de85ee32b4a8f35aebd792dc7aa9af2566d63ea",
+    "data/samples/pointing04/person01142+0-60.jpg": "314ca5a3bd03c4de03d577453ab6187d84e7e5eb13f7eddbd4a826ce393746f3",
+    "data/samples/pointing04/person01145+0-15.jpg": "77113751097123bc8a33193fd547091f36708029f29f263f4f517df080c4c258",
+    "data/samples/pointing04/person01148+0+30.jpg": "5e1186ad2f1cc93f55e9e9d6f5f25529c90d1eb266d527c5bc610f12cf375cd7",
+    "data/samples/pointing04/person02106-60-15.jpg": "65b0804182afa6377d99042c912def6bbc84d781f10bdaa07884c9300462be99",
+    "data/samples/pointing04/person02142+0-60.jpg": "b4529b087e76d3a73c280e585929001bea983336e1a33230773ee2932722fa88",
+    "data/samples/pointing04/person02145+0-15.jpg": "ce64957b4fe06e4817cd20400038331986535a16e971841a3d1f5bb954defc5d",
+    "data/samples/pointing04/person02148+0+30.jpg": "ce3ca48f81514c205e75c187961326801a1da9560a16b080a30692ca4e863a25",
+    "data/samples/pointing04/person03106-60-15.jpg": "a5924b16722f6aa35d682032f687f71ace051574f5c94381e40f8cb13cf74247",
+    "data/samples/pointing04/person03142+0-60.jpg": "506b439e0f1d265f9bb601508c3980872da1b1ec34af24b004af418eafec1603",
+    "data/samples/pointing04/person03145+0-15.jpg": "f2e2f2fc1f08fdda00bcba82333c0be3cc6dd1cb6553413f86595dbf865eb1cc",
+    "data/samples/pointing04/person03148+0+30.jpg": "c7e91f53d1efe6ec31088fb9724a352962fa17aa1c669cc38dbf3b4c66ca0e17",
+    "data/samples/pointing04/person04106-60-15.jpg": "7bedd4e0fa5a4489bd07e89b9a778cf14c3647eb05e05a9dfb4b33915d5538e2",
+    "data/samples/pointing04/person04142+0-60.jpg": "bb8246b92a1b8428e502732e6026847466fad80909570d5072b75a8bd08584ec",
+    "data/samples/pointing04/person04145+0-15.jpg": "91f5d81bf80a0c1b2248cc63a254e2b08c703d56fa0c935265ebcfa3b6b50c51",
+    "data/samples/pointing04/person04148+0+30.jpg": "ed6d640bf23a353782d77f92c9d5164c227f9035be10e829251b8e403c710ebe",
+    "data/samples/pointing04/person05106-60-15.jpg": "d72b00a8edf0d7814231b7bdc6bc04a959096e739e701fc538c0389bfa006dfe",
+    "data/samples/pointing04/person05142+0-60.jpg": "49447cd8ea35fbcf1291f275cfa273a7bc086ab8de3889f6edc1bee4788aaf48",
+    "data/samples/pointing04/person05145+0-15.jpg": "e3e8c3c35d5cf8db667fd8ea21d3cc01ee2eba52292b02c854526cd6f64e705a",
+    "data/samples/pointing04/person05148+0+30.jpg": "0d1d42abb06e0c495809b135176e90177b44a3d2b45459626b65f0ebc8855c24",
+    "data/samples/pointing04/README.md": "9a5b48eb466dc869ccbd6245484aaa219aa856d7f1d11d2d23cd7f47a108c2cb",
+    "models/README.md": "5227f6c463469121ad9a72ef1b0cc9bc6ba400953f11e5222fb8b3680aba330f",
+    "pyproject.toml": "e219ae78129beae26947618bfc9c2fc338cdd1389229042116a0239447127192",
+    "README.md": "5deb7748c17fbf37fd34634a7c78927f60f502d4ef387ce101aa7cb78db00908",
+    "requirements.txt": "0c52d8c2025a4097e155d809afa67c97b321e77eaecac4e649f061aadf913553",
+    "scripts/download_model.py": "81392217ac154a60f1a1de1373d0d33642f6b36af7a065427c8299c70501372d",
+    "scripts/evaluate.py": "af1f6659dadb1e6f9d73e99382c07b31a949609dcca97b597033d069a1748354",
+    "scripts/make_contact_sheet.py": "96b01ef2aeeef10842ae33c966faad6cdc252321ae277c91d624b6d848cc5fd5",
+    "scripts/predict.py": "bc1436a83cecdde8ecf61fefc7afeeb2a6f7c6c23bcdbbf2f4e5229181a0888c",
+    "scripts/prepare_data.py": "136d4278f4928a5577a37eeb7abd41cd9df1472cc664e1b2b0f7130836d1ed3d",
+    "scripts/prepare_video.py": "7761dbf8649a8ff6a141e52b354e0757e256a921c03b6fb583be35c047c09995",
+    "scripts/process_video.py": "aa096915ce152925c4dcec264163208c2e8f8aa97997306cebbc8749b7f585c2",
+    "scripts/README.md": "16827b8ea9113cfcee2468ca3c3e72f4547dea5faf5f6e4945319c40b895fb39",
+    "scripts/spike.py": "602b28ad20661ae04d55ca2d7426cb166cbef6f06862179e545b367b9638e119",
+    "src/gaze/__init__.py": "a1c51e6779fe5a2aee4321769a7e9b91ef2377f57ac0ef338213dfe3fe885365",
+    "src/gaze/baseline.py": "60d836c3b226b0dbe402637899740e1fd323b693325e4b526ea43db3fcd6c8e1",
+    "src/gaze/data.py": "7d6f31e58a76c8f0894dc8ee210f40f192c1fe3fbf8eec1a7edc6b3d705e6eb3",
+    "src/gaze/evaluation.py": "e3026c23e7b77c19b220ea96fd89313f28cc00861cadc57cf0cb6e11a5a9c522",
+    "src/gaze/events.py": "3505452d91ab79acc71409f41749f61239583436cf7989523833bc6476bd6291",
+    "src/gaze/history.py": "183fab868e71df40919196d2ef47aae53215f2ea2643efc10e0b745eefe2f35b",
+    "src/gaze/landmarks.py": "f18a6d56fde56ebc79427dab1e831db810fd3e673a0cfabc114d4ddc5b948322",
+    "src/gaze/pipeline.py": "73432ea704d010c0b805832d223d90d2ff4d7d7cbd44ae4a12c1bb1352b75c77",
+    "src/gaze/pose.py": "e0517cb08cbae567207276ce1e5410700a3ae8d928eb8acf3c3eea70b38ea5dc",
+    "src/gaze/preprocessing.py": "c924310d5e4ad7462cc3137ebb29ea9e27118ccfb1795c1b977a2f5fde8f473c",
+    "src/gaze/seats.py": "bbc71c263de3252bce867b3cf051a04d795d9cb6250aa7c16b7378db450e03e6",
+    "src/gaze/video.py": "7809eb42fb250176f816d2dbc4a9613f07d6e8e0449075ee3acf65bb432b8d13",
+    "src/gaze/visualization.py": "67f6e65c28cfaece2c80c662bec38f417fd398004b3efb335aa2870b30e67601",
+    "tests/README.md": "9b75639e3dee762b03a6f3e6ec1dada11d589ebe926ef8a3e5ae0f33a2ba8ffd",
+    "tests/test_baseline.py": "6774c94714d0b5370d17696d7337668b9b9a747bdb7d6c09c4641f4f40c3a452",
+    "tests/test_data.py": "90f0f9469c87a13424f301ac3e38611a11a583f0950f495e8ffdbd98c8fec4e3",
+    "tests/test_evaluation.py": "86c1004517c20137f18a07165f78fd87737bf20ca76ddcff4282d1100a75060e",
+    "tests/test_events.py": "82bc2c0827fced70a16b8f73c269fb4d3da9da0ea75cdcc37f4a9e89b5fc59e5",
+    "tests/test_history.py": "5c3ab72b75f1032e09f09cec88de9220037db7091a4c5c674b5751a763c6b9f1",
+    "tests/test_pipeline.py": "01f53487259787ca9ed8900544f658622e59a4f77af99e0dfd69657b05ea4095",
+    "tests/test_pose.py": "24543e8519eb1aaecbbe8a99a0546549188573dd6f63bfb675a19e426b8a44db",
+    "tests/test_preprocessing.py": "6b387876e2e2e684998e3c9b5cfb234e798609a0b4ae24036d8b8c38254e0ddd",
+    "tests/test_seats.py": "3d1404f6502725ed845bce74814a3fa679ee5f7cc9eb9bf078774beda3e4a1ca",
+    "tests/test_video.py": "cadea5b1c819a49a9054c3138ce9ffb61c5d600a714f15e7c764e40c349c5105"
+  },
+  "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+  "dataset_archive_sha256": "5629cb428f38c65ba0220f480ea53ba859f56fbfc5a34e7396a981f0485ed209",
+  "pip_check_passed": true,
+  "application_unit_tests_passed": 70,
+  "commands": [
+    {
+      "arguments": [
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.8482361999995192
+    },
+    {
+      "arguments": [
+        "scripts/download_model.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.27713040000162437
+    },
+    {
+      "arguments": [
+        "scripts/prepare_data.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 100.56157950000124
+    },
+    {
+      "arguments": [
+        "scripts/make_contact_sheet.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.9418851999980689
+    },
+    {
+      "arguments": [
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.563392299998668
+    },
+    {
+      "arguments": [
+        "scripts/predict.py",
+        "--input",
+        "data/samples/pointing04/person01145+0-15.jpg",
+        "--output",
+        "outputs/evidence/final-baseline.jpg"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.1378952999984904
+    },
+    {
+      "arguments": [
+        "scripts/predict.py",
+        "--input",
+        "data/samples/pointing04/person01145+0-15.jpg",
+        "--method",
+        "pose",
+        "--output",
+        "outputs/evidence/final-pose.jpg"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.1317570999999589
+    },
+    {
+      "arguments": [
+        "scripts/make_contact_sheet.py",
+        "--output",
+        "outputs/evidence/final-contact-sheet.jpg"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.40526089999912074
+    },
+    {
+      "arguments": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.111160500000551
+    },
+    {
+      "arguments": [
+        "scripts/evaluate.py",
+        "--help"
+      ],
+      "exit_code": 0,
+      "note": "Late evaluation CLI threshold flags copied and parser smoke checked; full validation results recorded separately."
+    },
+    {
+      "arguments": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.568064700000832
+    },
+    {
+      "arguments": [
+        "scripts/process_video.py",
+        "--help"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.11763490000157617
+    },
+    {
+      "arguments": [
+        "scripts/evaluate.py",
+        "--help"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.5064168000026257
+    }
+  ],
+  "outputs": {
+    "final-baseline.jpg": {
+      "bytes": 20490,
+      "sha256": "17981c18e2b2273c221009a9ca910846047375132ef98a5e60d9b425e58a5670"
+    },
+    "final-baseline.json": {
+      "bytes": 3202,
+      "sha256": "78416097e0e5b70d928d42608bdd4e4c4238ca6f99d9ba3a32d1ea697c0e9c0c"
+    },
+    "final-pose.jpg": {
+      "bytes": 20490,
+      "sha256": "17981c18e2b2273c221009a9ca910846047375132ef98a5e60d9b425e58a5670"
+    },
+    "final-pose.json": {
+      "bytes": 3472,
+      "sha256": "3ffb7776acae1e014230d8a6dd7bd3d800c13864c7146c05fd3d04bfcddedd48"
+    },
+    "final-contact-sheet.jpg": {
+      "bytes": 376938,
+      "sha256": "582c4a4f87f313dcfc58010b5f65a1856f0cabd7fa3e261968676a184d37ab99"
+    }
+  },
+  "final_refresh_note": "Final video/event history-gap guard and evaluation CLI source refreshed; full application tests and both parser smoke checks rerun in the same independently installed environment.",
+  "post_verification_source_normalization": [
+    {
+      "file": "scripts/make_contact_sheet.py",
+      "verified_snapshot_sha256": "96b01ef2aeeef10842ae33c966faad6cdc252321ae277c91d624b6d848cc5fd5",
+      "current_lf_sha256": "a9f926afbd48aa52dd13b46b5f38a9885ee8ed3b67d58f5ab40884a10e14aa86",
+      "change": "line endings only; text and Python AST identical"
+    },
+    {
+      "file": "scripts/spike.py",
+      "verified_snapshot_sha256": "602b28ad20661ae04d55ca2d7426cb166cbef6f06862179e545b367b9638e119",
+      "current_lf_sha256": "d5e6b176ec5edeaa775a46b24fe3eb4b050de0a68f6366b22c2898a36f0c6734",
+      "change": "line endings only; text and Python AST identical"
+    },
+    {
+      "file": "src/gaze/__init__.py",
+      "verified_snapshot_sha256": "a1c51e6779fe5a2aee4321769a7e9b91ef2377f57ac0ef338213dfe3fe885365",
+      "current_lf_sha256": "8788f1c1a335d11ab201e4bc8658c90daf7a0f4646e68a63d83d10604a835d9a",
+      "change": "line endings only; text and Python AST identical"
+    },
+    {
+      "file": "src/gaze/baseline.py",
+      "verified_snapshot_sha256": "60d836c3b226b0dbe402637899740e1fd323b693325e4b526ea43db3fcd6c8e1",
+      "current_lf_sha256": "92b882ab3365f4d0db80d9c3ca2a689ef8a2a28f23d9cb6d53008f0020d75765",
+      "change": "line endings only; text and Python AST identical"
+    },
+    {
+      "file": "src/gaze/landmarks.py",
+      "verified_snapshot_sha256": "f18a6d56fde56ebc79427dab1e831db810fd3e673a0cfabc114d4ddc5b948322",
+      "current_lf_sha256": "d1c97e1dcd940a939b4fd20f1ec3591d9c4e535f2f3203b64ed332c11667150c",
+      "change": "line endings only; text and Python AST identical"
+    },
+    {
+      "file": "src/gaze/pipeline.py",
+      "verified_snapshot_sha256": "73432ea704d010c0b805832d223d90d2ff4d7d7cbd44ae4a12c1bb1352b75c77",
+      "current_lf_sha256": "1e25ee19638ea7ebccd662ee2fabb4ec2e4c7b34941b2f68c7b0c0e38ccfef1a",
+      "change": "line endings only; text and Python AST identical"
+    },
+    {
+      "file": "src/gaze/visualization.py",
+      "verified_snapshot_sha256": "67f6e65c28cfaece2c80c662bec38f417fd398004b3efb335aa2870b30e67601",
+      "current_lf_sha256": "7d3091bab3a04b5f029273e3b038262b17430c91aaaf36af19b0f6a1c735a2a1",
+      "change": "line endings only; text and Python AST identical"
+    }
+  ]
+}

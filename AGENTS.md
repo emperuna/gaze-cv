@@ -4,7 +4,9 @@
 
 GAZE is a classroom head movement review aid using one fixed camera. Head movement does not establish cheating; outputs support instructor review and must not assert misconduct or make disciplinary decisions.
 
-The repository currently contains boilerplate only. Package modules contain descriptions, and scripts expose help and report that their features are unimplemented. Creating or updating the task backlog does not authorize application development. Work on the scope requested in the current conversation; start implementation tasks only when the user requests development work.
+The repository contains a working CPU image/saved-video prototype, acquired permitted data, validation measurements, and tests. Later capabilities and academic submission gates remain incomplete or unvalidated; read the current checkpoint report rather than assuming a backlog item is done. Work on the scope requested in the current conversation; a backlog alone does not authorize development.
+
+For this implementation session, the user requires all local writes on disk F only. Use the project .venv and .work directories for environments, caches, temporary files, and verification. Set process-local TEMP, TMP, PIP_CACHE_DIR, MPLCONFIGDIR, and XDG_CACHE_HOME as in README before installs or MediaPipe runs. Do not change Windows files/settings, install global packages/drivers, or modify other disks. Prefer sandbox execution; any necessary filesystem escalation must remain scoped to this project on F.
 
 ## Start every agent session
 
@@ -28,14 +30,12 @@ Root AGENTS.md is the canonical instruction source. Agents that do not discover 
 
 Use the PRD for behavior, the roadmap for checkpoint obligations, and TASK.md for task boundaries. Report inconsistencies rather than silently changing requirements or course dates. Follow direct user instructions over these repository conventions.
 
-## Keep the initial scaffold small
+## Keep organization focused
 
-- Keep `src/gaze/` limited to `__init__.py`, `landmarks.py`, `baseline.py`, and `visualization.py` until implementation needs another module.
-- Keep `scripts/` limited to `spike.py`, `make_contact_sheet.py`, and its README at this stage. Scripts coordinate tasks; reusable behavior belongs in the package.
-- Keep `configs/` as planning notes until adjustable behavior exists. Do not invent calibrated defaults.
-- Keep input samples in `data/samples/`, labels in `data/annotations/`, and permitted screenshots/contact sheets in `outputs/evidence/`.
-- Add later folders and dependencies when real work needs them. Preserve ignore rules for private data, downloaded models, and generated runs.
-- Keep the PRD, architecture, roadmap, contributor instructions, and task backlog at the repository root. Do not introduce a web frontend, backend service, database, or training framework without a requirement.
+- Reusable image, pose, video, data, evaluation, seat/history, and movement behavior belongs under src/gaze/; scripts coordinate commands.
+- Add modules/configuration only for implemented responsibilities. Keep the PRD, architecture, roadmap, instructions, and backlog at the root.
+- Keep permitted small examples in data/samples/, labels and manifests in data/annotations/, reviewed evidence in outputs/evidence/, and large generated runs/models/data in ignored local directories.
+- Do not add a web frontend, backend service, database, training framework, or identity recognition without a requirement.
 
 ## Shared task claiming
 
@@ -68,19 +68,11 @@ GitHub Issues and Projects become the authoritative team assignment and status r
 
 ## Python setup and verification
 
-The scaffold declares Python 3.10 or newer. From the repository root in PowerShell:
+Follow README for the project-local F: environment and cache setup, pinned install, verified model download, and supported commands. The checked-in examples can run the image prototype; prepare_data.py acquires the full selected dataset and prepare_video.py acquires the permitted video proxy. Neither acquisition replaces source-grounded label checks.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -c "import gaze; print(gaze.__doc__)"
-.\.venv\Scripts\python.exe scripts/spike.py --help
-.\.venv\Scripts\python.exe scripts/make_contact_sheet.py --help
-```
+For documentation, check local links and git diff --check. For application changes, run meaningful tests with the project interpreter: python -m unittest discover -s tests -v. Tests cover labels, geometry, preprocessing, gaps, timestamps, ambiguity, metric denominators, and I/O failures without requiring private footage, a camera, or full model/dataset downloads. Run actual model integration separately when affected. Record commands/results and any unperformed checks; agent clean-folder reproduction does not establish another human member's review or laptop performance.
 
-Installation can download the packaging tool. CV dependencies have not been selected. Both scripts intentionally fail with an unimplemented message without `--help`; help output is not a working feasibility spike.
-
-Run checks appropriate to actual changes. For documentation, check links and `git diff --check`. For future application behavior, add meaningful checks for direction conventions, timing, missing observations, association ambiguity, and comparable evaluation. Repository workflow checks and automation tests are defined in .github; they become active after the setup PR is merged. Run `python .github/automation.py check` and `python -m unittest discover -s .github/tests -v` for repository automation. There is no application test suite yet; do not report CV features as tested by these checks or create empty tests. Routine checks should not require private footage, a camera, or full dataset downloads. State any checks that could not be performed.
+Repository automation is separate: python .github/automation.py check and python -m unittest discover -s .github/tests -v. Current CI includes application tests; workflow tests do not establish CV accuracy. Keep test artifacts/caches inside project-local F: locations for this session.
 
 ## Data and evaluation rules
 
