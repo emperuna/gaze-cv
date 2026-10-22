@@ -1,6 +1,6 @@
 # Tasks
 
-This is the GAZE backlog derived from [ROADMAP.md](ROADMAP.md) and [PRD.md](PRD.md). All 40 tasks have linked GitHub Issues; CP2 has nine planned tasks aligned with the Milestone 2 guide. After the PR #44 acceptance reconciliation, shared work remains self-claimable: 19 tasks are Done (including the two existing administrative completions), 6 are Ready, 13 remain Backlog, and 2 hand-in tasks remain Blocked. See the [per-Issue acceptance audit](docs/checkpoints/task-reconciliation.md). Creating or claiming planning work does not start application development.
+This is the GAZE backlog derived from [ROADMAP.md](ROADMAP.md) and [PRD.md](PRD.md). All 40 tasks have linked GitHub Issues; CP2 has nine planned tasks aligned with the Milestone 2 guide. After the PR #44 acceptance reconciliation and fresh-clone spike verification, shared work remains self-claimable: 20 tasks are Done (including the two existing administrative completions), 5 are Ready, 13 remain Backlog, and 2 hand-in tasks remain Blocked. See the [per-Issue acceptance audit](docs/checkpoints/task-reconciliation.md). Creating or claiming planning work does not start application development.
 
 <!-- policy: Follow AGENTS.md and the scope authorized in the current conversation.
      policy: Creating this backlog does not authorize implementation, external publication, or a task-draining loop.
@@ -137,10 +137,10 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Verification**: Compare saved annotated examples against their source images.
   - **Evidence**: Saved annotations visibly match source face regions and landmarks; missing observations have an explicit display instead of a fabricated direction. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
 
-- [ ] Implement the reproducible five-image feasibility spike
+- [x] Implement the reproducible five-image feasibility spike
   - **ID**: cp1-spike
-  - **Assignee**: Unassigned
-  - **Status**: Ready
+  - **Assignee**: @emperuna (completion attribution)
+  - **Status**: Done
   - **Milestone**: CP1
   - **Tags**: baseline, tooling
   - **Files**: `scripts/spike.py`, `README.md`, `outputs/evidence/`
@@ -148,7 +148,7 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Related work**: cp1-landmarks, cp1-annotations
   - **Acceptance**: A project-relevant face/landmark operation runs on five actual samples from a fresh clone and saves inspectable results and a screenshot; this need not claim completed direction classification.
   - **Verification**: Follow documented setup and spike instructions from a fresh clone and count the five processed inputs and their outputs.
-  - **Remaining**: The five-image implementation and outputs exist, but the recorded independent run used a source copy. Remaining: run the documented spike from an actual fresh Git clone and record its five outputs and screenshot. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
+  - **Evidence**: Actual Git clone of main at bf6002f, new pinned CPU environment, newly downloaded checksum-verified model, five real annotated validation outputs, screenshot, successful command logs and portable file checksums. Verified by the coding agent assisting @emperuna on 22 October 2026. One wrong direction and one unknown are retained; another member/laptop run remains #41. See [fresh-clone verification](outputs/evidence/spike-fresh-clone/README.md).
 
 - [x] Generate the labeled twenty-sample contact sheet
   - **ID**: cp1-contact-sheet
@@ -185,10 +185,10 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Files**: `docs/checkpoints/`, `README.md`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/11
   - **Related work**: cp1-spike, cp1-contact-sheet, cp1-proposal
-  - **Blocked by**: cp1-spike, cp1-proposal
+  - **Blocked by**: cp1-proposal
   - **Acceptance**: All CP1 gates are checked, every member has a contribution from their own account, the three-minute pitch is rehearsed, and the actual hand-in commit is identified. A tag name alone is insufficient.
   - **Verification**: Walk through ROADMAP CP1 gates and demonstrate the spike and contact sheet; repository owner handles tagging/pushing when authorized.
-  - **Remaining**: Hand-in acceptance still needs the final proposal (#10), fresh-clone spike evidence (#8), each member own-account contribution, a rehearsed three-minute pitch, and the actual authorized hand-in revision. Code merge supplies none of the missing human/submission evidence. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
+  - **Remaining**: Hand-in acceptance still needs the final proposal (#10), each member own-account contribution, a rehearsed three-minute pitch, and the actual authorized hand-in revision. Code merge supplies none of the missing human/submission evidence. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
 
 - [x] Prepare the data card and source-separated evaluation inputs
   - **ID**: cp2-split-protocol

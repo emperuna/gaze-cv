@@ -38,7 +38,7 @@ The team still needs to confirm the following acceptance and demonstration decis
 - [ ] Agree on authorized video collection, access, and retention.
 - [ ] Confirm whether the proposed local preview satisfies the demonstration needs.
 
-All task checkboxes below represent future work or evidence that needs verification. Completing documentation alone does not complete a development checkpoint.
+Unchecked items below represent work or evidence that still needs verification. A completed individual gate does not by itself complete a development checkpoint.
 
 The current package implements data acquisition, shared preprocessing, landmarks, the geometric baseline, an approximate PnP comparison, annotated image/video outputs, validation scoring, fixed-seat association, source-time histories, and tested movement rules. Scripts expose these responsibilities; add further organization only when real work needs it. See [README](README.md) for supported commands and [the data card](docs/evaluation/data-card.md) for acquired inputs.
 
@@ -67,7 +67,7 @@ CI now runs actual application tests as well as repository consistency/automatio
 
 - [ ] The proposal covers all nine guide sections.
 - [ ] Data is acquired and a labeled 20-sample contact sheet is committed.
-- [ ] The five-image spike runs from a fresh clone and its screenshot is committed.
+- [x] The five-image spike runs from a fresh clone and its screenshot is committed. See [actual fresh-clone evidence](outputs/evidence/spike-fresh-clone/README.md).
 - [ ] Each member has at least one contribution from their own account.
 - [ ] The actual hand-in commit is identified for the `cp1-proposal` tag.
 
