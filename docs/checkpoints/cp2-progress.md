@@ -14,7 +14,7 @@ Permitted source acquisition, traceable head-direction labels, subject-separated
 | Validation measurements | [Initial baseline](../../outputs/evidence/cp2-validation-initial.json), [selected baseline](../../outputs/evidence/cp2-validation.json), [approximate pose](../../outputs/evidence/cp3-pose-validation.json) | Validation influenced baseline threshold selection; final test scoring remains locked. |
 | Multi-face saved video and FPS | [Video procedure/results](../evaluation/video.md), [benchmark](../../outputs/evidence/video-benchmark.json), [reviewed overlays](../../outputs/evidence/video-detection-review.jpg) | Office proxy and desktop CPU; no target-laptop or classroom result. |
 | Fixed-seat histories and rules | [Seat reference/scope](../evaluation/seats.md), synthetic/integration tests and ignored full run exports | Rules are behavior-tested; real movement-event precision/recall and writing false alerts remain unvalidated. |
-| Clean environment reproduction | [Reproduction record](reproduction.md) | Agent clean-folder verification is recorded separately from a fresh Git clone and another human member's verification. |
+| Clean environment reproduction | [Reproduction record](reproduction.md), [actual fresh-clone spike](../../outputs/evidence/spike-fresh-clone/README.md) | The agent desktop fresh-clone five-image check passed for #8. Another human member on the intended laptop remains #41. |
 
 ## Verification commands
 
@@ -77,7 +77,7 @@ The three agents' implementation work is assistance for the current human collab
 
 ## Team tracking snapshot
 
-After the authorized acceptance reconciliation, 19 tasks are Done (17 newly closed technical Issues plus the two existing administrative completions), 6 are Ready, 13 remain Backlog, and 2 hand-in tasks remain Blocked. No Review task remains solely because PR #44 was not linked with closing keywords. See [per-Issue reasons and remaining requirements](task-reconciliation.md). Human/laptop verification and fresh-clone spike checks are actionable Ready work; team/hand-in gates remain incomplete. Existing member attribution is preserved and unfinished shared claims are released. No checkpoint tag or overall percentage is inferred.
+After acceptance reconciliation and the fresh-clone #8 verification, 20 tasks are Done (18 accepted technical tasks plus the two existing administrative completions), 5 are Ready, 13 remain Backlog, and 2 hand-in tasks remain Blocked. No Review task remains solely because PR #44 was not linked with closing keywords. See [per-Issue reasons and remaining requirements](task-reconciliation.md). The fresh-clone spike is verified with its screenshot and logs; human/laptop verification remains actionable Ready work; team/hand-in gates remain incomplete. Existing member attribution is preserved and unfinished shared claims are released. No checkpoint tag or overall percentage is inferred.
 
 ## Implementation review fixes
 

@@ -2,24 +2,26 @@
 
 Reconciled on 22 October 2026 against the merged implementation at `fbf081d5add783a2874a964c4e4eebd5702862ae` and the live GitHub Issue criteria. [PR #44](https://github.com/emperuna/gaze-cv/pull/44) merged six atomic implementation/evidence commits. This audit accepts individual task evidence; it does not certify a checkpoint submission or an overall completion percentage.
 
+Updated on 22 October 2026 after [actual fresh-clone verification](../../outputs/evidence/spike-fresh-clone/README.md) satisfied #8. The original PR #44 reconciliation accepted seventeen technical tasks; this follow-up adds one completed feasibility task. Other acceptance criteria remain unchanged.
+
 ## Result
 
 | Status | Tasks |
 | --- | ---: |
-| Done | 19 |
-| Ready | 6 |
+| Done | 20 |
+| Ready | 5 |
 | Review | 0 |
 | Blocked | 2 |
 | Backlog | 13 |
 
-Seventeen implementation Issues are newly accepted and closed. The two pre-existing administrative completions and their attribution are retained. Ready work is unassigned and available to any collaborator; existing partial implementation remains attributed through PR #44 and its commits. No task is automatically claimed by this reconciliation.
+Seventeen implementation Issues were accepted in the original PR #44 reconciliation; #8 is additionally accepted after fresh-clone verification. The two pre-existing administrative completions and their attribution are retained. Ready work is unassigned and available to any collaborator; existing partial implementation remains attributed through PR #44 and its commits. No task is automatically claimed by this reconciliation.
 
 ## Acceptance rules
 
 - Compare each Issue with its own acceptance and verification requirements. A merged PR, passing CI, or another task awaiting a laptop does not independently prove or prevent acceptance.
 - Completed history/rule mechanics have labeled synthetic and saved-video integration evidence. Seat-consistency measurement and real movement-event/writing accuracy remain separate unfinished tasks; neither is inferred from unit tests.
 - The three historical desktop video timing runs satisfy the recorded CP2 proxy demonstration scope. They retain their original provenance; a current integrated workload on the intended laptop remains unfinished under #29.
-- The five-image spike explicitly requires an actual fresh Git clone. Existing source-copy evidence does not satisfy that remaining check. Human laptop verification is independently required by #5/#41.
+- The five-image spike now has an actual fresh Git clone, new environment, independently retrieved model, five new outputs and a screenshot. This satisfies #8. Human laptop verification is independently required by #5/#41.
 - Nominal PnP calibration assumptions are documented. Accepting method implementation does not establish physically calibrated angles, improved accuracy, or the final held-out target.
 - No acceptance criteria are weakened. Completed prerequisites move from `Blocked by` to `Related work`; unresolved prerequisites remain explicit. CP3 hand-in explicitly retains #20 because accepting history mechanics must not hide the missing seat-consistency result.
 - Closed Issues retain contributor attribution. Remaining Ready/Backlog work previously assigned only to @emperuna is released for shared claiming; partial contribution history remains in the merged PR.
@@ -35,10 +37,10 @@ Seventeen implementation Issues are newly accepted and closed. The two pre-exist
 | [#5 - cp1-runtime](https://github.com/emperuna/gaze-cv/issues/5) | Ready | Pinned dependencies and asset retrieval work on the recorded desktop/CI environments. Remaining: run and record the environment/model checks on the intended laptop; accessible setup instructions allow a member to start now. Evidence: [README.md](../../README.md); [reproduction.md](../../docs/checkpoints/reproduction.md). |
 | [#6 - cp1-landmarks](https://github.com/emperuna/gaze-cv/issues/6) | Done | Real image/spike outputs contain face regions and landmarks; validation records and tests retain explicit unavailable observations. Laptop verification remains a separate open task. Evidence: [report.json](../../outputs/evidence/spike/report.json); [image-baseline.png](../../outputs/evidence/image-baseline.png); [test_pipeline.py](../../tests/test_pipeline.py). |
 | [#7 - cp1-annotations](https://github.com/emperuna/gaze-cv/issues/7) | Done | Saved annotations visibly match source face regions and landmarks; missing observations have an explicit display instead of a fabricated direction. Evidence: [image-baseline.png](../../outputs/evidence/image-baseline.png); [visualization.py](../../src/gaze/visualization.py); [test_pipeline.py](../../tests/test_pipeline.py). |
-| [#8 - cp1-spike](https://github.com/emperuna/gaze-cv/issues/8) | Ready | The five-image implementation and outputs exist, but the recorded independent run used a source copy. Remaining: run the documented spike from an actual fresh Git clone and record its five outputs and screenshot. Evidence: [spike.py](../../scripts/spike.py); [report.json](../../outputs/evidence/spike/report.json); [reproduction.md](../../docs/checkpoints/reproduction.md). |
+| [#8 - cp1-spike](https://github.com/emperuna/gaze-cv/issues/8) | Done | Actual Git clone, newly installed CPU environment, model retrieval/checksum, five annotated validation outputs and screenshot, command logs and file hashes were verified. One wrong direction and one unknown are retained. This agent desktop check leaves #41 pending. Evidence: [verification summary](../../outputs/evidence/spike-fresh-clone/README.md); [verification record](../../outputs/evidence/spike-fresh-clone/verification.json). |
 | [#9 - cp1-contact-sheet](https://github.com/emperuna/gaze-cv/issues/9) | Done | The contact sheet visibly contains twenty permitted samples, five subjects, all four labels, pose variation, and attribution; displayed labels match the sample manifest. Evidence: [contact-sheet.jpg](../../outputs/evidence/contact-sheet.jpg); [samples.json](../../data/annotations/samples.json). |
 | [#10 - cp1-proposal](https://github.com/emperuna/gaze-cv/issues/10) | Ready | Label/data evidence is available. Remaining: produce and review the final nine-section proposal PDF and workflow diagram against the CP1 guide. Evidence: [ROADMAP.md](../../ROADMAP.md); [README.md](../../docs/checkpoints/README.md). |
-| [#11 - cp1-hand-in](https://github.com/emperuna/gaze-cv/issues/11) | Blocked | Hand-in acceptance still needs the final proposal (#10), fresh-clone spike evidence (#8), each member own-account contribution, a rehearsed three-minute pitch, and the actual authorized hand-in revision. Code merge supplies none of the missing human/submission evidence. Evidence: [ROADMAP.md](../../ROADMAP.md); [cp2-progress.md](../../docs/checkpoints/cp2-progress.md). |
+| [#11 - cp1-hand-in](https://github.com/emperuna/gaze-cv/issues/11) | Blocked | Hand-in acceptance still needs the final proposal (#10), each member own-account contribution, a rehearsed three-minute pitch, and the actual authorized hand-in revision. Code merge supplies none of the missing human/submission evidence. Evidence: [ROADMAP.md](../../ROADMAP.md); [cp2-progress.md](../../docs/checkpoints/cp2-progress.md). |
 | [#12 - cp2-split-protocol](https://github.com/emperuna/gaze-cv/issues/12) | Done | The committed data card and 360-record manifests document acquisition, labels, dimensions, gaps, class counts, selection, preprocessing, and the locked subject/source-separated validation/test split; leakage checks and fixed-test policy are recorded. Evidence: [data-card.md](../../docs/evaluation/data-card.md); [pointing04.json](../../data/annotations/pointing04.json); [test_data.py](../../tests/test_data.py); [test_manifest_validation.py](../../tests/test_manifest_validation.py). |
 | [#13 - cp2-baseline](https://github.com/emperuna/gaze-cv/issues/13) | Done | The baseline implements all four directions, explicit unknown handling, mirroring/boundary rules, and recorded thresholds selected only with validation inputs; initial and selected measurements are retained. Evidence: [baseline.py](../../src/gaze/baseline.py); [test_baseline.py](../../tests/test_baseline.py); [cp2-validation-initial.json](../../outputs/evidence/cp2-validation-initial.json); [cp2-validation.json](../../outputs/evidence/cp2-validation.json). |
 | [#14 - cp2-video](https://github.com/emperuna/gaze-cv/issues/14) | Done | The permitted FourPeople CFR clip was processed with frame-index/source-FPS timestamps independent of wall-clock processing; invalid input and timestamp mechanics are tested. This does not claim VFR or camera support. Evidence: [video.md](../../docs/evaluation/video.md); [video-benchmark.json](../../outputs/evidence/video-benchmark.json); [test_video.py](../../tests/test_video.py). |
@@ -73,7 +75,7 @@ Seventeen implementation Issues are newly accepted and closed. The two pre-exist
 
 The audit inspected the merged data card, sample/validation manifests, source/preprocessing/model metadata, annotated image/contact/preprocessing/video evidence, historical video summaries, reproduction records, implementation source, and relevant behavior tests. The twenty displayed source labels and face/landmark overlays were visually checked. Validation report source-file hashes were compared with the merged source bytes, metrics/counts were checked, and no held-out test inference was performed.
 
-The previously recorded 96 application tests, 16 workflow tests, and successful PR #44 GitHub CI remain implementation evidence. This documentation reconciliation does not claim a new human/laptop run, fresh-clone spike, camera demonstration, real-event accuracy result, individual contribution, or academic submission. Repository consistency/local links, task IDs/dependencies, whitespace, and the live Issue/board/task snapshot are verified before publication.
+The previously recorded 96 application tests, 16 workflow tests, and successful PR #44 GitHub CI remain implementation evidence. The follow-up records the new fresh-clone spike; it does not claim a new human/laptop run, camera demonstration, real-event accuracy result, individual contribution, or academic submission. Repository consistency/local links, task IDs/dependencies, whitespace, and the live Issue/board/task snapshot are verified before publication.
 
 ## Merge and ongoing tracking
 

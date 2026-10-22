@@ -44,3 +44,12 @@ A collaborator still needs to follow the reviewed README from an actual fresh Gi
 ## Post-review source refresh
 
 The reviewed source revision `827679e` was copied into the same independent environment on 22 October 2026. The existing independently installed dependencies and separately acquired model/data were retained. All **96 application tests**, `pip check`, both real model image methods, and the twenty-image contact sheet passed. The [new verification record](../../outputs/evidence/review-verification.json) records source hashes, command results, and the source revision. The original 70-test record remains historical evidence of its earlier source snapshot. This refresh is still not a fresh Git clone or another human member's verification.
+
+
+## Actual fresh-clone five-image spike
+
+On **22 October 2026**, the coding agent assisting @emperuna completed the separate #8 verification from an actual Git clone of main at bf6002fe4b3a47fe9c8abb649543065d91093e5e into a previously unused folder on F:. A new Python 3.12.10 environment installed the pinned requirements, passed dependency checks, downloaded the model again and verified its checksum. The documented spike command saved five new annotated validation outputs.
+
+The [fresh-clone evidence package](../../outputs/evidence/spike-fresh-clone/README.md) contains the five PNGs, a gallery screenshot, raw report, full command logs, runtime provenance and file checksums. All five inputs produced a face and landmarks; one direction is incorrect and one is unknown. These failures remain visible. No held-out inference or new aggregate validation scoring was performed.
+
+**#8's feasibility execution and saved-output/screenshot criteria passed.** This desktop agent run does not complete #5 or #41, another human member's intended-laptop reproduction, individual contribution explanations, or the academic hand-in. The earlier source-copy and 96-test refresh records above remain historical evidence; those tests were not rerun as part of this five-image run.
