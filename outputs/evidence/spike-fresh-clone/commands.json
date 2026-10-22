@@ -1,0 +1,127 @@
+[
+  {
+    "stage": "01-clone",
+    "argv": [
+      "git",
+      "-c",
+      "credential.helper=",
+      "clone",
+      "--branch",
+      "main",
+      "--single-branch",
+      "https://github.com/emperuna/gaze-cv.git",
+      "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22",
+    "started": "2026-10-22T12:26:05.390048+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\01-clone.log",
+    "exit_code": 0,
+    "seconds": 2.566,
+    "finished": "2026-10-22T12:26:07.956621+08:00"
+  },
+  {
+    "stage": "02-create-environment",
+    "argv": [
+      "F:\\Dev\\Environments\\Python\\python.exe",
+      "-m",
+      "venv",
+      ".venv"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout",
+    "started": "2026-10-22T12:26:08.602737+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\02-create-environment.log",
+    "exit_code": 0,
+    "seconds": 6.434,
+    "finished": "2026-10-22T12:26:15.036253+08:00"
+  },
+  {
+    "stage": "03-install-pinned",
+    "argv": [
+      "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pip",
+      "install",
+      "-r",
+      "requirements.txt"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout",
+    "started": "2026-10-22T12:26:15.036253+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\03-install-pinned.log",
+    "exit_code": 0,
+    "seconds": 52.281,
+    "finished": "2026-10-22T12:27:07.318138+08:00"
+  },
+  {
+    "stage": "04-dependency-check",
+    "argv": [
+      "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pip",
+      "check"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout",
+    "started": "2026-10-22T12:27:07.319138+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\04-dependency-check.log",
+    "exit_code": 0,
+    "seconds": 0.838,
+    "finished": "2026-10-22T12:27:08.157201+08:00"
+  },
+  {
+    "stage": "05-dependency-versions",
+    "argv": [
+      "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pip",
+      "freeze",
+      "--all"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout",
+    "started": "2026-10-22T12:27:08.157201+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\05-dependency-versions.log",
+    "exit_code": 0,
+    "seconds": 0.575,
+    "finished": "2026-10-22T12:27:08.732437+08:00"
+  },
+  {
+    "stage": "06-download-model",
+    "argv": [
+      "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv\\Scripts\\python.exe",
+      "scripts/download_model.py"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout",
+    "started": "2026-10-22T12:27:08.733438+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\06-download-model.log",
+    "exit_code": 0,
+    "seconds": 0.26,
+    "finished": "2026-10-22T12:27:08.993125+08:00"
+  },
+  {
+    "stage": "07-five-image-spike",
+    "argv": [
+      "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv\\Scripts\\python.exe",
+      "scripts/spike.py",
+      "--output-dir",
+      "outputs/runs/spike"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout",
+    "started": "2026-10-22T12:27:09.001127+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\07-five-image-spike.log",
+    "exit_code": 0,
+    "seconds": 4.514,
+    "finished": "2026-10-22T12:27:13.514173+08:00"
+  },
+  {
+    "stage": "08-inspect-runtime",
+    "argv": [
+      "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv\\Scripts\\python.exe",
+      "-c",
+      "import json,sys,platform,os,gaze; print(json.dumps(dict(python=sys.version,executable=sys.executable,prefix=sys.prefix,base_prefix=sys.base_prefix,platform=platform.platform(),machine=platform.machine(),processor=platform.processor(),logical_cpus=os.cpu_count(),gaze_file=gaze.__file__),indent=2))"
+    ],
+    "cwd": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout",
+    "started": "2026-10-22T12:27:13.515174+08:00",
+    "log": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\evidence\\08-inspect-runtime.log",
+    "exit_code": 0,
+    "seconds": 0.116,
+    "finished": "2026-10-22T12:27:13.631597+08:00"
+  }
+]

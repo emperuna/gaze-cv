@@ -1,0 +1,417 @@
+{
+  "task_id": "cp1-spike",
+  "issue": 8,
+  "verification_date": "2026-10-22",
+  "verifier": "Coding agent assisting Jeremy Garin; desktop verification, not another student/laptop run.",
+  "source_remote": "https://github.com/emperuna/gaze-cv.git",
+  "source_commit": "bf6002fe4b3a47fe9c8abb649543065d91093e5e",
+  "clone_created_by_git": true,
+  "new_environment": true,
+  "model_downloaded_in_new_clone": true,
+  "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+  "hardware": {
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "executable": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv\\Scripts\\python.exe",
+    "prefix": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\.venv",
+    "base_prefix": "F:\\Dev\\Environments\\Python",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "machine": "AMD64",
+    "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "logical_cpus": 12,
+    "gaze_file": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\src\\gaze\\__init__.py"
+  },
+  "commands": "commands.json",
+  "command_log_location": "logs/ uses original command log basenames; absolute command paths identify original F: execution.",
+  "samples": [
+    {
+      "id": "pointing04-person01145+0-15",
+      "input": "data/samples/pointing04/person01145+0-15.jpg",
+      "input_sha256": "77113751097123bc8a33193fd547091f36708029f29f263f4f517df080c4c258",
+      "output": "01-person01145+0-15.png",
+      "output_sha256": "46cfb6a196116b692845765f1ed21c60790188b9b6adb16fc650ecb087f8fd04",
+      "expected": "forward",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              81,
+              58,
+              133,
+              156
+            ],
+            "direction": "forward",
+            "landmarks": {
+              "left_eye": [
+                0.5241278409957886,
+                0.3679116368293762
+              ],
+              "right_eye": [
+                0.3184300661087036,
+                0.3662577271461487
+              ],
+              "nose": [
+                0.4557390809059143,
+                0.4891371726989746
+              ],
+              "chin": [
+                0.4380306005477905,
+                0.7420431971549988
+              ],
+              "mouth_right": [
+                0.3765021562576294,
+                0.6016752123832703
+              ],
+              "mouth_left": [
+                0.4906250238418579,
+                0.5965226292610168
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.1702053890278068,
+              "nose_down_ratio": 0.3248870719212177,
+              "eye_span": 0.20570151498152736
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 11.948699999948076,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person01142+0-60",
+      "input": "data/samples/pointing04/person01142+0-60.jpg",
+      "input_sha256": "314ca5a3bd03c4de03d577453ab6187d84e7e5eb13f7eddbd4a826ce393746f3",
+      "output": "02-person01142+0-60.png",
+      "output_sha256": "dc9388f19eb29d1f186b4b002ff919607969d48a014f915c4858ad739cdab7cc",
+      "expected": "left",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              112,
+              61,
+              130,
+              148
+            ],
+            "direction": "left",
+            "landmarks": {
+              "left_eye": [
+                0.6050191521644592,
+                0.35528695583343506
+              ],
+              "right_eye": [
+                0.4468611478805542,
+                0.3776651918888092
+              ],
+              "nose": [
+                0.6222666501998901,
+                0.48264479637145996
+              ],
+              "chin": [
+                0.5705541968345642,
+                0.7185807824134827
+              ],
+              "mouth_right": [
+                0.5264321565628052,
+                0.5967079401016235
+              ],
+              "mouth_left": [
+                0.6057384014129639,
+                0.5780691504478455
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.5444614149798436,
+              "nose_down_ratio": 0.362142805373548,
+              "eye_span": 0.1590460503568137
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 7.481500000039887,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person01148+0+30",
+      "input": "data/samples/pointing04/person01148+0+30.jpg",
+      "input_sha256": "5e1186ad2f1cc93f55e9e9d6f5f25529c90d1eb266d527c5bc610f12cf375cd7",
+      "output": "03-person01148+0+30.png",
+      "output_sha256": "3fca2df3a3a0f212252a479e8f695bda0a66a0166faf645f59791ef56d481237",
+      "expected": "right",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              62,
+              60,
+              134,
+              153
+            ],
+            "direction": "forward",
+            "landmarks": {
+              "left_eye": [
+                0.3900981545448303,
+                0.3741585612297058
+              ],
+              "right_eye": [
+                0.191237211227417,
+                0.3654780387878418
+              ],
+              "nose": [
+                0.25734585523605347,
+                0.48814547061920166
+              ],
+              "chin": [
+                0.27800512313842773,
+                0.7374759912490845
+              ],
+              "mouth_right": [
+                0.2255004346370697,
+                0.600450336933136
+              ],
+              "mouth_left": [
+                0.3386985659599304,
+                0.5994390845298767
+              ]
+            },
+            "scores": {
+              "horizontal_offset": -0.15278957592384468,
+              "nose_down_ratio": 0.3253077590121251,
+              "eye_span": 0.19896748472775597
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 7.512499999961619,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person01106-60-15",
+      "input": "data/samples/pointing04/person01106-60-15.jpg",
+      "input_sha256": "4cfdc238fca24ca8b4a72a449de85ee32b4a8f35aebd792dc7aa9af2566d63ea",
+      "output": "04-person01106-60-15.png",
+      "output_sha256": "5c82fd8bd020f58888d7c33d513a007f30136075a3d02fe0f3a328d38f2ed905",
+      "expected": "down",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              175,
+              143,
+              143,
+              137
+            ],
+            "direction": "unknown",
+            "landmarks": {
+              "left_eye": [
+                0.78093022108078,
+                0.6790549755096436
+              ],
+              "right_eye": [
+                0.5837181806564331,
+                0.6532567739486694
+              ],
+              "nose": [
+                0.7173161506652832,
+                0.8282706141471863
+              ],
+              "chin": [
+                0.6272584199905396,
+                0.9724864959716797
+              ],
+              "mouth_right": [
+                0.6026835441589355,
+                0.8560746312141418
+              ],
+              "mouth_left": [
+                0.701084554195404,
+                0.869788646697998
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.23565257319573243,
+              "nose_down_ratio": 0.5024567376095447,
+              "eye_span": 0.19815892407474575
+            },
+            "unavailable_reason": "mixed_down_and_sideways"
+          }
+        ],
+        "processing_ms": 7.459800000106043,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person02145+0-15",
+      "input": "data/samples/pointing04/person02145+0-15.jpg",
+      "input_sha256": "ce64957b4fe06e4817cd20400038331986535a16e971841a3d1f5bb954defc5d",
+      "output": "05-person02145+0-15.png",
+      "output_sha256": "a3d6ef07d313c9194e71a03efc19928f0ec15baf7a16bcfdf6714c4e1d1dc9e3",
+      "expected": "forward",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              134,
+              68,
+              116,
+              138
+            ],
+            "direction": "forward",
+            "landmarks": {
+              "left_eye": [
+                0.6129828691482544,
+                0.3732750415802002
+              ],
+              "right_eye": [
+                0.41903799772262573,
+                0.39194804430007935
+              ],
+              "nose": [
+                0.5342919230461121,
+                0.49619001150131226
+              ],
+              "chin": [
+                0.5390486717224121,
+                0.7142945528030396
+              ],
+              "mouth_right": [
+                0.4787142872810364,
+                0.593540370464325
+              ],
+              "mouth_left": [
+                0.5788956880569458,
+                0.583583652973175
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.062220999834845706,
+              "nose_down_ratio": 0.34542743049704916,
+              "eye_span": 0.19444985531494485
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 6.866400000035355,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    }
+  ],
+  "screenshot": {
+    "file": "five-image-spike-screenshot.png",
+    "sha256": "57bbbfc6d911a92179437a709d2b4fe0908c0b708e74c527efd47a1950d0f43e",
+    "description": "Browser capture displaying five actual new outputs; evidence viewer rather than a new application interface."
+  },
+  "decoded_output_dimensions": [
+    384,
+    288
+  ],
+  "observed_face_counts": [
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "annotated_pixels_differ_from_inputs": true,
+  "source_working_tree_clean": true,
+  "no_held_out_inference": true,
+  "environment_paths": {
+    "TEMP": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\tmp",
+    "TMP": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\tmp",
+    "PIP_CACHE_DIR": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\pip-cache",
+    "MPLCONFIGDIR": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\matplotlib",
+    "XDG_CACHE_HOME": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\cache"
+  },
+  "acceptance": "PASS for Issue #8 fresh-clone five-image execution and saved-output/screenshot criteria.",
+  "visual_review": "All five actual outputs inspected in the captured gallery; face boxes and landmarks visible. One wrong direction and one unknown retained.",
+  "limitations": [
+    "Coding-agent desktop verification; another human member on the intended laptop is still required by #41.",
+    "One incorrect direction and one unknown are retained. These five images are not an aggregate accuracy benchmark.",
+    "No new full validation, camera/laptop benchmark, checkpoint submission, or individual defense is claimed."
+  ],
+  "text_storage": "JSON, logs and HTML use LF for portable Git-file hashes; data values and output PNG bytes are unchanged.",
+  "files_manifest": "SHA256SUMS.json"
+}
