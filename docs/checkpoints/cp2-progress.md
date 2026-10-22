@@ -1,6 +1,6 @@
 # CP2 implementation and progress evidence
 
-Status: Implementation merged through [PR #44](https://github.com/emperuna/gaze-cv/pull/44) on 22 October 2026 (Asia/Shanghai). Validation artifacts retain their original measured source revision/hashes; rebased merge commit IDs do not change those source bytes. The [post-merge acceptance audit](task-reconciliation.md) records current task decisions. No checkpoint tag, academic submission, or final held-out result is claimed.
+Status: Implementation merged through [PR #44](https://github.com/emperuna/gaze-cv/pull/44) on 22 October 2026 (Asia/Shanghai). Validation artifacts retain their original measured source revision/hashes; rebased merge commit IDs do not change those source bytes. The [post-merge acceptance audit](task-reconciliation.md) records current task decisions. The [technical CP2 hand-in package](cp2-hand-in/README.md) is prepared for the authorized cp2-50 tag. LMS submission, instructor acceptance, member/laptop checks and final held-out results remain unverified.
 
 ## Delivered technical scope
 
