@@ -1,0 +1,41 @@
+﻿Task ID,Task,Checkpoint,Status,Planned points,Completed points,Weight rationale
+cp1-confirm-plan,Confirm course schedule and demonstration constraints,CP1,Done,0,0,Scheduling and governance; excluded from delivery effort.
+cp1-project-board,Prepare the GitHub Issues and Projects board,CP1,Done,0,0,Administrative tracking; excluded from delivery effort.
+cp1-data-access,Acquire an accessible labeled head-pose sample set,CP1,Done,3,3,"Acquire permitted data, verify access, and document provenance."
+cp1-label-contract,Define direction meanings and label selected samples,CP1,Done,3,3,Define and check label conventions and selected sample labels.
+cp1-runtime,Establish the minimal reproducible vision environment,CP1,Ready,3,0,Pin the runtime and verify assets and libraries on the intended laptop.
+cp1-landmarks,Extract faces and landmarks from the selected images,CP1,Done,5,5,Integrate the pretrained face/landmark detector and observation handling.
+cp1-annotations,Draw inspectable face and landmark results,CP1,Done,2,2,Implement inspectable face/landmark drawing.
+cp1-spike,Implement the reproducible five-image feasibility spike,CP1,Done,2,2,Coordinate five images and verify the spike from a fresh clone; reuse detection.
+cp1-contact-sheet,Generate the labeled twenty-sample contact sheet,CP1,Done,2,2,Generate and check a labeled contact sheet; reuse sample labels.
+cp1-proposal,Finalize the nine-section proposal and workflow diagram,CP1,Ready,3,0,Prepare the nine-section proposal and workflow diagram.
+cp1-hand-in,Review CP1 evidence and rehearse the pitch,CP1,Blocked,1,0,Review CP1 gates and rehearse the pitch; exclude already weighted artifacts.
+cp2-split-protocol,Prepare the data card and source-separated evaluation inputs,CP2,Done,5,5,"Prepare reproducible source-separated manifests, data card, and leakage checks."
+cp2-preprocessing,Implement reusable preprocessing and record its effects,CP2,Done,3,3,"Implement shared color/size handling, tests, and before/after evidence."
+cp2-baseline,Implement the geometric direction baseline,CP2,Done,5,5,"Implement and check geometric direction rules, ambiguity, and thresholds."
+cp2-image-prototype,Run one image through the annotated baseline prototype,CP2,Done,3,3,Integrate one-image input/output and errors; reuse detector and baseline.
+cp2-video,Read saved video with source timestamps,CP2,Done,5,5,"Implement saved-video decoding, source timestamps, and error handling."
+cp2-multi-face,Demonstrate three-face observations and measure video FPS,CP2,Done,5,5,"Integrate multiple-face processing, audit misses, and record proxy timing."
+cp2-first-metrics,Measure baseline quality on the validation split,CP2,Done,5,5,"Implement validation scoring, failure accounting, and reproducible measurements."
+cp2-reproduction,Verify the image prototype from a fresh clone on CPU,CP2,Ready,3,0,Independently reproduce image execution from a fresh clone on CPU.
+cp2-hand-in,Prepare the CP2 progress report and class review,CP2,Blocked,2,0,Prepare CP2 report and class review; do not count earlier implementation again.
+cp3-video-labels,Prepare authorized multi-person video labels,CP3,Ready,5,0,Prepare permitted video and cross-checked seat/movement/writing/gap labels.
+cp3-pose,Implement the main head-pose direction approach,CP3,Done,5,5,"Implement approximate pose estimation, conventions, and unavailable cases."
+cp3-seats,Associate observations with fixed seat positions,CP3,Backlog,5,0,Associate fixed seats and measure consistency with labeled disappearance/return cases.
+cp3-histories,Maintain timestamped seat direction histories,CP3,Done,5,5,"Implement timestamped seat histories, missing observations, and gap checks."
+cp3-comparison,Compare the baseline and main approaches,CP3,Done,3,3,Compare methods and review errors; reuse the existing evaluator.
+cp3-hand-in,Prepare core implementation evidence,CP3,Backlog,1,0,Review and assemble CP3 evidence without recounting its component work.
+cp4-movement,Detect sustained and repeated movement events,CP4,Done,5,5,"Implement sustained/repeated rules and timing, dwell, and gap tests."
+cp4-settings,Make session observation settings adjustable and traceable,CP4,Done,3,3,"Expose, validate, and save settings; exclude separately weighted rule logic."
+cp4-export-review,Integrate event review and saved session records,CP4,Ready,8,0,"Integrate event display, seat annotations, session control, and reopened records."
+cp4-camera,Support the live camera workflow,CP4,Backlog,5,0,"Integrate live input, elapsed time, camera failures, and demonstration."
+cp4-event-evaluation,Evaluate movement events and false alerts during writing,CP4,Backlog,5,0,Define event matching/exposure accounting and evaluate real labeled intervals.
+cp4-performance,Measure the integrated prototype and record fallback decisions,CP4,Backlog,3,0,Measure the integrated laptop workload and review errors/fallbacks.
+cp4-hand-in,Prepare the integrated progress submission,CP4,Backlog,2,0,Review and assemble integrated evidence; exclude already weighted features.
+cp5-final-evaluation,Freeze settings and complete final held-out evaluation,CP5,Backlog,5,0,"Freeze settings, run held-out evaluation, and assess final targets."
+cp5-reproduction,Verify fresh-clone execution and rehearse the demonstration,CP5,Backlog,3,0,Reproduce the final workflow and rehearse failure and backup demonstrations.
+cp5-report,Complete the final report and presentation,CP5,Backlog,5,0,Prepare the final report and presentation with results and contribution mapping.
+defense-marc,Prepare Marc personal technical defense,Defense,Backlog,3,0,Prepare and verify Marc's personal code explanation and defense.
+defense-jose,Prepare Jose personal technical defense,Defense,Backlog,3,0,Prepare and verify Jose's personal code explanation and defense.
+defense-jeremy,Prepare Jeremy personal technical defense,Defense,Backlog,3,0,Prepare and verify Jeremy's personal code explanation and defense.
+cp5-hand-in,Review the final submission and individual defense readiness,CP5,Backlog,1,0,Review final submission readiness; exclude reports and defenses already counted.
