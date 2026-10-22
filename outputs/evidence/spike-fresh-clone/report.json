@@ -1,0 +1,387 @@
+{
+  "pipeline": {
+    "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+    "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; no test data used for default selection",
+    "thresholds": {
+      "yaw": 0.18,
+      "down": 0.4,
+      "min_eye_span": 0.015
+    },
+    "max_width": 1280,
+    "mirrored_input": false,
+    "mirror_handling": "input unmirrored",
+    "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+    "bbox_convention": "original-image pixels (x,y,width,height)",
+    "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+    "detector": {
+      "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+      "mediapipe_version": "0.10.32",
+      "model_path": "F:\\UserData\\Personal\\Downloads\\GAZE_CP2_Spike_Verification_2026-10-22\\checkout\\models\\downloads\\face_landmarker.task",
+      "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+      "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      "max_faces": 10,
+      "detection_confidence_threshold": 0.5,
+      "face_presence_threshold": 0.5,
+      "landmark_indices": {
+        "left_eye": 263,
+        "right_eye": 33,
+        "nose": 1,
+        "chin": 152,
+        "mouth_right": 61,
+        "mouth_left": 291
+      },
+      "tile_grid": 1,
+      "tiling": "full frame",
+      "face_order": "frame-local detector order; no association or persistent identity"
+    }
+  },
+  "manifest": "data\\annotations\\samples.json",
+  "split": "validation",
+  "samples": [
+    {
+      "id": "pointing04-person01145+0-15",
+      "image": "data/samples/pointing04/person01145+0-15.jpg",
+      "expected": "forward",
+      "output": "outputs\\runs\\spike\\01-person01145+0-15.png",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              81,
+              58,
+              133,
+              156
+            ],
+            "direction": "forward",
+            "landmarks": {
+              "left_eye": [
+                0.5241278409957886,
+                0.3679116368293762
+              ],
+              "right_eye": [
+                0.3184300661087036,
+                0.3662577271461487
+              ],
+              "nose": [
+                0.4557390809059143,
+                0.4891371726989746
+              ],
+              "chin": [
+                0.4380306005477905,
+                0.7420431971549988
+              ],
+              "mouth_right": [
+                0.3765021562576294,
+                0.6016752123832703
+              ],
+              "mouth_left": [
+                0.4906250238418579,
+                0.5965226292610168
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.1702053890278068,
+              "nose_down_ratio": 0.3248870719212177,
+              "eye_span": 0.20570151498152736
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 11.948699999948076,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person01142+0-60",
+      "image": "data/samples/pointing04/person01142+0-60.jpg",
+      "expected": "left",
+      "output": "outputs\\runs\\spike\\02-person01142+0-60.png",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              112,
+              61,
+              130,
+              148
+            ],
+            "direction": "left",
+            "landmarks": {
+              "left_eye": [
+                0.6050191521644592,
+                0.35528695583343506
+              ],
+              "right_eye": [
+                0.4468611478805542,
+                0.3776651918888092
+              ],
+              "nose": [
+                0.6222666501998901,
+                0.48264479637145996
+              ],
+              "chin": [
+                0.5705541968345642,
+                0.7185807824134827
+              ],
+              "mouth_right": [
+                0.5264321565628052,
+                0.5967079401016235
+              ],
+              "mouth_left": [
+                0.6057384014129639,
+                0.5780691504478455
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.5444614149798436,
+              "nose_down_ratio": 0.362142805373548,
+              "eye_span": 0.1590460503568137
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 7.481500000039887,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person01148+0+30",
+      "image": "data/samples/pointing04/person01148+0+30.jpg",
+      "expected": "right",
+      "output": "outputs\\runs\\spike\\03-person01148+0+30.png",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              62,
+              60,
+              134,
+              153
+            ],
+            "direction": "forward",
+            "landmarks": {
+              "left_eye": [
+                0.3900981545448303,
+                0.3741585612297058
+              ],
+              "right_eye": [
+                0.191237211227417,
+                0.3654780387878418
+              ],
+              "nose": [
+                0.25734585523605347,
+                0.48814547061920166
+              ],
+              "chin": [
+                0.27800512313842773,
+                0.7374759912490845
+              ],
+              "mouth_right": [
+                0.2255004346370697,
+                0.600450336933136
+              ],
+              "mouth_left": [
+                0.3386985659599304,
+                0.5994390845298767
+              ]
+            },
+            "scores": {
+              "horizontal_offset": -0.15278957592384468,
+              "nose_down_ratio": 0.3253077590121251,
+              "eye_span": 0.19896748472775597
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 7.512499999961619,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person01106-60-15",
+      "image": "data/samples/pointing04/person01106-60-15.jpg",
+      "expected": "down",
+      "output": "outputs\\runs\\spike\\04-person01106-60-15.png",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              175,
+              143,
+              143,
+              137
+            ],
+            "direction": "unknown",
+            "landmarks": {
+              "left_eye": [
+                0.78093022108078,
+                0.6790549755096436
+              ],
+              "right_eye": [
+                0.5837181806564331,
+                0.6532567739486694
+              ],
+              "nose": [
+                0.7173161506652832,
+                0.8282706141471863
+              ],
+              "chin": [
+                0.6272584199905396,
+                0.9724864959716797
+              ],
+              "mouth_right": [
+                0.6026835441589355,
+                0.8560746312141418
+              ],
+              "mouth_left": [
+                0.701084554195404,
+                0.869788646697998
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.23565257319573243,
+              "nose_down_ratio": 0.5024567376095447,
+              "eye_span": 0.19815892407474575
+            },
+            "unavailable_reason": "mixed_down_and_sideways"
+          }
+        ],
+        "processing_ms": 7.459800000106043,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    },
+    {
+      "id": "pointing04-person02145+0-15",
+      "image": "data/samples/pointing04/person02145+0-15.jpg",
+      "expected": "forward",
+      "output": "outputs\\runs\\spike\\05-person02145+0-15.png",
+      "result": {
+        "width": 384,
+        "height": 288,
+        "detections": [
+          {
+            "bbox": [
+              134,
+              68,
+              116,
+              138
+            ],
+            "direction": "forward",
+            "landmarks": {
+              "left_eye": [
+                0.6129828691482544,
+                0.3732750415802002
+              ],
+              "right_eye": [
+                0.41903799772262573,
+                0.39194804430007935
+              ],
+              "nose": [
+                0.5342919230461121,
+                0.49619001150131226
+              ],
+              "chin": [
+                0.5390486717224121,
+                0.7142945528030396
+              ],
+              "mouth_right": [
+                0.4787142872810364,
+                0.593540370464325
+              ],
+              "mouth_left": [
+                0.5788956880569458,
+                0.583583652973175
+              ]
+            },
+            "scores": {
+              "horizontal_offset": 0.062220999834845706,
+              "nose_down_ratio": 0.34542743049704916,
+              "eye_span": 0.19444985531494485
+            },
+            "unavailable_reason": null
+          }
+        ],
+        "processing_ms": 6.866400000035355,
+        "preprocessing": {
+          "input_color": "BGR",
+          "model_color": "RGB",
+          "dtype": "uint8",
+          "original_size": [
+            384,
+            288
+          ],
+          "prepared_size": [
+            384,
+            288
+          ],
+          "resize": "aspect-preserving shrink only; INTER_AREA",
+          "normalization": "none; MediaPipe performs internal model normalization"
+        }
+      }
+    }
+  ]
+}

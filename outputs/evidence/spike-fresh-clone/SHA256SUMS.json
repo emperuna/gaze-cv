@@ -1,0 +1,22 @@
+{
+  ".gitattributes": "c1652304552eade2211ff649cf9ef6858521a455c3abdf922a279ae4be03cc33",
+  "01-person01145+0-15.png": "46cfb6a196116b692845765f1ed21c60790188b9b6adb16fc650ecb087f8fd04",
+  "02-person01142+0-60.png": "dc9388f19eb29d1f186b4b002ff919607969d48a014f915c4858ad739cdab7cc",
+  "03-person01148+0+30.png": "3fca2df3a3a0f212252a479e8f695bda0a66a0166faf645f59791ef56d481237",
+  "04-person01106-60-15.png": "5c82fd8bd020f58888d7c33d513a007f30136075a3d02fe0f3a328d38f2ed905",
+  "05-person02145+0-15.png": "a3d6ef07d313c9194e71a03efc19928f0ec15baf7a16bcfdf6714c4e1d1dc9e3",
+  "commands.json": "f0306754a943655845b9569c8bda362dafb219f0f6aeab82976e64fc930a9375",
+  "five-image-spike-screenshot.png": "57bbbfc6d911a92179437a709d2b4fe0908c0b708e74c527efd47a1950d0f43e",
+  "logs/01-clone.log": "66fc0cbba62234319bdfadb5d67a68237397045533fd71ffd6a37ba53fcfa1f4",
+  "logs/02-create-environment.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "logs/03-install-pinned.log": "2a6ee4940cb824603a430e3514414c30e5a5c8a245b49da60d7a5a5f9f7e8fda",
+  "logs/04-dependency-check.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+  "logs/05-dependency-versions.log": "d2d10faf85d363dc8ec06bbf6eb09579178e10c3afbe1c1a8df7901142f98f2e",
+  "logs/06-download-model.log": "b7515f9504f0eb89c5cc4b221bbfa0006a44e57def1d3df801ddd58b959184b0",
+  "logs/07-five-image-spike.log": "6184657573eefbe55b187016dd9a8138d65791ad9cdc1777534c00f4e4510b04",
+  "logs/08-inspect-runtime.log": "9bd5647aaed711c071c0bc9a2079811b48f6356aae8cf6fae0fa84ee37f04201",
+  "output-gallery.html": "389f884f5fc1e73844248755e72583046cd1cebcee9bf7a413b5f55fb2ede497",
+  "README.md": "60be9ef304a76276cf89794929d8df1043c7bb0d6d03de11461b56d18504412c",
+  "report.json": "d009608b93cd8eb7d5e8afd453bc75a9ed09cbace78c9eba8b69930a58951e52",
+  "verification.json": "61bb0ece9fb1953e8d5c66ae99192ddf02183e0505fc8162843835e273bb52bb"
+}
