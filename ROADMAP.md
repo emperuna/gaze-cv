@@ -108,7 +108,7 @@ Unlabeled LFW images can demonstrate an operation but cannot supply head-directi
 - [ ] GAZE's saved-video demonstration shows at least three visible faces and records FPS and missed observations under stated conditions.
 - [ ] The progress report matches repository evidence and includes contributors, an effort-weighted completion calculation, blockers, and revised target dates.
 - [ ] Each member can open and explain code they wrote; the team can run a teacher-selected test image without tuning from its output.
-- [ ] The actual hand-in commit is identified for `cp2-50`; tagging or pushing requires separate authorization.
+- [x] The authorized `cp2-50` tag identifies the [technical hand-in package](docs/checkpoints/cp2-hand-in/README.md). Instructor acceptance and the other unchecked gates remain separate.
 
 Image validation depends on prepared data, preprocessing, and the image prototype; it does not wait for video integration. Video input can proceed alongside this path, with FPS evidence completed under `cp2-multi-face`. Hand-in requires both paths and fresh-clone verification. Detailed reporting expectations are in [the evaluation plan](docs/evaluation/README.md) and [checkpoint evidence notes](docs/checkpoints/README.md).
 
@@ -165,7 +165,7 @@ The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms a
 
 **Outcome:** Deliver a reproducible prototype and explain its measured capabilities and limitations.
 
-**Dependencies:** CP4 results and a confirmed final demonstration scope. Relevant requirements: all FR01–FR11, or an explicitly documented fallback with incomplete requirements listed.
+**Dependencies:** CP4 results and a confirmed final demonstration scope. Relevant requirements: all FR01Ã¢â‚¬â€œFR11, or an explicitly documented fallback with incomplete requirements listed.
 
 | Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
@@ -207,4 +207,4 @@ A fallback narrows the demonstration; it does not establish that all PRD require
 
 For every checkpoint, summarize completed work, attach reproducible evidence, record measurements and limitations, and identify each member's contribution. Check the submission against the relevant completion gate and tag the actual hand-in commit with the guide's checkpoint tag. GitHub pushes require the repository owner's authorization.
 
-The checklists remain acceptance gates rather than an assertion that implemented work is unstarted. Review the implementation report and linked Issues before checking off a gate; no checkpoint tag or submission is claimed by this roadmap.
+The checklists remain acceptance gates rather than an assertion that implemented work is unstarted. Review the implementation report and linked Issues before checking off a gate. The authorized cp2-50 tag identifies the technical package; LMS submission, instructor acceptance and individual/laptop verification remain separate.
