@@ -4,13 +4,17 @@ GAZE is a local computer vision prototype for reviewing visible head movements. 
 
 ## Current state
 
-Working CPU prototype merged into `main` through [PR #44](https://github.com/emperuna/gaze-cv/pull/44), with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. This is implementation evidence, not a completed academic submission. The held-out test split remains locked. The current machine is a desktop; laptop performance and another human member's reproduction remain unverified.
+Working CPU prototype merged into `main` through [PR #44](https://github.com/emperuna/gaze-cv/pull/44), with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. The technical CP2 hand-in files are linked below; instructor acceptance and personal class checks remain unverified. The held-out test split remains locked. The current machine is a desktop; laptop performance and another human member's reproduction remain unverified.
 
 - [Product requirements](PRD.md), [project architecture](ARCHITECTURE.md), [roadmap](ROADMAP.md), and [task backlog](TASK.md).
 - [Contributor setup](CONTRIBUTING.md) and [agent instructions](AGENTS.md).
 - [Data card](docs/evaluation/data-card.md), [evaluation procedure](docs/evaluation/README.md), [video evidence](docs/evaluation/video.md), and [seat/history scope](docs/evaluation/seats.md).
 - [Checkpoint evidence](docs/checkpoints/README.md) and [CP2 implementation report](docs/checkpoints/cp2-progress.md).
 - [GitHub kanban](https://github.com/users/emperuna/projects/3/views/2) and [PR automation](docs/automation.md).
+
+## CP2 hand-in
+
+Start with the [seven-item submission index](docs/checkpoints/cp2-hand-in/README.md), [two-page progress report](docs/checkpoints/cp2-hand-in/progress-report.pdf), and [one-page data card](docs/checkpoints/cp2-hand-in/data-card.pdf). Tag **cp2-50** identifies the hand-in snapshot; the remaining human/laptop and class checks are listed in the report.
 
 ## Windows setup on F:
 

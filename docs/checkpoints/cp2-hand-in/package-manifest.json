@@ -1,0 +1,64 @@
+{
+  "checkpoint": "CP2",
+  "tag": "cp2-50",
+  "report_date": "2026-10-22",
+  "source_baseline": "8b02d7d",
+  "progress_report_pages": 2,
+  "data_card_pages": 1,
+  "sample_outputs": [
+    "outputs/evidence/spike-fresh-clone/01-person01145+0-15.png",
+    "outputs/evidence/spike-fresh-clone/02-person01142+0-60.png",
+    "outputs/evidence/spike-fresh-clone/03-person01148+0+30.png",
+    "outputs/evidence/spike-fresh-clone/04-person01106-60-15.png",
+    "outputs/evidence/spike-fresh-clone/05-person02145+0-15.png",
+    "outputs/evidence/video-baseline.jpg"
+  ],
+  "dataset": {
+    "train": 0,
+    "training_status": "Not applicable: pretrained landmark inference and an untrained geometric classifier.",
+    "validation": 240,
+    "reserved_test": 120,
+    "demo_examples_within_validation": 20
+  },
+  "validation_result": {
+    "correct": 208,
+    "images": 240,
+    "accuracy": 0.8666666666666667,
+    "macro_f1": 0.8798286613023113,
+    "unknown": 6,
+    "status": "Validation-selected settings; not final held-out performance."
+  },
+  "effort": {
+    "planned": 138,
+    "completed": 69,
+    "percent": 50.0,
+    "weights": "Retrospective estimates, unchanged; no partial credit or credit for pending hand-in/class checks."
+  },
+  "remaining": [
+    "Another member on intended laptop (#41)",
+    "Confirmed contributions and individual code explanations",
+    "Earlier final proposal/hand-in evidence",
+    "Labeled classroom/event data and integrated evaluation",
+    "LMS/form submission and instructor acceptance"
+  ],
+  "files_sha256": {
+    "requirements.txt": "7f57b5cb75a82b9a3c0b37fef283532e565ae864a78511f774e5b0e81bb65964",
+    "README.md": "67c861f85887c4019ca8332953711c25a4f2b2bbaaa3fdc8d538036375f5245a",
+    "data/annotations/pointing04.json": "064b1a2470287403ede19d9a00b5140f734ac8bee983ccaac81cd63535433b98",
+    "data/annotations/samples.json": "82827bcb46524029c7c93d09ed39f6b0a9bbcbbb8712e55d8701518f4cf099b3",
+    "src/gaze/preprocessing.py": "426cfead056e9c78ff099be7c45331d929b9e0dc16275a54c181679e6e307dbd",
+    "src/gaze/baseline.py": "92b882ab3365f4d0db80d9c3ca2a689ef8a2a28f23d9cb6d53008f0020d75765",
+    "scripts/predict.py": "4f2c0fc76d6f9149c619ec9bafba7774317ef125894e291eeb5712bf455df4a0",
+    "outputs/evidence/cp2-validation.json": "1b1e25d4bbabd104d96ae7bb79e68cdf64941828b163f0575d816d155a6e5c23",
+    "outputs/evidence/preprocessing.png": "fc47ecda2835e00992875c5638f44b967ff8646ce2572e664f210291fda75316",
+    "docs/checkpoints/cp2-hand-in/progress-report.pdf": "fb063fbe5effd765b919765d735dcb2cc8045a951dd554e57e5e2ae1551cd54f",
+    "docs/checkpoints/cp2-hand-in/data-card.pdf": "1c8e1a65c9ae183f8523994a15205fc0bdc28dbcc97cda10da8807664b3a9f13",
+    "docs/checkpoints/cp2-hand-in/effort-worksheet.csv": "48d1a12d18556d37af949923829375d36959d8d84e7e85c8ec72b222f199d740",
+    "outputs/evidence/spike-fresh-clone/01-person01145+0-15.png": "46cfb6a196116b692845765f1ed21c60790188b9b6adb16fc650ecb087f8fd04",
+    "outputs/evidence/spike-fresh-clone/02-person01142+0-60.png": "dc9388f19eb29d1f186b4b002ff919607969d48a014f915c4858ad739cdab7cc",
+    "outputs/evidence/spike-fresh-clone/03-person01148+0+30.png": "3fca2df3a3a0f212252a479e8f695bda0a66a0166faf645f59791ef56d481237",
+    "outputs/evidence/spike-fresh-clone/04-person01106-60-15.png": "5c82fd8bd020f58888d7c33d513a007f30136075a3d02fe0f3a328d38f2ed905",
+    "outputs/evidence/spike-fresh-clone/05-person02145+0-15.png": "a3d6ef07d313c9194e71a03efc19928f0ec15baf7a16bcfdf6714c4e1d1dc9e3",
+    "outputs/evidence/video-baseline.jpg": "98ccd6a85806505f7ef4b978326039ca2ecb728a98f275dfe25296475aa5e16d"
+  }
+}
