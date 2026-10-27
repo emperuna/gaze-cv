@@ -76,6 +76,19 @@ For configured fixed-seat histories and optional movement records, use:
 
 Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input is an optional extension, not required for project completion. Integrated event review remains required work; saved video is the required input workflow.
 
+## Experimental head orientation without facial landmarks
+
+Saved video also supports an opt-in `--method head` mode with a separate head
+detector, full-rotation pose model, fixed head regions, and per-seat neutral
+calibration. It can estimate direction when facial landmarks are unavailable
+but enough of the head remains visible. It cannot see through full occlusion.
+See [setup, calibration, usage, and limitations](docs/evaluation/hidden-faces.md).
+
+With `--events`, sustained/repeated sideways events now carry **For instructor
+review** in the annotated video and JSON. Downward events remain recorded
+without that sideways flag. These are movement observations, not gaze or
+misconduct determinations.
+
 ## Verification
 
 ```powershell

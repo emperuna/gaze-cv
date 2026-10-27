@@ -82,7 +82,7 @@ class SeatAssociator:
                 "association": "bbox-center-in-roi; crowded ROI remains ambiguous",
                 "seats": [{"id": seat.id, "roi": list(seat.roi)} for seat in self.seats]}
 
-    def associate(self, detections, width: int, height: int) -> AssociationResult:
+    def associate(self, detections, width: int, height: int, mirrored=False) -> AssociationResult:
         if any(isinstance(v, bool) or not isinstance(v, int) or v <= 0 for v in (width, height)):
             raise ValueError("Image width and height must be positive integer pixels.")
         candidates = {seat.id: [] for seat in self.seats}
@@ -103,6 +103,8 @@ class SeatAssociator:
             if not 0 <= center_x <= 1 or not 0 <= center_y <= 1:
                 unassigned.append({"detection_index": index, "reason": "outside_image"})
                 continue
+            if mirrored:
+                center_x = 1 - center_x
             matches = []
             for seat in self.seats:
                 left, top, right, bottom = seat.roi

@@ -25,6 +25,12 @@ def configuration():
 
 
 class SeatTests(unittest.TestCase):
+    def test_mirrored_source_uses_unmirrored_seat_regions(self):
+        from gaze.pipeline import FaceObservation
+        associator = SeatAssociator({'schema_version': 1, 'seats': [{'id': 'left', 'roi': [0,0,.4,1]}]})
+        face = FaceObservation((70,20,20,20), 'left', {}, {})
+        result = associator.associate([face], 100, 100, mirrored=True)
+        self.assertIs(result.assignments['left'], face)
     def test_frame_order_changes_do_not_change_seat_positions(self):
         associator = SeatAssociator(configuration())
         left, right = FakeFace((10, 20, 20, 20)), FakeFace((70, 20, 20, 20))

@@ -14,6 +14,7 @@ class FaceObservation:
     landmarks: dict
     scores: dict
     unavailable_reason: str | None = None
+    estimation_source: str = 'facial_landmarks'
     def to_dict(self):
         return asdict(self)
 

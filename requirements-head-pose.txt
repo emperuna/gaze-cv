@@ -1,0 +1,7 @@
+# Optional CPU-only head-pose inference; install after requirements.txt.
+onnxruntime==1.23.2
+coloredlogs==15.0.1
+humanfriendly==10.0
+mpmath==1.3.0
+protobuf==7.36.2
+sympy==1.14.0

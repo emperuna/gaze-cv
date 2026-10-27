@@ -14,6 +14,18 @@ def association(direction="left", reason=None, unavailable=None):
 
 
 class HistoryTests(unittest.TestCase):
+    def test_estimation_source_change_starts_a_new_segment(self):
+        from gaze.pipeline import FaceObservation
+        from gaze.seats import SeatAssociator
+        associator = SeatAssociator({'schema_version': 1, 'seats': [{'id': 'a', 'roi': [0,0,1,1]}]})
+        tracker = HistoryTracker(['a'])
+        first = FaceObservation((10,10,20,20), 'left', {}, {})
+        second = FaceObservation((10,10,20,20), 'left', {}, {}, estimation_source='head_pose_fallback')
+        a = tracker.update(0, associator.associate([first], 100, 100))[0]
+        b = tracker.update(.1, associator.associate([second], 100, 100))[0]
+        self.assertNotEqual(a.segment_id, b.segment_id)
+        self.assertEqual(b.continuous_seconds, 0)
+        self.assertEqual(b.estimation_source, 'head_pose_fallback')
     def test_duration_uses_source_span_and_resets_at_direction_change(self):
         tracker = HistoryTracker(["a"], max_gap_seconds=1)
         first = tracker.update(2, association())[0]
