@@ -16,7 +16,7 @@ All hand-ins are due at 11:30 PM in the course timezone, which needs confirmatio
 | CP2 | 22 October | 23 October | 15 | Reproducible image prototype, prepared data, preprocessing evidence, validation baseline, and GAZE video evidence. | `cp2-50` |
 | CP3 | 29 October | 30 October | 15 | Core direction classification and seat association with initial tests. | `cp3-core` |
 | CP4 | 12 November | 13 November | 20 | Movement histories, review events, integrated outputs, and performance evidence. | `cp4-80` |
-| CP5 | 19 November | Presentations from 20 November | 30 | Final team presentation and live demonstration. | `v1.0` |
+| CP5 | 19 November | Presentations from 20 November | 30 | Final team presentation and demonstration using saved video; live camera input is optional. | `v1.0` |
 | Individual defense | 19 November | During the team's presentation slot | 10 | Each member explains and defends their contribution. | Same final submission |
 
 The guide has five project checkpoints plus a separately marked individual defense, totaling 100 points. The 50% and 80% checkpoint names do not establish actual completion. Milestone 2 requires a reported completion percentage calculated from completed tasks weighted by effort; document the scope, weights, and evidence rather than counting every task equally.
@@ -33,7 +33,7 @@ The team still needs to confirm the following acceptance and demonstration decis
 
 - [ ] Confirm course deadlines, timezone, and prior submission status.
 - [ ] Confirm an accessible labeled dataset and its permitted uses.
-- [ ] Confirm the demonstration laptop, camera, and three-seat arrangement.
+- [ ] Confirm the demonstration laptop, saved-video input, and three-seat arrangement; camera hardware is needed only for the optional live workflow.
 - [ ] Agree on direction meanings, including left/right and mixed movements.
 - [ ] Agree on authorized video collection, access, and retention.
 - [ ] Confirm whether the proposed local preview satisfies the demonstration needs.
@@ -112,7 +112,7 @@ Unlabeled LFW images can demonstrate an operation but cannot supply head-directi
 
 Image validation depends on prepared data, preprocessing, and the image prototype; it does not wait for video integration. Video input can proceed alongside this path, with FPS evidence completed under `cp2-multi-face`. Hand-in requires both paths and fresh-clone verification. Detailed reporting expectations are in [the evaluation plan](docs/evaluation/README.md) and [checkpoint evidence notes](docs/checkpoints/README.md).
 
-The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms are illustrative. Use a layout and split justified by the actual data; no training split is required for a baseline that does not train. The 80% accuracy and 10 FPS goals remain final project targets, not minimum CP2 scores. Seat association, histories, and movement rules now have development implementations requiring later checkpoint acceptance. Live-camera support and a polished interactive interface remain later work. Screenshots alone cannot satisfy the runnable-prototype requirement.
+The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms are illustrative. Use a layout and split justified by the actual data; no training split is required for a baseline that does not train. The 80% accuracy and 10 FPS goals remain final project targets, not minimum CP2 scores. Seat association, histories, and movement rules now have development implementations requiring later checkpoint acceptance. Live-camera support is optional; integrated event review remains required. Screenshots alone cannot satisfy the runnable-prototype requirement.
 
 ## CP3 Core implementation and testing
 
@@ -141,20 +141,20 @@ The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms a
 
 **Outcome:** Demonstrate sustained and repeated movement events within a usable session review flow.
 
-**Dependencies:** Reliable direction observations, seat histories, and labeled movement intervals. Relevant requirements: FR05 through FR10, completion of live input in FR01, and expanded FR11.
+**Dependencies:** Reliable direction observations, seat histories, and labeled movement intervals. Relevant requirements: FR05 through FR10, saved-video input in FR01, and expanded FR11. Live camera support is optional and does not block CP4 or project completion.
 
 | Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Distinguish brief, sustained, and repeated movements. | Jeremy with Jose | Labeled sequences demonstrate each behavior, with gaps excluded from continuous duration. |
 | Make observation settings adjustable and traceable. | Jeremy with Jose | Two documented settings produce explainable differences and are saved with the session. |
 | Combine the preview, review log, and saved records. | Jeremy | A session can be started, reviewed, stopped, and its records opened independently. |
-| Demonstrate live camera input and failure handling. | Marc with Jeremy | Camera session evidence and understandable handling of an unavailable camera. |
+| Optional: demonstrate live camera input and failure handling. | Marc with Jeremy | If pursued, camera session evidence and understandable handling of an unavailable camera; not a completion gate. |
 | Evaluate movement events and ordinary writing. | All members | Event precision/recall where labels permit, defined matching rules, and unwanted alerts during labeled writing intervals. |
 | Measure the integrated prototype and review errors. | Marc measures speed; Jose leads accuracy; Jeremy integrates | Results on the specified laptop with resolution, face count, coverage, and known failures recorded. |
 
 **Completion gate:**
 
-- [ ] The target three-seat workflow runs from input through review and saved records.
+- [ ] The target three-seat saved-video workflow runs from input through review and saved records.
 - [ ] Events describe movements without asserting misconduct.
 - [ ] Sustained and repeated movements are checked against labeled sequences.
 - [ ] Writing-related false alerts and processing speed are reported.
