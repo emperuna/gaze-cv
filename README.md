@@ -74,7 +74,7 @@ For configured fixed-seat histories and optional movement records, use:
 .\.venv\Scripts\python.exe scripts/process_video.py --input data/raw/video/FourPeople_1280x720_60.webm --output-dir outputs/runs/seat-example --tile-grid 2 --expected-faces 4 --seats data/annotations/fourpeople-seats.json --events
 ```
 
-Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input and a polished review interface remain later work.
+Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input is an optional extension, not required for project completion. Integrated event review remains required work; saved video is the required input workflow.
 
 ## Verification
 

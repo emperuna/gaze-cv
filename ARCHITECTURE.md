@@ -26,7 +26,7 @@ Movement observations support the instructor's judgment. A sideways or downward 
 
 ## Session flow
 
-1. The instructor or demonstrator selects live or prerecorded examination footage.
+1. The instructor or demonstrator selects prerecorded examination footage. Live camera input is an optional extension, not required for project completion.
 2. The seating arrangement and observation settings are established.
 3. GAZE observes visible head directions and associates them with seats.
 4. Movement histories identify sustained or repeated patterns according to the session settings.

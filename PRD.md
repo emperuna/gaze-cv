@@ -44,20 +44,20 @@ The minimum fallback is multi-face detection and frame-level direction labels on
 
 ## Proposed user workflow
 
-1. Select a saved video or a supported camera input.
+1. Select a saved video; a live camera may be used if the optional camera workflow is implemented.
 2. Configure the fixed seat regions and confirm that at least three faces are sufficiently visible.
 3. Load or adjust direction and movement thresholds. Show their values for the session.
 4. Start processing and view face regions, seat IDs, direction labels, and processing status.
 5. Review timestamped movement events alongside the annotated preview.
 6. Stop the session and save its configuration and event log for later review.
 
-Prerecorded video will support repeatable demonstrations and evaluation. The target prototype also supports live classroom observation.
+Saved video is the required input workflow for demonstrations, evaluation, and project completion. Live camera support is an optional extension and is not a completion gate.
 
 ## Functional requirements
 
 | ID | Requirement | Acceptance evidence |
 | --- | --- | --- |
-| FR01 | Read saved video and, for the target prototype, a camera stream. | Valid input processes; missing files, unreadable input, and unavailable cameras produce understandable errors. |
+| FR01 | Read saved video. Live camera input is optional. | Valid saved input processes; missing files and unreadable input produce understandable errors. If the optional camera workflow is implemented, verify camera startup, stop, elapsed session time, and unavailable-camera errors separately. |
 | FR02 | Detect multiple visible faces. | An annotated test clip shows at least three visible faces processed in the same frame; missed detections are included in evaluation. |
 | FR03 | Produce the four direction labels using documented rules. | Labeled evaluation samples produce reproducible predictions; left and right follow a documented subject-relative convention, with preview mirroring handled explicitly. |
 | FR04 | Associate detections with fixed seat IDs within a session. | A labeled multi-person clip supports measurement of ID consistency; ambiguous associations remain unassigned. |
@@ -148,7 +148,7 @@ At the planning date, the guide's CP1 deadline has passed and CP2 is the next li
 
 1. Confirm the accessible labeled dataset, permissions, class counts, and subject split.
 2. Agree on how direction labels are interpreted, including left and right and movements in more than one direction.
-3. Confirm the test laptop, camera, resolution, and three-seat arrangement.
+3. Confirm the test laptop, saved-video resolution, and three-seat arrangement; confirm camera hardware only if the optional live workflow is pursued.
 4. Agree on seat setup, handling unclear observations, and the criteria for reviewing movement events.
 5. Confirm a local preview is sufficient for the course demonstration and agree on footage retention.
 6. Confirm checkpoint submission status, GitHub visibility, repository license, and asset publication permissions.

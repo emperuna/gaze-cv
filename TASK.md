@@ -47,6 +47,8 @@ The original per-member allocation is advisory and does not control task eligibi
 
 Commit and repository pushes remain manual unless separately authorized.
 
+Scope update (27 October 2026): live camera support (`cp4-camera`) is optional. Required completion and laptop evaluation use the integrated saved-video workflow. This local scope change has not been synchronized to GitHub Issues/Projects. Historical checkpoint reports and effort percentages retain their original scope and have not been recalculated.
+
 ## P1
 
 - [x] Confirm course schedule and demonstration constraints
@@ -427,7 +429,7 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Verification**: Complete a saved-input session and reopen exported records to match events and settings to the displayed session.
   - **Remaining**: Saved processing exports annotated video, histories, events, and settings/source hashes. Remaining: complete the integrated display/review of timestamped movement events with seat/direction annotations and verify the start/stop/reopen workflow. Current overlays show source time/seats/directions, while events are exported separately. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
 
-- [ ] Support the live camera workflow
+- [ ] Optional: support the live camera workflow
   - **ID**: cp4-camera
   - **Assignee**: Unassigned
   - **Status**: Backlog
@@ -437,7 +439,7 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/27
   - **Related work**: cp4-export-review
   - **Blocked by**: cp4-export-review
-  - **Acceptance**: Live input uses the shared observation workflow and elapsed session time; unavailable camera input receives an understandable message.
+  - **Acceptance**: Optional extension; not required for checkpoint or project completion. If implemented, live input uses the shared observation workflow and elapsed session time; unavailable camera input receives an understandable message.
   - **Verification**: Run the authorized three-seat camera demonstration and verify startup, stop, camera failure, and time semantics.
   - **Remaining**: Live-camera support and authorized camera startup/stop/failure demonstrations are unimplemented; the integrated review workflow (#26) is still incomplete. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
 
@@ -463,11 +465,11 @@ Commit and repository pushes remain manual unless separately authorized.
   - **Tags**: evaluation, integration
   - **Files**: `docs/evaluation/`, `docs/checkpoints/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/29
-  - **Related work**: cp4-camera, cp4-event-evaluation
-  - **Blocked by**: cp4-camera, cp4-event-evaluation
+  - **Related work**: cp4-export-review, cp4-event-evaluation
+  - **Blocked by**: cp4-export-review, cp4-event-evaluation
   - **Acceptance**: End-to-end speed, supported resolution and face count, direction quality, and known errors are reported; full-scope feasibility and any fallback are explicit.
   - **Verification**: Repeat the documented representative workload on the specified laptop and review errors with all members.
-  - **Remaining**: Historical office-proxy desktop FPS does not satisfy integrated representative laptop evaluation. Camera integration (#27), event evaluation (#28), the specified laptop run, and team error/fallback review remain. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
+  - **Remaining**: Historical office-proxy desktop FPS does not satisfy integrated representative laptop evaluation. Integrated saved-video review (#26), event evaluation (#28), the specified laptop run, and team error/fallback review remain. Camera integration (#27) is optional and does not block this task. See [acceptance audit](docs/checkpoints/task-reconciliation.md) for the historical assessment before this scope change.
 
 - [ ] Prepare the integrated progress submission
   - **ID**: cp4-hand-in
