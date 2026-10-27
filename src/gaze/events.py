@@ -38,30 +38,38 @@ class MovementMonitor:
             raise ValueError("Unique nonempty seat IDs are required")
         self.settings = settings or MovementSettings()
         self.states = {s: {"direction": "unknown", "start": None, "last": None,
-                           "event": None, "repeat_counted": False, "entries": {d: deque() for d in ("left", "right", "down")}} for s in seat_ids}
+                           "event": None, "repeat_review": None, "source": None,
+                           "repeat_counted": False, "entries": {d: deque() for d in ("left", "right", "down")}} for s in seat_ids}
         self.events = []
         self.last_timestamp = None
 
-    def update(self, timestamp, directions):
+    def update(self, timestamp, directions, sources=None):
         if not math.isfinite(timestamp) or timestamp < 0 or (self.last_timestamp is not None and timestamp <= self.last_timestamp):
             raise ValueError("Source timestamps must be finite, nonnegative, and strictly increasing")
         if any(s not in self.states or d not in DIRECTIONS for s, d in directions.items()):
             raise ValueError("Unknown seat or direction")
+        sources = sources if sources is not None else {}
+        if any(s not in self.states or not isinstance(v, str) or not v for s, v in sources.items()):
+            raise ValueError("Estimation sources must identify configured seats and be nonempty strings")
         self.last_timestamp = timestamp
         new = []
         for seat, state in self.states.items():
             direction = directions.get(seat, "unknown")
+            source = sources.get(seat, "facial_landmarks")
             gap = state["last"] is not None and timestamp - state["last"] > self.settings.max_gap + TIME_EPSILON
-            if direction == "unknown" or gap:
+            if direction == "unknown" or gap or state["source"] != source:
                 state["direction"], state["start"], state["event"] = "unknown", None, None
+                state["repeat_review"] = None
                 state["repeat_counted"] = False
                 for queue in state["entries"].values():
                     queue.clear()
+            state["source"] = source
             if direction == "unknown":
                 state["last"] = timestamp
                 continue
             if direction != state["direction"]:
                 state["direction"], state["start"], state["event"] = direction, timestamp, None
+                state["repeat_review"] = None
                 state["repeat_counted"] = False
             if direction != "forward":
                 elapsed = timestamp - state["start"]
@@ -75,6 +83,8 @@ class MovementMonitor:
                         event = {"seat_id": seat, "event_type": "repeated_movement", "direction": direction,
                                  "start_time": queue[0], "end_time": timestamp, "duration": timestamp - queue[0],
                                  "repetition_count": len(queue), "observed_at": timestamp}
+                        event.update(self._review_metadata(direction, source))
+                        state["repeat_review"] = event
                         self.events.append(event)
                         new.append(dict(event))
                         queue.clear()
@@ -83,6 +93,7 @@ class MovementMonitor:
                         event = {"seat_id": seat, "event_type": "sustained_movement", "direction": direction,
                                  "start_time": state["start"], "end_time": timestamp, "duration": elapsed,
                                  "observed_at": timestamp}
+                        event.update(self._review_metadata(direction, source))
                         self.events.append(event)
                         state["event"] = event
                         new.append(dict(event))
@@ -91,7 +102,34 @@ class MovementMonitor:
             state["last"] = timestamp
         return new
 
+    @staticmethod
+    def _review_metadata(direction, source):
+        required = direction in {"left", "right"}
+        return {"review_required": required,
+                "review_label": "For instructor review" if required else None,
+                "review_reason": "sustained_or_repeated_sideways_head_movement" if required else None,
+                "estimation_source": source}
+
+    def review_flags(self):
+        """Current flags only; repeated notices expire after two source seconds.
+
+        Any direction change, missing observation, excessive gap or source change
+        clears the displayed notification. Records remain available in exports.
+        """
+        flags = []
+        for state in self.states.values():
+            sustained = state["event"]
+            repeated = state["repeat_review"]
+            event = sustained if sustained is not None else repeated
+            if event is None or not event["review_required"]:
+                continue
+            if event is repeated and self.last_timestamp - event["observed_at"] > 2.0 + TIME_EPSILON:
+                continue
+            flags.append(dict(event))
+        return flags
+
     def to_dict(self):
-        return {"settings": self.settings.to_dict(), "events": [dict(event) for event in self.events],
+        return {"schema_version": 2, "settings": self.settings.to_dict(), "events": [dict(event) for event in self.events],
+                "review_policy": "left/right sustained or repeated events only; repeated overlays at most 2 source seconds, cleared by direction/source change or unknown",
                 "semantics": "source-time head movement observations for instructor review; no misconduct inference",
                 "validation": "rule behavior tested on synthetic sequences; real event accuracy unvalidated"}

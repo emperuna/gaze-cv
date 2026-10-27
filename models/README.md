@@ -1,5 +1,9 @@
 # Face model and nominal pose geometry
 
+The optional landmark-free head models are documented under
+[experimental head orientation](../docs/evaluation/hidden-faces.md). The existing
+MediaPipe asset and baseline remain the default.
+
 The working CPU pipeline uses MediaPipe Tasks FaceLandmarker with its official versioned float16/1 bundle. The bundle combines face detection and landmark estimation. Facial expressions, blendshapes, transformation matrices, and recognition are not used.
 
 ## Acquire the model

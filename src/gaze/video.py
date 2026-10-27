@@ -58,6 +58,11 @@ def process_video(input_path, output_dir, pipeline, *, annotate_fn=None,
     input_path, output_dir = Path(input_path), Path(output_dir)
     if not input_path.is_file():
         raise VideoError(f"Video file does not exist: {input_path}")
+    pipeline_metadata = getattr(pipeline, 'metadata', {})
+    required_source = pipeline_metadata.get('required_input_sha256')
+    if required_source is not None and required_source != _sha256(input_path):
+        raise VideoError('Calibration source checksum does not match this video')
+    mirrored = pipeline_metadata.get('mirrored_input', False)
     if seat_config is not None and seat_config.get("source_sha256") and seat_config["source_sha256"] != _sha256(input_path):
         raise VideoError("Seat configuration source checksum does not match this video.")
     if max_frames is not None and max_frames <= 0:
@@ -116,14 +121,25 @@ def process_video(input_path, output_dir, pipeline, *, annotate_fn=None,
                 result = pipeline.process(frame)
                 inference_elapsed = time.perf_counter() - inference_started
                 association = None
+                review_flags = []
                 if seat_associator is not None:
-                    association = seat_associator.associate(result.detections, w, h)
+                    association = seat_associator.associate(result.detections, w, h, mirrored=mirrored)
                     entries = history_tracker.update(timestamp, association)
                     if movement_monitor is not None:
-                        movement_monitor.update(timestamp, {entry.seat_id: entry.direction for entry in entries})
+                        movement_monitor.update(timestamp, {entry.seat_id: entry.direction for entry in entries},
+                                                {entry.seat_id: entry.estimation_source for entry in entries})
+                        review_flags = movement_monitor.review_flags()
                 annotated = annotate_fn(frame, result)
                 if association is not None and seat_config is not None:
-                    _annotate_seats(annotated, association, seat_config)
+                    _annotate_seats(annotated, association, seat_config, mirrored)
+                if review_flags:
+                    panel_top = max(0, h-32-24*len(review_flags))
+                    cv2.rectangle(annotated, (0, panel_top), (w-1, h-30), (20, 20, 20), -1)
+                for flag_index, flag in enumerate(review_flags):
+                    text = f"{flag['seat_id']}: For instructor review ({flag['direction']})"
+                    baseline_y = h-38-24*(len(review_flags)-1-flag_index)
+                    cv2.putText(annotated, text, (8, max(12, baseline_y)),
+                                cv2.FONT_HERSHEY_SIMPLEX, .45, (0, 180, 255), 1, cv2.LINE_AA)
                 cv2.putText(annotated, f"frame={frame_index} source={timestamp:.3f}s",
                             (12, h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
                 encoded_frame = annotated
@@ -143,7 +159,7 @@ def process_video(input_path, output_dir, pipeline, *, annotate_fn=None,
                 record = {"frame_index": frame_index, "source_timestamp_seconds": timestamp,
                           "face_count": faces, "expected_face_count": expected_faces,
                           "count_deficit": deficit, "inference_seconds": inference_elapsed,
-                          "result": result.to_dict()}
+                          "result": result.to_dict(), "review_flags": review_flags}
                 if association is not None:
                     record["seat_association"] = association.to_dict()
                 observations.write(json.dumps(record, allow_nan=False) + "\n")
@@ -168,7 +184,7 @@ def process_video(input_path, output_dir, pipeline, *, annotate_fn=None,
         if frame_index == 0:
             raise VideoError("The video contains no decodable frames.")
         # A short clip can be processed, but has no timed post-warmup result.
-        summary = {"schema_version": 1, "run_label": run_label,
+        summary = {"schema_version": 2, "run_label": run_label,
                    "input": str(input_path),
                    "input_sha256": _sha256(input_path),
                    "environment": _environment(),
@@ -203,6 +219,8 @@ def process_video(input_path, output_dir, pipeline, *, annotate_fn=None,
                    "seat_configuration": seat_config,
                    "seat_history_file": "seat_history.json" if history_tracker is not None else None,
                    "movement_events_file": "events.json" if movement_monitor is not None else None,
+                   "observation_kind": "heads" if pipeline_metadata.get('estimation_source') == 'head_pose_fallback' else "faces",
+                   "count_field_note": "face_count/count histogram field names retained for compatibility; use observation_kind to distinguish head mode",
                    "limitations": ["CFR inputs only; VFR timestamps are not supported.",
                                    "No person identities or misconduct inference; event accuracy remains unvalidated.",
                                    "Seat association and observation histories require explicit seat configuration."]}
@@ -236,11 +254,13 @@ def _sha256(path):
     return digest.hexdigest()
 
 
-def _annotate_seats(image, association, config):
+def _annotate_seats(image, association, config, mirrored=False):
     height, width = image.shape[:2]
     for seat in config["seats"]:
         seat_id = seat["id"]
         x0, y0, x1, y1 = seat["roi"]
+        if mirrored:
+            x0, x1 = 1-x1, 1-x0
         observation = association.assignments[seat_id]
         direction = observation.direction if observation is not None else "unknown"
         reason = association.seat_reasons[seat_id]

@@ -19,6 +19,7 @@ class HistoryEntry:
     detection_index: int | None
     segment_id: int | None
     continuous_seconds: float
+    estimation_source: str = 'facial_landmarks'
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -58,6 +59,7 @@ class HistoryTracker:
             reason = association.seat_reasons[seat_id]
             direction = getattr(observation, "direction", "unknown")
             unavailable = getattr(observation, "unavailable_reason", None)
+            source = getattr(observation, 'estimation_source', 'facial_landmarks')
             valid = observation is not None and reason is None and direction in DIRECTIONS and unavailable is None
             if not valid:
                 direction = "unknown"
@@ -66,9 +68,9 @@ class HistoryTracker:
                 segment_id, continuous = None, 0.0
             else:
                 active = self._active[seat_id]
-                if active is None or active["direction"] != direction or timestamp - active["last"] > self.max_gap_seconds + 1e-9:
+                if active is None or active["direction"] != direction or active['source'] != source or timestamp - active["last"] > self.max_gap_seconds + 1e-9:
                     active = {"id": self._next_segment[seat_id], "start": float(timestamp),
-                              "last": float(timestamp), "direction": direction}
+                              "last": float(timestamp), "direction": direction, 'source': source}
                     self._next_segment[seat_id] += 1
                     self._active[seat_id] = active
                 active["last"] = float(timestamp)
@@ -76,14 +78,14 @@ class HistoryTracker:
                 continuous = float(timestamp) - active["start"]
                 reason = None
             entry = HistoryEntry(seat_id, float(timestamp), direction, valid, reason,
-                                 association.detection_indices.get(seat_id), segment_id, continuous)
+                                 association.detection_indices.get(seat_id), segment_id, continuous, source)
             self.entries[seat_id].append(entry)
             result.append(entry)
         self._last_timestamp = float(timestamp)
         return result
 
     def to_dict(self) -> dict:
-        return {"schema_version": 1,
+        return {"schema_version": 2,
                 "timebase": "source session seconds; never processing wall time",
                 "max_gap_seconds": self.max_gap_seconds,
                 "duration_note": "Observed same-direction span only; gaps reset continuity; no movement events inferred.",

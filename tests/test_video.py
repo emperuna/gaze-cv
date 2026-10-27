@@ -127,6 +127,17 @@ class VideoTests(unittest.TestCase):
         self.assertAlmostEqual(events["events"][0]["end_time"], .5)
         self.assertEqual(summary["movement_events_file"], "events.json")
         self.assertEqual(events["input_sha256"], summary["input_sha256"])
+        frames = [json.loads(line) for line in (self.root/'seated/observations.jsonl').read_text().splitlines()]
+        self.assertEqual([len(row['review_flags']) for row in frames], [0, 0, 0, 0, 0, 1])
+        self.assertTrue(events['events'][0]['review_required'])
+        self.assertEqual(history[5]['estimation_source'], 'facial_landmarks')
+
+    def test_head_pipeline_calibration_cannot_be_reused_on_another_source(self):
+        pipeline = FakePipeline()
+        pipeline.metadata = {'required_input_sha256': '0'*64}
+        with self.assertRaisesRegex(VideoError, 'Calibration'):
+            process_video(self.clip, self.root/'output', pipeline)
+        self.assertFalse((self.root/'output/observations.jsonl').exists())
 
     def test_events_cannot_bridge_a_gap_that_breaks_history(self):
         from gaze.seats import SeatAssociator
