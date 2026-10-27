@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "checkpoint": "cp3-core",
+  "pdf_pages": 4,
+  "fixed_test_images": 63,
+  "base_frames": 15,
+  "target_subjects": 3,
+  "gallery_failures": 12,
+  "application_tests_passed": 138,
+  "automation_tests_passed": 16,
+  "publication": "local only; owner push and LMS submission not performed",
+  "metrics": {
+    "baseline": {
+      "eligible": 63,
+      "predicted": 33,
+      "unavailable": 30,
+      "correct": 29,
+      "accuracy": 0.4603174603174603,
+      "macro_f1": 0.4875055285272003,
+      "coverage": 0.5238095238095238,
+      "conditional_accuracy": 0.8787878787878788,
+      "confusion_matrix": {
+        "forward": {
+          "forward": 12,
+          "left": 0,
+          "right": 0,
+          "down": 4,
+          "unknown": 0
+        },
+        "left": {
+          "forward": 0,
+          "left": 0,
+          "right": 0,
+          "down": 0,
+          "unknown": 15
+        },
+        "right": {
+          "forward": 0,
+          "left": 0,
+          "right": 2,
+          "down": 0,
+          "unknown": 15
+        },
+        "down": {
+          "forward": 0,
+          "left": 0,
+          "right": 0,
+          "down": 15,
+          "unknown": 0
+        }
+      },
+      "per_class": {
+        "forward": {
+          "support": 16,
+          "true_positive": 12,
+          "false_positive": 0,
+          "false_negative": 4,
+          "precision": 1.0,
+          "recall": 0.75,
+          "f1": 0.8571428571428571
+        },
+        "left": {
+          "support": 15,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 15,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "right": {
+          "support": 17,
+          "true_positive": 2,
+          "false_positive": 0,
+          "false_negative": 15,
+          "precision": 1.0,
+          "recall": 0.11764705882352941,
+          "f1": 0.21052631578947367
+        },
+        "down": {
+          "support": 15,
+          "true_positive": 15,
+          "false_positive": 4,
+          "false_negative": 0,
+          "precision": 0.7894736842105263,
+          "recall": 1.0,
+          "f1": 0.8823529411764706
+        }
+      },
+      "unavailable_reasons": {
+        "no_detection": 29,
+        "mixed_down_and_sideways": 1
+      },
+      "definitions": {
+        "accuracy": "correct / all eligible labeled images; unknown predictions are incorrect",
+        "macro_f1": "unweighted mean over all four fixed direction classes; zero-denominator F1 is zero",
+        "coverage": "usable direction predictions / all eligible labeled images",
+        "conditional_accuracy": "correct / usable direction predictions; supplementary only",
+        "confusion_matrix": "rows: ground truth; columns: prediction, including unknown",
+        "unit": "one annotated subject per image; multiple faces are ambiguous, not cherry-picked"
+      }
+    },
+    "head": {
+      "eligible": 63,
+      "predicted": 24,
+      "unavailable": 39,
+      "correct": 13,
+      "accuracy": 0.20634920634920634,
+      "macro_f1": 0.3070744039744833,
+      "coverage": 0.38095238095238093,
+      "conditional_accuracy": 0.5416666666666666,
+      "confusion_matrix": {
+        "forward": {
+          "forward": 2,
+          "left": 0,
+          "right": 0,
+          "down": 0,
+          "unknown": 14
+        },
+        "left": {
+          "forward": 0,
+          "left": 3,
+          "right": 0,
+          "down": 0,
+          "unknown": 12
+        },
+        "right": {
+          "forward": 2,
+          "left": 0,
+          "right": 6,
+          "down": 0,
+          "unknown": 9
+        },
+        "down": {
+          "forward": 9,
+          "left": 0,
+          "right": 0,
+          "down": 2,
+          "unknown": 4
+        }
+      },
+      "per_class": {
+        "forward": {
+          "support": 16,
+          "true_positive": 2,
+          "false_positive": 11,
+          "false_negative": 14,
+          "precision": 0.15384615384615385,
+          "recall": 0.125,
+          "f1": 0.13793103448275862
+        },
+        "left": {
+          "support": 15,
+          "true_positive": 3,
+          "false_positive": 0,
+          "false_negative": 12,
+          "precision": 1.0,
+          "recall": 0.2,
+          "f1": 0.3333333333333333
+        },
+        "right": {
+          "support": 17,
+          "true_positive": 6,
+          "false_positive": 0,
+          "false_negative": 11,
+          "precision": 1.0,
+          "recall": 0.35294117647058826,
+          "f1": 0.5217391304347826
+        },
+        "down": {
+          "support": 15,
+          "true_positive": 2,
+          "false_positive": 0,
+          "false_negative": 13,
+          "precision": 1.0,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882
+        }
+      },
+      "unavailable_reasons": {
+        "no_detection": 21,
+        "head_blurry": 13,
+        "head_pose_outside_supported_range": 5
+      },
+      "definitions": {
+        "accuracy": "correct / all eligible labeled images; unknown predictions are incorrect",
+        "macro_f1": "unweighted mean over all four fixed direction classes; zero-denominator F1 is zero",
+        "coverage": "usable direction predictions / all eligible labeled images",
+        "conditional_accuracy": "correct / usable direction predictions; supplementary only",
+        "confusion_matrix": "rows: ground truth; columns: prediction, including unknown",
+        "unit": "one annotated subject per image; multiple faces are ambiguous, not cherry-picked"
+      }
+    }
+  },
+  "files": {
+    "docs/checkpoints/cp3-hand-in/README.md": "0222b0d2672d11c73858b5dbd0ce187c6a05eb0ab894ed688488b5f4eacd59d8",
+    "docs/checkpoints/cp3-hand-in/data-card.md": "399b85aae730d7196a0be7d06bbebbca2d72c7a812771c8378b9adf2d5eed833",
+    "docs/checkpoints/cp3-hand-in/explanation-guide.md": "55ed09a54dc236ab0cadd8959f960b3bffe76b2df0f1058979f93898d4a0ae02",
+    "docs/checkpoints/cp3-hand-in/frozen-protocol-reproduction.json": "e35735c405d13c4e65243e6f47bc6fc006fc0889edf123180e6992a1e16009ed",
+    "docs/checkpoints/cp3-hand-in/frozen-protocol.json": "d327ef02489a95b1163374af473f8c7e12e21fbeb600d43e429ec6ebfd7d35ac",
+    "docs/checkpoints/cp3-hand-in/results.pdf": "78c507328e77f029a42682e70b649a79b03d75a769aa3794120e0ecba3ec6713",
+    "docs/checkpoints/cp3-hand-in/test-log.md": "32f5274205b58cbddb83fa6ed07ad0c4c648b3f1fd005635628d6f2c6279e079",
+    "outputs/evidence/cp3-core/README.md": "bc0fea9f17e763154e4ffe45b6a807a9b4010f2c275a00d023f5b0cdb7c6b782",
+    "outputs/evidence/cp3-core/comparison.json": "9f5d8d4604c06e8c323cd8fcdfe16ee15c7fbdec473775f487af5b867f254804",
+    "outputs/evidence/cp3-core/confusion-matrices.png": "ba461cf6a43be53f1de3bea2db47d517d4cbe66d0c3d7306fa174555ba0f4b3e",
+    "outputs/evidence/cp3-core/gallery/01-5474326-0000-blur.jpg": "c1fa1250828fa30785aec3d717a0353e2ba922fffd31f9cf9d2e8d6add254281",
+    "outputs/evidence/cp3-core/gallery/02-5474326-0000-original.jpg": "755cabaaf15df3930b2efe429396ba8fa590d2dce9c80ec1db1924bbe8375170",
+    "outputs/evidence/cp3-core/gallery/03-5474326-0000-low_light.jpg": "8e29ead55494271583164a0a7bf95d8a331c045725c1850e446ecd11d9c27156",
+    "outputs/evidence/cp3-core/gallery/04-8363848-0135-original.jpg": "beb3aa63f9eeff132710a924bec583602f5dd35b75bc3f00e32b9f8c28b002fb",
+    "outputs/evidence/cp3-core/gallery/05-5474326-0000-occlusion.jpg": "efefe7083232660cba9214f3b2c4cdc7322eda9470ba50ab925487504c7a9e85",
+    "outputs/evidence/cp3-core/gallery/06-5474326-0000-small.jpg": "c0df27e8d254a0e03aeccfca8569c16db63967b6093444449a012bdad1b580dd",
+    "outputs/evidence/cp3-core/gallery/07-5474326-0289-blur.jpg": "17def7367f72ad6dba6d67ed0287d3b99c50fd72ac722648261b2ee49ec4fea8",
+    "outputs/evidence/cp3-core/gallery/08-5474326-0636-original.jpg": "670694c5e94d37b11e8ae41826ce2e6da839d4313e6dd618fcd5a3c9a24648df",
+    "outputs/evidence/cp3-core/gallery/09-5474326-0289-low_light.jpg": "0c9a2d12d265dab90afe334285f72c143251d8c4ba641a238ba18d0e3b7fde85",
+    "outputs/evidence/cp3-core/gallery/10-8363848-0202-original.jpg": "8e6eeea8a0628c652f498a0b1ea36b42991d5fb8fe530e5861136f3f44c357b4",
+    "outputs/evidence/cp3-core/gallery/11-5474326-0289-occlusion.jpg": "3823a41f3d5c3b87a7a89bf7aab94f979a8e3cd1943977441025fb5df5a0bc02",
+    "outputs/evidence/cp3-core/gallery/12-5474326-0289-small.jpg": "0fe65037de82d74675b2b165178c625f7657222489c0ed185072f64cc0263ed4",
+    "outputs/evidence/cp3-core/gallery.json": "58a84f1e0985dca3f59c74f3c1c3ed24a6dbd0be5b8c8054df2f70c533f035da",
+    "outputs/evidence/cp3-core/initial-comparison.json": "e71e4a06862197359da3e8d7d37a75b1d2c12ec092c3e8e837e001cbccbeb124"
+  }
+}

@@ -116,6 +116,8 @@ The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms a
 
 ## CP3 Core implementation and testing
 
+**Updated course instructions supplied 27 October 2026:** use the [CP3 submission index](docs/checkpoints/cp3-hand-in/README.md) for the complete six-item hand-in and 15-point rubric. They require a fixed set never used for training/tuning, baseline-versus-main metrics and laptop speed, at least ten grouped failures, a confusion matrix, three improvements and a 2–4-page PDF. The class check uses three teacher-provided unseen inputs. This supersedes the validation-only comparison below for this hand-in; the existing validation acceptance remains historical evidence. The newly integrated learned head method is evaluated separately from the earlier approximate PnP method. Seat-consistency obligations below remain unresolved project work, not evidence implied by the new classification results. Camera input stays optional.
+
 **Outcome:** Demonstrate the main direction approach and maintain seat references through a session.
 
 **Dependencies:** CP2 baseline and labeled direction data. Seat evaluation also requires authorized, labeled multi-person footage. Relevant requirements: FR03, FR04, initial FR05 and FR10, and FR11.
