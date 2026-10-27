@@ -30,6 +30,8 @@ The 50% checkpoint label, a tag, closed planning Issues, and CI success alone do
 
 ## Current implementation records
 
+- [CP3 technical package](cp3-hand-in/README.md): automatic learned-head pipeline, fixed-set preliminary comparison, four-page report, failure gallery and reproduction instructions. Main-method improvement and human/in-class checks remain unestablished.
+
 - [CP2 and core implementation progress](cp2-progress.md): actual results, requirement coverage, and remaining hand-in gates.
 - [Independent clean-folder reproduction](reproduction.md): pinned environment/model/data reproduction and its human/Git-clone limitations.
 

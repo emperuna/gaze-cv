@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-27T07:58:00.372303+00:00",
+  "note": "Model initialization only; no fixed-set samples passed through inference at freeze time",
+  "manifest_sha256": "afae5e5ee6cf6cc54f15055f507e273e4e317db0850930910bfc0345d1e700ac",
+  "pipelines": {
+    "baseline": {
+      "method": "eye-nose-chin geometry baseline; no pose-angle solver",
+      "threshold_status": "default down=.40 selected on Pointing04 validation; yaw=.18 experimental; overrides user-supplied; no test data used for default selection",
+      "thresholds": {
+        "yaw": 0.18,
+        "down": 0.4,
+        "min_eye_span": 0.015
+      },
+      "max_width": 1280,
+      "mirrored_input": false,
+      "mirror_handling": "input unmirrored",
+      "direction_convention": "subject-relative left/right; down/side mixed -> unknown",
+      "bbox_convention": "original-image pixels (x,y,width,height)",
+      "landmark_convention": "full-image normalized x,y; x rightward,y downward",
+      "detector": {
+        "backend": "MediaPipe FaceLandmarker IMAGE CPU",
+        "mediapipe_version": "0.10.32",
+        "model_path": "/Users/joseaquino/Desktop/PROJECTS/gaze-cv/models/downloads/face_landmarker.task",
+        "model_sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+        "model_url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        "max_faces": 10,
+        "detection_confidence_threshold": 0.5,
+        "face_presence_threshold": 0.5,
+        "landmark_indices": {
+          "left_eye": 263,
+          "right_eye": 33,
+          "nose": 1,
+          "chin": 152,
+          "mouth_right": 61,
+          "mouth_left": 291
+        },
+        "tile_grid": 1,
+        "tiling": "full frame",
+        "face_order": "frame-local detector order; no association or persistent identity"
+      }
+    },
+    "head": {
+      "method": "Gold-YOLO head detection + 6DRepNet360 camera-relative rotation",
+      "estimation_source": "head_pose_fallback",
+      "mirrored_input": false,
+      "detector": {
+        "backend": "ONNX Runtime CPU",
+        "onnxruntime_version": "1.23.2",
+        "model_sha256": {
+          "gold_yolo_n_head_post_0277_0.5071_1x3x640x640.onnx": "37e79ad3cc1eba99feea6884867a29f549d5cbd589b67ceacc8509629505605e",
+          "sixdrepnet360_1x3x224x224_full.onnx": "422b69d17bf02e164bd1062f5e970f67f1688cadf7d700800fad5fa12a16fc82"
+        },
+        "direction_basis": "camera axes; no desk calibration",
+        "model_sources": {
+          "head": "https://github.com/PINTO0309/PINTO_model_zoo/tree/main/421_Gold-YOLO-Head",
+          "pose": "https://github.com/PINTO0309/PINTO_model_zoo/tree/main/423_6DRepNet360"
+        },
+        "upstream_terms": {
+          "head": "GPL-3.0 directory notice",
+          "pose": "MIT directory notice"
+        },
+        "validation": "experimental; no classroom/occlusion accuracy claim"
+      },
+      "head_settings": {
+        "min_detection_score": 0.5,
+        "min_head_pixels": 32,
+        "min_blur_variance": 10.0,
+        "max_clipped_fraction": 0.15,
+        "yaw": 25.0,
+        "pitch": 25.0,
+        "max_yaw": 100.0,
+        "max_pitch": 70.0
+      },
+      "count_semantics": "detected heads, including unknown direction",
+      "direction_convention": "subject-relative left/right about camera-facing neutral; down/side mixed and upward -> unknown",
+      "bbox_convention": "original-image pixels (x,y,width,height)",
+      "limitation": "Head orientation estimate, not eye gaze or direction relative to a desk"
+    }
+  },
+  "inference_sha256": {
+    "src/gaze/__init__.py": "8788f1c1a335d11ab201e4bc8658c90daf7a0f4646e68a63d83d10604a835d9a",
+    "src/gaze/baseline.py": "92b882ab3365f4d0db80d9c3ca2a689ef8a2a28f23d9cb6d53008f0020d75765",
+    "src/gaze/cp3_data.py": "1fe8142343187166941dacfc56544656dec2e8955fe0d79e16b0266e9185001d",
+    "src/gaze/cp3_evaluation.py": "55b63f65f38738a3f4eb2cb2130063e19a75edcd5f09adaced6df4cab37fa1e8",
+    "src/gaze/data.py": "258cead48560b0e36df531a9b1298ce797042951267bdef8f47f0f8919e07b2d",
+    "src/gaze/evaluation.py": "e3026c23e7b77c19b220ea96fd89313f28cc00861cadc57cf0cb6e11a5a9c522",
+    "src/gaze/events.py": "3d6de41974c2cbee27e725edaff0ae18eb7032b2ebd235ef6a8303fbcfdeaad4",
+    "src/gaze/head_download.py": "aa45f6d66a02c8e931005e206bff45263b7f10708504af0f34bd7004117fb331",
+    "src/gaze/head_image.py": "9f3fe6f697cd8cd63ce3e6c646e0c463f9225393c6b0c505bb3f8a8dcff3c682",
+    "src/gaze/head_models.py": "c7c45441a615b0dacb4df0c22b128c3b5463e5c4fa342c20d0da7d3103909528",
+    "src/gaze/head_pose.py": "a5f22057bef885927cb2005eed8a5d6abfe5c6e08016d26b477a3b04e72078fa",
+    "src/gaze/head_session.py": "eb35bd53cbdd8cb33fe3227472b5c3f3a05d3725b784675dbe426e7d26005839",
+    "src/gaze/history.py": "35dd1d47f9f8b078161b8363a10faf9cb18d438794ed60fc4eb58e28da7f6fd2",
+    "src/gaze/landmarks.py": "d1c97e1dcd940a939b4fd20f1ec3591d9c4e535f2f3203b64ed332c11667150c",
+    "src/gaze/pipeline.py": "80e46d54ce0745c9905e7da0b43132919e19dce46a15b86a0c29fdd03527e19c",
+    "src/gaze/pose.py": "b4d7a13851632230cb2021839af0c1f785d45bb02156648bdf775f039597231c",
+    "src/gaze/preprocessing.py": "426cfead056e9c78ff099be7c45331d929b9e0dc16275a54c181679e6e307dbd",
+    "src/gaze/runner.py": "abf0f02bf5d895153dbba316ebcc25078e7b1a76d56036fc636a0e0ae7422866",
+    "src/gaze/seats.py": "ad19eb8756974ccbe74f8306aa25dbca32e47baf17d18fc25f3cf3dee618c453",
+    "src/gaze/video.py": "35fa7de95c5e396ac36a70d536c5317cdf11a2f008794318b9a833cd0dadb143",
+    "src/gaze/visualization.py": "40acc268d89a61cbee0ac25dbe442296979cce78479f7366df70145d65a29e1d",
+    "scripts/run.py": "d0d0b103a1710449483f51e6beac2d16c8ac4d585019baa49d21407bf06447ef",
+    "scripts/evaluate_cp3.py": "c05491e7efee98cd34ed75de79aa44f0b5861e305bb814630df244b1401ac56b",
+    "scripts/prepare_cp3.py": "85d38f2166b4a0d739d04b5957fdcf371f60019d9f07c0c0d64248d633f4b653",
+    "scripts/freeze_cp3.py": "fd20669ef375ac30062ee6ab1e08a6b717972b91bf139827f69000fcddeecc65"
+  }
+}

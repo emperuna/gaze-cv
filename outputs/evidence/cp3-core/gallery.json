@@ -1,0 +1,414 @@
+[
+  {
+    "id": "5474326-0000-blur",
+    "image": "data/processed/cp3/5474326-0000-blur.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "blur",
+    "variant": "blur",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "head_blurry",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [
+        {
+          "bbox": [
+            204.35354614257812,
+            29.35520362854004,
+            199.2030029296875,
+            222.8143310546875
+          ],
+          "direction": "unknown",
+          "landmarks": {},
+          "scores": {
+            "head_detection_score": 0.6476453542709351
+          },
+          "unavailable_reason": "head_blurry",
+          "estimation_source": "head_pose_fallback"
+        }
+      ],
+      "processing_ms": 66.89237500017953,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/01-5474326-0000-blur.jpg"
+  },
+  {
+    "id": "5474326-0000-original",
+    "image": "data/processed/cp3/5474326-0000-original.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "clean_pose",
+    "variant": "original",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "no_detection",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [],
+      "processing_ms": 89.5240830000148,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/02-5474326-0000-original.jpg"
+  },
+  {
+    "id": "5474326-0000-low_light",
+    "image": "data/processed/cp3/5474326-0000-low_light.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "low_light",
+    "variant": "low_light",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "no_detection",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [],
+      "processing_ms": 64.64245900019705,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/03-5474326-0000-low_light.jpg"
+  },
+  {
+    "id": "8363848-0135-original",
+    "image": "data/processed/cp3/8363848-0135-original.png",
+    "subject": "pexels-8363848-target",
+    "source": "pexels-8363848",
+    "cause": "mask_and_classroom_clutter",
+    "variant": "original",
+    "expected": "right",
+    "predicted": "forward",
+    "unavailable_reason": null,
+    "observations": {
+      "width": 200,
+      "height": 200,
+      "detections": [
+        {
+          "bbox": [
+            88.49275207519531,
+            52.83113479614258,
+            59.61719512939453,
+            65.9531021118164
+          ],
+          "direction": "forward",
+          "landmarks": {},
+          "scores": {
+            "head_detection_score": 0.9338264465332031,
+            "model_angles_degrees": [
+              23.2790470123291,
+              -3.8016486167907715,
+              2.8045575618743896
+            ],
+            "camera_yaw_degrees": -23.082725186090443,
+            "camera_down_degrees": 4.905809297035484
+          },
+          "unavailable_reason": null,
+          "estimation_source": "head_pose_fallback"
+        }
+      ],
+      "processing_ms": 102.66162500010978,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/04-8363848-0135-original.jpg"
+  },
+  {
+    "id": "5474326-0000-occlusion",
+    "image": "data/processed/cp3/5474326-0000-occlusion.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "occlusion",
+    "variant": "occlusion",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "head_pose_outside_supported_range",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [
+        {
+          "bbox": [
+            252.1081085205078,
+            212.8094482421875,
+            124.7510986328125,
+            51.66083908081055
+          ],
+          "direction": "unknown",
+          "landmarks": {},
+          "scores": {
+            "head_detection_score": 0.899796724319458,
+            "model_angles_degrees": [
+              3.0509212017059326,
+              177.7063751220703,
+              174.6968536376953
+            ],
+            "camera_yaw_degrees": -176.75034918472272,
+            "camera_down_degrees": 2.0019815545117354
+          },
+          "unavailable_reason": "head_pose_outside_supported_range",
+          "estimation_source": "head_pose_fallback"
+        }
+      ],
+      "processing_ms": 110.21395900002062,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/05-5474326-0000-occlusion.jpg"
+  },
+  {
+    "id": "5474326-0000-small",
+    "image": "data/processed/cp3/5474326-0000-small.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "small",
+    "variant": "small",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "no_detection",
+    "observations": {
+      "width": 128,
+      "height": 67,
+      "detections": [],
+      "processing_ms": 62.67329100001007,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/06-5474326-0000-small.jpg"
+  },
+  {
+    "id": "5474326-0289-blur",
+    "image": "data/processed/cp3/5474326-0289-blur.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "blur",
+    "variant": "blur",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "head_blurry",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [
+        {
+          "bbox": [
+            215.0403289794922,
+            28.239633560180664,
+            197.34893798828125,
+            229.2461700439453
+          ],
+          "direction": "unknown",
+          "landmarks": {},
+          "scores": {
+            "head_detection_score": 0.6129758358001709
+          },
+          "unavailable_reason": "head_blurry",
+          "estimation_source": "head_pose_fallback"
+        }
+      ],
+      "processing_ms": 63.460625000061555,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/07-5474326-0289-blur.jpg"
+  },
+  {
+    "id": "5474326-0636-original",
+    "image": "data/processed/cp3/5474326-0636-original.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "clean_pose",
+    "variant": "original",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "no_detection",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [],
+      "processing_ms": 61.5032919999976,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/08-5474326-0636-original.jpg"
+  },
+  {
+    "id": "5474326-0289-low_light",
+    "image": "data/processed/cp3/5474326-0289-low_light.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "low_light",
+    "variant": "low_light",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "no_detection",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [],
+      "processing_ms": 62.02579199998581,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/09-5474326-0289-low_light.jpg"
+  },
+  {
+    "id": "8363848-0202-original",
+    "image": "data/processed/cp3/8363848-0202-original.png",
+    "subject": "pexels-8363848-target",
+    "source": "pexels-8363848",
+    "cause": "mask_and_classroom_clutter",
+    "variant": "original",
+    "expected": "right",
+    "predicted": "forward",
+    "unavailable_reason": null,
+    "observations": {
+      "width": 200,
+      "height": 200,
+      "detections": [
+        {
+          "bbox": [
+            63.128204345703125,
+            51.26073455810547,
+            62.8017463684082,
+            68.40919494628906
+          ],
+          "direction": "forward",
+          "landmarks": {},
+          "scores": {
+            "head_detection_score": 0.9511685967445374,
+            "model_angles_degrees": [
+              23.114673614501953,
+              3.2982709407806396,
+              0.7152304649353027
+            ],
+            "camera_yaw_degrees": -23.1509603289105,
+            "camera_down_degrees": -3.017279616110941
+          },
+          "unavailable_reason": null,
+          "estimation_source": "head_pose_fallback"
+        }
+      ],
+      "processing_ms": 102.6214579999305,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/10-8363848-0202-original.jpg"
+  },
+  {
+    "id": "5474326-0289-occlusion",
+    "image": "data/processed/cp3/5474326-0289-occlusion.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "occlusion",
+    "variant": "occlusion",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "head_pose_outside_supported_range",
+    "observations": {
+      "width": 640,
+      "height": 338,
+      "detections": [
+        {
+          "bbox": [
+            253.07962036132812,
+            212.796875,
+            130.15611267089844,
+            52.74809646606445
+          ],
+          "direction": "unknown",
+          "landmarks": {},
+          "scores": {
+            "head_detection_score": 0.8736436367034912,
+            "model_angles_degrees": [
+              3.1721346378326416,
+              178.2657470703125,
+              167.29103088378906
+            ],
+            "camera_yaw_degrees": -176.5244499354007,
+            "camera_down_degrees": 0.9943653250853961
+          },
+          "unavailable_reason": "head_pose_outside_supported_range",
+          "estimation_source": "head_pose_fallback"
+        }
+      ],
+      "processing_ms": 103.29795799998465,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/11-5474326-0289-occlusion.jpg"
+  },
+  {
+    "id": "5474326-0289-small",
+    "image": "data/processed/cp3/5474326-0289-small.png",
+    "subject": "pexels-5474326-target",
+    "source": "pexels-5474326",
+    "cause": "small",
+    "variant": "small",
+    "expected": "forward",
+    "predicted": "unknown",
+    "unavailable_reason": "no_detection",
+    "observations": {
+      "width": 128,
+      "height": 67,
+      "detections": [],
+      "processing_ms": 61.564249999946696,
+      "preprocessing": {
+        "input_color": "BGR",
+        "detector": "whole image; resize 640 square; RGB float32 /255 NCHW",
+        "pose": "1.2x head crop; resize 256 square; center crop 224; RGB ImageNet normalization",
+        "mirror_handling": "unmirror before inference; map boxes to source pixels"
+      }
+    },
+    "gallery_image": "outputs/evidence/cp3-core/gallery/12-5474326-0289-small.jpg"
+  }
+]
