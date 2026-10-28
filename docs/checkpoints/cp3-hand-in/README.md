@@ -1,48 +1,26 @@
-# CP3 core implementation and testing
+# CP3 team hand-in
 
-Status: local technical package prepared; main-method improvement, human label review and the in-class checks are not established. This index does not establish instructor acceptance or publication.
-Task: `cp3-hand-in` ([Issue #23](https://github.com/emperuna/gaze-cv/issues/23)). Live assignment and Project status have not been verified in this session.
+**GAZE - CSST 106 - 29 October 2026**
 
-The user supplied the complete Phase 3 instructions and 15-point rubric on 27 October 2026. Hand-in is Thursday 29 October, 11:30 PM; the in-class check is Friday 30 October. No deadline timezone was specified in those instructions.
+Team: Marc Justin Alberto, Jose III Aquino, Jeremy Garin. Deadline supplied for this hand-in: Thursday 29 October, 11:30 PM; class check: Friday 30 October. The supplied instructions do not specify a deadline timezone.
 
-## Required evidence
+Submit the repository link together with tag **cp3-core** and the [four-page results PDF](results.pdf). The tag pins the hand-in snapshot; it does not certify instructor acceptance, human label review or the remaining in-class checks. Publish the final hand-in tag before submitting its links.
 
-| Requirement | Evidence required before hand-in | Current gap |
-| --- | --- | --- |
-| Integrated primary method | [Automatic head pipeline](../../../src/gaze/head_image.py), pinned Gold-YOLO + 6DRepNet360 models; see [model provenance](../../../models/README.md). | Integrated and measured, but lower aggregate accuracy than baseline. |
-| One-command pipeline | [Runner](../../../scripts/run.py) handles an image, media folder or saved clip; [test log](test-log.md) records two images plus one clip and verified outputs. | Teacher's three unseen inputs remain an in-class check. Calibrated seat mode remains separate. |
-| Fixed held-out testing | [63-image manifest](../../../data/annotations/cp3.json), [data card](data-card.md), [original protocol](frozen-protocol.json), [reproduction protocol](frozen-protocol-reproduction.json) and [test log](test-log.md). | Only three subjects; synthetic/correlated cases and visual labels limit inference. Human label cross-check pending. Final split untouched. |
-| Preliminary results | [Evaluator](../../../scripts/evaluate_cp3.py), [measurements](../../../outputs/evidence/cp3-core/comparison.json), [four-page PDF](results.pdf). | One recorded timing workload, not general real-time classroom FPS. |
-| Error analysis | [12-example gallery and full error groups](../../../outputs/evidence/cp3-core/README.md), [confusion matrices](../../../outputs/evidence/cp3-core/confusion-matrices.png). | Groups indicate observed conditions, not proven causes. |
-| Improvement plan | Results PDF page 4 ties three changes to blur/light, direction boundaries, and occlusion/size. | Expected effects are proposed targets, not achieved improvements. |
-| Submission | [Results PDF](results.pdf), this index and reproducible source/evidence; local hand-in tag `cp3-core` identifies the technical package. | Owner publication, LMS submission and instructor acceptance remain separate. |
+## Six required items
 
-The older roadmap and task snapshot describe a validation comparison and additional seat-consistency work. For this submission, the newly supplied instructions require a previously unused set. Historical task completion remains historical; it does not satisfy this new comparison. Seat consistency remains a separate unresolved project requirement.
+| Requirement | Included evidence |
+| --- | --- |
+| 1. Integrated primary algorithm or model | [Automatic head pipeline](../../../src/gaze/head_image.py): Gold-YOLO head detection and 6DRepNet360 pose estimation, with [model provenance](../../../models/README.md). The main method is integrated and measured, but its aggregate accuracy is lower than baseline. |
+| 2. Working one-command pipeline | [Runner](../../../scripts/run.py) accepts an image, media folder or saved clip and saves annotated PNG/AVI outputs, JSON direction labels/counts and a batch record. The [test log](test-log.md) records two images plus one clip and verified outputs. See the command below. |
+| 3. Initial testing on a fixed, previously unused set | [63-image manifest](../../../data/annotations/cp3.json), [data card](data-card.md), [original protocol](frozen-protocol.json), [reproduction protocol](frozen-protocol-reproduction.json) and [test log](test-log.md). Includes low light, blur, profile angles, occlusion, clutter and reduced-size cases. These inputs were not used for local training or tuning; human label cross-check remains pending. |
+| 4. Preliminary comparison and laptop speed | [Evaluator](../../../scripts/evaluate_cp3.py), [saved measurements](../../../outputs/evidence/cp3-core/comparison.json), comparison table below and results PDF page 2. Both methods use the same 63 inputs; laptop timing is one image workload, not whole-video real-time FPS. |
+| 5. Error analysis | [Twelve actual failures grouped by condition](../../../outputs/evidence/cp3-core/README.md), [full gallery records](../../../outputs/evidence/cp3-core/gallery.json), [confusion matrices](../../../outputs/evidence/cp3-core/confusion-matrices.png) and results PDF pages 2–3. Groups describe observed conditions, not proven causes. |
+| 6. Three-change improvement plan | Results PDF page 4 links three proposed changes to blur/light, direction boundaries and occlusion/size, with expected measurable effects. These are proposed targets, not achieved improvements. |
 
-After the owner publishes the branch and local tag, hand in the repository link at `https://github.com/emperuna/gaze-cv/tree/cp3-core` together with `results.pdf`. The tag identifies this preliminary package; it does not certify excellent-tier accuracy, human review or instructor acceptance. No remote publication or course-site submission was performed by this implementation session.
+The fixed set contains 63 images from 15 base frames and three target subjects/recordings. Adjacent frames and synthetic variants are correlated; they are not 63 independent subjects. Labels describe visible head direction, not measured gaze. Upstream pretraining overlap cannot be fully audited. The final Pointing04 test split remains untouched.
 
-## Marking and live check
+## How to run from the hand-in source (macOS CPU)
 
-| Criterion | Maximum | Excellent evidence |
-| --- | ---: | --- |
-| End-to-end pipeline | 4 | All three teacher-provided inputs run from one command with clear outputs and no manual intermediate stages. |
-| Primary algorithm | 4 | Correct integrated main method, sensible preprocessing/post-processing, and measured improvement over baseline. |
-| Testing and preliminary results | 3 | Representative held-out hard cases, appropriate metrics, comparison and speed reproduced by repository code. |
-| Error analysis and plan | 2 | At least 10 failures grouped with counts, correctly interpreted confusion matrix and three cause-specific fixes. |
-| Implementation understanding | 2 | Explain a live failure using the method's mechanics; each member answers questions about their contribution. |
-
-A model that fails to improve must be reported honestly with an explanation; integration alone does not earn the excellent primary-method rating. Local rehearsal cannot establish the teacher's unseen-input demonstration or each member's understanding.
-
-## Results
-
-| Method | Correct | Accuracy | Macro-F1 | Coverage | ms/image | images/s |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Geometric baseline | 29/63 | 46.03% | 0.4875 | 52.38% | 7.66 | 130.54 |
-| Learned head model | 13/63 | 20.63% | 0.3071 | 38.10% | 83.48 | 11.98 |
-
-Measured on an Apple M5 MacBook Air with CPU inference. Both methods score 8/15 on the unmodified inputs; the main method scores 6/6 on strong unmodified portrait profiles versus baseline 1/6, but does worse on the aggregate stress set. No threshold was changed using these test results. See the JSON for exact timing scope, versions and unrounded values.
-
-## Reproduce on the hand-in source
 
 Use Python 3.12 and the project-local environment. From the repository root on macOS:
 
@@ -75,7 +53,51 @@ The preparation command accepts an existing versioned manifest and verifies reco
 
 Place the three supported images/clips directly in that folder. Outputs are sorted into separate directories with PNG/AVI annotations, JSON labels/counts and a batch `run.json`. Exit 0 means all inputs processed; 1 means a per-input failure was logged; 2 means setup/argument processing failed. Counts are observations, not unique people. Folder scanning is nonrecursive. Constant-frame-rate saved video is supported; webcam remains optional and unimplemented.
 
+## Preliminary measured results
+
+
+| Method | Correct | Accuracy | Macro-F1 | Coverage | ms/image | images/s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Geometric baseline | 29/63 | 46.03% | 0.4875 | 52.38% | 7.66 | 130.54 |
+| Learned head model | 13/63 | 20.63% | 0.3071 | 38.10% | 83.48 | 11.98 |
+
+Measured on an Apple M5 MacBook Air with CPU inference. Both methods score 8/15 on the unmodified inputs; the main method scores 6/6 on strong unmodified portrait profiles versus baseline 1/6, but does worse on the aggregate stress set. No threshold was changed using these test results. See the JSON for exact timing scope, versions and unrounded values.
+
+## Twelve failure sample outputs
+
+The [grouped gallery](../../../outputs/evidence/cp3-core/README.md) links all twelve numbered failure images, with reference directions, predictions and recorded reasons. It covers blur, clean poses, low light, masks/classroom clutter, occlusion and small heads. Counts include every failed image, not only the examples selected for display.
+
+Additional view: [baseline and main confusion matrices](../../../outputs/evidence/cp3-core/confusion-matrices.png). The failure gallery is also included on results PDF page 3.
+
+Sources are cottonbro studio, Nicola Barts and RDNE Stock project via Pexels; the [data card](data-card.md) records permissions and source links. These are head-direction predictions, not misconduct labels.
+
+Machine-readable inventory: [package manifest](package-manifest.json), including page count, dataset counts, evidence hashes and measured results.
+
+## Remaining checks and submission
+
+Human label cross-check, the teacher's three unseen inputs and each member's personal explanation remain unverified. Three subjects, correlated frames and synthetic stress conditions limit generalization. Seat consistency is a separate unresolved project requirement. Camera input is optional and unimplemented; calibrated seat mode remains separate from these automatic-mode results.
+
+The Phase 3 instructions supplied on 27 October require a fixed set never used for training or tuning. This supersedes the older roadmap's validation-only comparison for this hand-in; historical validation results do not establish this new comparison.
+
+Task: `cp3-hand-in` ([Issue #23](https://github.com/emperuna/gaze-cv/issues/23)). Live assignment and Project status have not been verified for this documentation update. This file does not establish LMS submission or instructor acceptance; the team performs the actual hand-in.
+
+Submit the repository at `https://github.com/emperuna/gaze-cv/tree/cp3-core` together with `results.pdf`, after the final tag is published.
+
+## Marking and live check
+
+
+| Criterion | Maximum | Excellent evidence |
+| --- | ---: | --- |
+| End-to-end pipeline | 4 | All three teacher-provided inputs run from one command with clear outputs and no manual intermediate stages. |
+| Primary algorithm | 4 | Correct integrated main method, sensible preprocessing/post-processing, and measured improvement over baseline. |
+| Testing and preliminary results | 3 | Representative held-out hard cases, appropriate metrics, comparison and speed reproduced by repository code. |
+| Error analysis and plan | 2 | At least 10 failures grouped with counts, correctly interpreted confusion matrix and three cause-specific fixes. |
+| Implementation understanding | 2 | Explain a live failure using the method's mechanics; each member answers questions about their contribution. |
+
+A model that fails to improve must be reported honestly with an explanation; integration alone does not earn the excellent primary-method rating. Local rehearsal cannot establish the teacher's unseen-input demonstration or each member's understanding.
+
 ## Four-page results PDF
+
 
 1. Task, baseline and main method, direction conventions, pipeline and exact run command.
 2. Dataset separation, permissions, hard-case coverage, evaluation protocol, comparison table and laptop timing conditions.
