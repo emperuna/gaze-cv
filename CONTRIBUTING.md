@@ -10,6 +10,17 @@ Start here when joining the repository or opening it with a coding agent. GAZE h
 4. Use your own GitHub account and Git author identity so your contributions remain attributable. Follow the [README setup](README.md) when an environment is needed.
 5. Read AGENTS.md and its linked planning documents. Choose from the unclaimed shared tasks in TASK.md and confirm live claims and dependencies in GitHub. There are no preset module owners. Repository invitation acceptance is still required for normal collaborator assignment access.
 
+## Check your commit identity
+
+Before your first commit, check the effective identity and where it is configured:
+
+```sh
+git config --show-origin --get user.name
+git config --show-origin --get user.email
+```
+
+Use your own name and an email associated with your GitHub account, including your GitHub-provided `noreply` address if preferred. Repository settings override global defaults. After committing, verify the recorded author with `git log -1 --format='%an <%ae>'`; changing configuration does not update existing commits.
+
 ## Verify the agent has loaded the rules
 
 Codex discovers repository AGENTS.md guidance when starting a session from the project root or its subdirectories. Restart an existing session after pulling updated instructions so it reloads them. See the [official AGENTS.md documentation](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
