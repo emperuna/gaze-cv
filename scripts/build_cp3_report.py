@@ -9,6 +9,7 @@ import cv2
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
@@ -18,19 +19,63 @@ from gaze.pipeline import FaceObservation, ImageResult
 from gaze.preprocessing import read_image, write_image
 from gaze.visualization import annotate
 
+# Use the same Arial family as the CP2 submission where available.
+for font_path in Path('/System/Library/Fonts/Supplemental').glob('Arial*.ttf'):
+    font_manager.fontManager.addfont(str(font_path))
+if any(font.name == 'Arial' for font in font_manager.fontManager.ttflist):
+    plt.rcParams['font.family'] = 'Arial'
+plt.rcParams['pdf.fonttype'] = 42
 
-def paragraph(fig, x, y, text, width=102, size=9, color='#24344a'):
-    lines = '\n'.join(textwrap.fill(part, width) for part in text.split('\n'))
+
+def paragraph(fig, x, y, text, width=95, size=9, color='black'):
+    lines = '\n'.join(textwrap.fill(part, round(width * .93)) for part in text.split('\n'))
     fig.text(x, y, lines, fontsize=size, va='top', color=color, linespacing=1.4)
 
 
 def page(title, number):
-    fig = plt.figure(figsize=(8.27, 11.69), facecolor='white')
-    fig.text(.07, .955, 'GAZE  /  CP3 CORE IMPLEMENTATION & TESTING', size=9, color='#53667c')
-    fig.text(.07, .915, title, size=20, weight='bold', color='#102a43')
-    fig.text(.07, .035, 'Head orientation supports instructor review; it does not establish misconduct.', size=8, color='#53667c')
-    fig.text(.92, .035, str(number), size=9)
+    fig = plt.figure(figsize=(8.5, 11), facecolor='white')
+    seal = fig.add_axes([.20, .89, .10, .085])
+    seal.imshow(plt.imread(Path(__file__).resolve().parents[1] /
+                         'docs/checkpoints/assets/lspu-seal.png'),
+                interpolation='none')
+    seal.axis('off')
+    # Native PDF text remains sharp when zoomed or printed.
+    for y, wording, size, weight in [
+        (.950, 'Republic of the Philippines', 11, 'normal'),
+        (.929, 'Laguna State Polytechnic University', 12, 'bold'),
+        (.908, 'Province of Laguna', 11, 'normal'),
+    ]:
+        label = fig.text(.50, y, wording, size=size, weight=weight,
+                         ha='center', va='center', color='#202c3e')
+        label.set_gid('letterhead')
+    if number == 1:
+        fig.text(.07, .855,
+                 'GAZE: A Computer Vision-Based Head Movement Monitoring System\n'
+                 'for Classroom Examinations (CP3 Results Report)',
+                 size=12, weight='bold', color='black', va='top')
+        fig.text(.07, .79, title, size=10, weight='bold', color='black')
+    else:
+        fig.text(.07, .845, title, size=12, weight='bold', color='black')
     return fig
+
+
+def save_report_page(pdf, fig, root, number):
+    # CP2 uses one-inch margins and a repeating university letterhead. Keep
+    # existing evidence placements below that letterhead on US Letter pages.
+    for artist in fig.texts:
+        if artist.get_gid() == 'letterhead':
+            continue
+        x, y = artist.get_position()
+        if y <= .87 and not (artist.get_fontweight() == 'bold'):
+            artist.set_position((.117 + (x-.07)*.89, .07+(y-.07)*.88))
+        elif artist.get_fontweight() == 'bold':
+            artist.set_x(.117)
+    for ax in fig.axes[1:]:
+        x, y, w, h = ax.get_position().bounds
+        ax.set_position([.117+(x-.07)*.89, .07+(y-.07)*.88, w*.89, h*.88])
+    pdf.savefig(fig)
+    fig.savefig(root/f'.work/cp3-report-page-{number}.png', dpi=120)
+    plt.close(fig)
 
 
 def matrix_axes(fig, bounds, method, result):
@@ -89,7 +134,7 @@ def main(argv=None):
         paragraph(fig, .07, .395, 'Fixed set: 63 images from 15 base frames and 3 target subjects/recordings. Twelve portrait bases each have original, low-light, blur, occlusion and reduced-size variants (60 images); 3 masked classroom crops add natural clutter. No local model fitting or threshold tuning used these sources. Labels were visually assigned before inference; human cross-check is pending. Final Pointing04 test images remain locked.')
         paragraph(fig, .07, .24, 'These are single-subject classification examples, mostly portrait stress proxies. Adjacent frames and variants are correlated; 63 images do not mean 63 independent subjects. Labels describe visible head direction, not measured angles or eye gaze. Synthetic conditions are explicitly identified. Upstream pretraining overlap cannot be fully audited.')
         fig.text(.07, .10, 'python scripts/run.py --input teacher-inputs --output-dir outputs/runs/live --method head', size=8, family='monospace')
-        pdf.savefig(fig); fig.savefig(root/'.work/cp3-report-page-1.png', dpi=120); plt.close(fig)
+        save_report_page(pdf, fig, root, 1)
 
         fig = page('Measured comparison on identical inputs', 2)
         rows = []
@@ -107,7 +152,7 @@ def main(argv=None):
         paragraph(fig,.07,.19,f"Rows are reference classes; columns are predictions. Main model: {unknown}/63 unknown; {cm['down']['forward']} down references are predicted forward. A large unknown column indicates observation failure or rejection, not correct classification. The fixed 25-degree down threshold leaves the original downward examples (estimated about 20-22 degrees) labeled forward.",size=8,width=115)
         env=report['environment']
         paragraph(fig,.07,.105,f"Laptop: Apple M5 MacBook Air, {env['machine']}, Python {env['python']}, {env['os']}. CPU inference; sequential baseline then main. Timing includes decode, preprocessing, inference and record construction; excludes model load, checksum preflight and rendering/writes. No explicit warmup excluded. This is one initial run; it is not whole-video real-time FPS.",size=8,width=115)
-        pdf.savefig(fig);fig.savefig(root/'.work/cp3-report-page-2.png', dpi=120);plt.close(fig)
+        save_report_page(pdf, fig, root, 2)
 
         fig = page('Twelve recorded main-model failures', 3)
         paragraph(fig,.07,.865,'Deterministic round-robin selection across input conditions; every panel is an actual recorded error. Labels show reference -> prediction. Gallery selection affects presentation only; aggregate counts include every failure. See gallery.json for full predictions and reasons.',size=8,width=115)
@@ -118,7 +163,7 @@ def main(argv=None):
             ax.imshow(cv2.cvtColor(image,cv2.COLOR_BGR2RGB));ax.axis('off')
             ax.set_title(f"{index+1}. {record['cause']}\n{record['expected']} -> {record['predicted']}",fontsize=7)
         paragraph(fig,.07,.082,'Sources: cottonbro studio (Pexels 5474326), Nicola Barts (7924513), RDNE Stock project (8363848). Pexels license permits use/modification; no endorsement is implied. Images illustrate model behavior only.',size=7,width=130)
-        pdf.savefig(fig);fig.savefig(root/'.work/cp3-report-page-3.png', dpi=120);plt.close(fig)
+        save_report_page(pdf, fig, root, 3)
 
         fig = page('Error groups, next changes and reproduction', 4)
         counts='; '.join(f"{k}: {v}" for k,v in sorted(head['failure_counts'].items()))
@@ -129,7 +174,7 @@ def main(argv=None):
         paragraph(fig,.07,.35,'Reproduce: install the pinned base and head requirements, download verified models and the three pinned source videos, run prepare_cp3.py, then evaluate_cp3.py with the versioned manifest and frozen protocol. Regeneration verifies image hashes without rewriting the manifest. The submission index supplies exact commands. Numbers come from outputs/evidence/cp3-core/comparison.json; no manual table entries replace evaluator measurements.',size=8,width=115)
         paragraph(fig,.07,.235,'Limits and remaining checks: three subjects, correlated frames, synthetic stress and pending human label review limit generalization. Main method does not improve overall baseline accuracy, so the excellent primary-method rubric tier is not established. Teacher-provided inputs and each member\'s explanation remain in-class checks. Seat/event accuracy and live camera support are outside this automatic-mode result.',size=8,width=115)
         paragraph(fig,.07,.13,'Explain one failure: trace detection score/quality gate -> pose angles -> 25-degree decision -> output. Know why a masked face may defeat landmark geometry, why a head can be detected but direction rejected, and why head orientation cannot prove where the eyes are looking. Every member must rehearse their own explanation.',size=8,width=115)
-        pdf.savefig(fig);fig.savefig(root/'.work/cp3-report-page-4.png', dpi=120);plt.close(fig)
+        save_report_page(pdf, fig, root, 4)
     print(f'Wrote four-page report and {len(chosen)}-failure gallery: {args.output}')
 
 
