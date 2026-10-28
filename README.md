@@ -125,6 +125,19 @@ git diff --check
 
 Application unit tests use synthetic/local temporary inputs without downloading models or datasets. Actual model/data runs are separate recorded integration evidence. GitHub CI passed for PR #44 with pinned dependency installation and both application and repository tests. Current Issue decisions and remaining work are recorded in the [post-merge acceptance audit](docs/checkpoints/task-reconciliation.md). Passing checks does not imply classroom performance or academic completion.
 
+## Project website
+
+The public-facing introduction to GAZE lives in [frontend/](frontend/README.md).
+It uses React, Next.js, TypeScript, Tailwind CSS, and a local shadcn/ui button
+component. Run `npm ci` and `npm run dev` from `frontend/` after the project-local
+cache setup in that README. The landing page contains an explicitly illustrative
+session example. The `/analyze` workspace accepts one image or saved video and
+calls the existing automatic Python runner locally, once the project `.venv` and
+selected models are installed. It previews the input and provides annotated
+outputs and observation downloads. Seat histories and movement events remain a
+separate configured workflow. The website has not been published; this interface
+does not establish a checkpoint gate or classroom accuracy.
+
 ## Organization and collaboration
 
 Reusable processing lives in src/gaze/: data preparation, preprocessing, landmarks, baseline, pose, visualization, pipeline, evaluation, video, seats, histories, and movement rules. Scripts coordinate those modules. [scripts/README.md](scripts/README.md) lists the commands. Configs remain small; current seat configuration is documented alongside its source annotations.
