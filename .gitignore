@@ -37,3 +37,10 @@ htmlcov/
 
 # Project-local scratch, caches, and verification environments (F: only)
 /.work/
+
+# Next.js landing page dependencies and generated output
+/frontend/node_modules/
+/frontend/.next/
+/frontend/out/
+/frontend/*.tsbuildinfo
+/frontend/.sites-runtime/
