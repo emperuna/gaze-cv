@@ -193,7 +193,7 @@
     }
   },
   "files": {
-    "docs/checkpoints/cp3-hand-in/README.md": "0222b0d2672d11c73858b5dbd0ce187c6a05eb0ab894ed688488b5f4eacd59d8",
+    "docs/checkpoints/cp3-hand-in/README.md": "107ccaeed3acc52a7e9c64bba95a61d422b1ca927019706f33eb5ee01ad5801c",
     "docs/checkpoints/cp3-hand-in/data-card.md": "399b85aae730d7196a0be7d06bbebbca2d72c7a812771c8378b9adf2d5eed833",
     "docs/checkpoints/cp3-hand-in/explanation-guide.md": "55ed09a54dc236ab0cadd8959f960b3bffe76b2df0f1058979f93898d4a0ae02",
     "docs/checkpoints/cp3-hand-in/frozen-protocol-reproduction.json": "e35735c405d13c4e65243e6f47bc6fc006fc0889edf123180e6992a1e16009ed",
