@@ -120,7 +120,78 @@ The separate output directory protects development artifacts. On PowerShell set
 `$env:NEXT_DIST_DIR` first. The webpack option avoids a Turbopack build-process
 port failure observed in the agent environment.
 
-## Processor setup and saved-file outputs
+## Saved-video seat and movement review
+
+Choose **Saved video → Seats & movement review**. Upload an authorized
+browser-playable MP4/WebM from one fixed camera. Video timing is checked
+automatically. Click **Suggest seats**, review the boxes and names, then correct
+missed/incorrect regions with **Add seat**, **Edit region** and Remove. Edit
+region lets you redraw an existing box without creating another seat. Suggestions
+use repeated head detections across up to five frames; they are not identities
+or proof that every occupied seat was detected. Existing manual edits stay
+unchanged unless you explicitly choose **Replace current seats**.
+
+The default page shows seat names and a plain-language summary of active movement
+rules. **Advanced seat editing** contains optional exact percentage coordinates
+and a numeric Add control for keyboard-accessible setup. Seek the setup frame
+with the slider. Regions cannot overlap and stay fixed during processing.
+
+The automatic head model and existing experimental rules are the defaults.
+**Advanced settings** contains optional method selection, sustained duration,
+repetition count/window, minimum dwell, maximum gap, mirroring and baseline
+tiling. For mirrored source pixels, the interface maps
+drawn regions into unmirrored configuration coordinates once. Source playback
+itself stays unchanged. Automatic head directions remain camera-relative; these
+regions do not perform neutral/desk calibration.
+
+Review the boxes, then click **Confirm seats & process**. No frame-rate
+confirmation checkbox is required: both setup and actual processing check every
+decoded presentation timestamp against source FPS, allowing millisecond container
+quantization. Missing/duplicate/variable or inconsistent timestamps are rejected
+with guidance to convert a copy. A timing check is not proof of head/seat accuracy.
+Use **Stop** to cancel; navigating away also aborts the request. A ten-minute
+timeout and forced termination after two seconds bound failed worker shutdown.
+Camera, directions-only uploads and review share the local inference reservation.
+The interface does not estimate a progress percentage.
+
+When complete, play the source video with synchronized seat/detection overlays.
+Filter the movement-event table and click a start time to pause/seek there.
+The observed-at column records when the rule triggered. Inspect per-seat history
+intervals, explicit gaps, settings/source hash and downloadable records. Missing
+or ambiguous observations break continuity and clear active review notices.
+
+Completed sessions reopen from the local session list or their bookmarked
+`/analyze?session=<uuid>` URL without inference. The latest 50 are listed; older
+bookmarks load directly. Each session retains its original source, settings,
+observations, histories, events, summary, compact review JSON and annotated AVI in
+ignored `outputs/runs/review/<uuid>/`. The source is served only through local
+guarded APIs with byte-range support. No database or cloud service is used.
+
+Review limits: 64 MB input, 5 minutes, 18,000 frames, 1920 × 1080 source pixels
+(portrait allowed), 20 seats, 64 MB compact review JSON and 512 MB session outputs.
+Output size is checked periodically; truncated/over-limit clips fail rather than
+publish complete sessions. Failed/cancelled files can remain local and need
+manual cleanup. Agree on source/record access and retention. Supported frame
+rates are up to 240 FPS with decoded timestamp cadence within the recorded
+1.1–2 ms tolerance. Unsupported timing/codecs require conversion before review;
+automatic conversion and global ffmpeg/ffprobe installation are not included.
+
+Video inspection/suggestions use `POST /api/review/prepare`, bounded uploads and
+the shared inference reservation. Temporary setup uploads are removed after the
+subprocess exits, including cancellation/failure. **Stop** also cancels setup.
+Direct CCTV/RTSP/ONVIF connections are not implemented. Suitable exported footage
+from one fixed camera uses the upload path; a changed camera angle/layout needs
+new seat confirmation. The intended interface users are faculty, with technical
+controls available only when needed.
+
+**Directions only** preserves the earlier generic video-upload workflow. The
+existing calibrated head/seat CLI remains available separately. This web review
+does not establish seat consistency, event accuracy, classroom generalization,
+or CP4 completion. See [technical evidence](../docs/superpowers/specs/2026-10-29-saved-review-verification.md),
+[CP4 checklist](../docs/checkpoints/cp4-checklist.md), and
+[before/after table](../docs/checkpoints/cp4-before-after.md).
+
+## Processor setup and directions-only saved-file outputs
 
 The processor must be installed in the repository's `.venv`, with models under
 `models/downloads`. Use Python 3.12 and the root README's project-local cache
@@ -157,10 +228,11 @@ codec is supported. TIFF and some video codecs may also lack browser previews
 while remaining decodable by Python. Saved-video timestamps assume constant
 frame rate. Video counts aggregate frame observations, not unique people.
 
-The saved-file workspace uses the automatic camera-relative runner. Camera mode
-uses the same inference adapters through a persistent worker. Seat configuration,
-neutral calibration, seat histories, event generation, and synchronized event
-review are not included and do not complete `cp4-export-review`.
+The directions-only workspace uses the automatic camera-relative runner. Camera
+mode uses the same inference adapters through a persistent worker. The separate
+seat-review mode integrates histories/events and saved-session review; neutral
+calibration remains in the CLI. Technical integration alone does not complete
+team acceptance of `cp4-export-review`.
 
 Check the hero and remaining sections at desktop and narrow/mobile widths.
 Select each of the three example timestamps: `00:12`, `00:24`, and `00:36`.

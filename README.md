@@ -105,7 +105,7 @@ For configured fixed-seat histories and optional movement records, use:
 .\.venv\Scripts\python.exe scripts/process_video.py --input data/raw/video/FourPeople_1280x720_60.webm --output-dir outputs/runs/seat-example --tile-grid 2 --expected-faces 4 --seats data/annotations/fourpeople-seats.json --events
 ```
 
-Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input is an optional extension, not required for project completion. Integrated event review remains required work; saved video is the required input workflow.
+Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input is optional. The website's Saved video → Seats & movement review now integrates playback, events and session reopening; team acceptance and labeled real-video validation remain separate from this implementation. Saved video is the required input workflow.
 
 ## Experimental head orientation without facial landmarks
 
@@ -140,8 +140,15 @@ cache setup in that README. The landing page contains an explicitly illustrative
 session example. The `/analyze` workspace accepts one image or saved video and
 calls the existing automatic Python runner locally, once the project `.venv` and
 selected models are installed. It previews the input and provides annotated
-outputs and observation downloads. Seat histories and movement events remain a
-separate configured workflow. The **Camera** source also provides live directions
+outputs and observation downloads. **Saved video → Seats & movement review**
+adds visual/numeric seat setup, configurable movement rules, synchronized browser
+playback, clickable events, per-seat histories, saved-session reopening and JSON
+downloads. It reuses the existing Python modules; directions remain camera-relative.
+The directions-only upload and calibrated CLI workflows remain available.
+See [saved-review use](frontend/README.md#saved-video-seat-and-movement-review),
+the [CP4 checklist](docs/checkpoints/cp4-checklist.md), and the
+[before/after table](docs/checkpoints/cp4-before-after.md).
+The **Camera** source also provides live directions
 through the same models, with Start/Stop, in-memory frames, and a persistent
 local Python worker. See [camera use and limitations](frontend/README.md#live-camera).
 Physical-camera and classroom checks remain unverified. The website has not been published; this interface

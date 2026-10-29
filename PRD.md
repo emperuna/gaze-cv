@@ -67,6 +67,14 @@ choose Camera and a method, Start and grant permission, review processed frames,
 then Stop. The six-step seat/event workflow above remains a separate configured
 saved-video workflow; camera directions do not establish completion of it.
 
+The website also now exposes the saved-video seat/history/event flow through
+visual/numeric seat setup, adjustable movement settings, synchronized source
+playback, event seeking, downloads and reopening. Technical integration checks
+are recorded in [saved-review verification](docs/superpowers/specs/2026-10-29-saved-review-verification.md).
+Real seat consistency, event precision/recall and writing false alerts remain
+unvalidated. The [CP4 checklist](docs/checkpoints/cp4-checklist.md) maps the newer
+Phase 4 hand-in instructions, including held-out evaluation, to remaining evidence.
+
 ## Functional requirements
 
 | ID | Requirement | Acceptance evidence |

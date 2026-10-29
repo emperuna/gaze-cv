@@ -427,7 +427,8 @@ Scope update (27 October 2026): live camera support (`cp4-camera`) is optional. 
   - **Related work**: cp4-settings, cp2-multi-face
   - **Acceptance**: The workflow starts, displays seat/direction annotations and timestamped events, stops, and saves independently readable records linked to session settings.
   - **Verification**: Complete a saved-input session and reopen exported records to match events and settings to the displayed session.
-  - **Remaining**: Saved processing exports annotated video, histories, events, and settings/source hashes. Remaining: complete the integrated display/review of timestamped movement events with seat/direction annotations and verify the start/stop/reopen workflow. Current overlays show source time/seats/directions, while events are exported separately. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
+  - **Evidence**: The local saved-video web integration now adds visual/numeric seat setup, shared history/event processing, synchronized source playback, event seeking, histories, settings/downloads, Stop and completed-session reopening. Real-model API and synthetic/real-model browser checks passed; see [verification](docs/superpowers/specs/2026-10-29-saved-review-verification.md) and [test cases](docs/checkpoints/cp4-test-cases.md).
+  - **Remaining**: Team acceptance and the representative multi-seat demonstration remain; independently labeled seat/event accuracy is separate work (#20/#28). The historical [acceptance audit](docs/checkpoints/task-reconciliation.md) predates the integration. Assignee/Status remain the last synchronized snapshot; no live Issue/Project mutation or task completion is claimed.
 
 - [ ] Optional: support the live camera workflow
   - **ID**: cp4-camera

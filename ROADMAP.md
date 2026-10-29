@@ -141,7 +141,21 @@ The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms a
 
 ## CP4 Movement analysis and integrated review
 
+The subsequently supplied Phase 4 instructions require a nearly complete
+application, results interface, held-out metrics and demo-laptop speed with a CP3
+comparison, limitations, at least ten test cases (three hard/edge), draft report
+sections, eight or more draft slides, and a backup recording of at most five
+minutes. See the [CP4 checklist](docs/checkpoints/cp4-checklist.md). The supplied
+held-out requirement takes precedence over this roadmap's older CP5-only
+sequencing; freeze and document the revised protocol before any test scoring.
+No held-out results or checkpoint tag are established by the review integration.
+
 **Outcome:** Demonstrate sustained and repeated movement events within a usable session review flow.
+
+The website now implements saved-video seat setup, event seeking, histories,
+settings/downloads and session reopening. [Integration evidence](docs/superpowers/specs/2026-10-29-saved-review-verification.md)
+is separate from labeled real-event/seat validation, representative laptop
+performance and human acceptance; the gates below remain unchecked.
 
 **Dependencies:** Reliable direction observations, seat histories, and labeled movement intervals. Relevant requirements: FR05 through FR10, saved-video input in FR01, and expanded FR11. Live camera support is optional and does not block CP4 or project completion.
 

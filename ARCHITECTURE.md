@@ -40,6 +40,7 @@ If a face cannot be observed reliably, the session should show that uncertainty.
 | Entry point | Processing path | Available outputs |
 | --- | --- | --- |
 | Website Image/Saved video | Next.js upload API → `scripts/run.py` → shared head or baseline pipeline | Annotated PNG/AVI, direction counts, JSON/JSONL, run metadata. |
+| Website Saved video: seat review | Visual seat/settings editor → local review API → `scripts/review_video.py` → shared video/seat/history/event modules | Source-time playback overlays, event seeking, per-seat intervals, raw JSON/AVI downloads and saved-session reopening. |
 | Website Camera | Browser capture → local camera API → persistent `scripts/camera_worker.py` → shared head or baseline pipeline | Continuous preview, matching processed-frame annotations, per-frame counts, elapsed capture time, measured processing throughput. |
 | Configured saved-video command | `scripts/process_video.py` → selected pipeline → fixed-seat association → histories → optional movement rules | Annotated video, observations, seat histories, settings, and optional movement events. Head mode requires seat-bound neutral calibration. |
 
@@ -50,7 +51,12 @@ elapsed monotonic time. Stop, source navigation, hidden tabs, and processing
 failures release the camera and worker; idle/processing timeouts bound abandoned
 sessions. Live and upload processing share one inference reservation per local
 server process. Seat histories and events are available through the configured
-saved-video path and are not connected to Camera mode.
+saved-video command and the website's seat-review mode; they are not connected
+to Camera mode. Review sessions retain their original source, source hash,
+settings and generated records locally. Only completed manifests are listed;
+failed/cancelled partial files require manual cleanup. Browser review assumes
+CFR, with frame-index/FPS overlays on the original source; annotated AVI remains
+a download. See [session scope and checks](docs/superpowers/specs/2026-10-29-saved-review-verification.md).
 
 ## Information used and produced
 

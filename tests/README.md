@@ -13,6 +13,18 @@ See [camera verification](../docs/superpowers/specs/2026-10-29-live-camera-verif
 for real-model and synthetic-browser integration checks. These do not establish
 physical-camera behavior or the authorized three-seat demonstration.
 
+`test_session_review.py` checks saved-review exports/provenance, source-time
+alignment, missing/ambiguous gaps, invalid settings, protected output paths,
+corrupt media, mirroring consistency and frame/output budgets. Frontend
+`review.test.mjs` checks seat validation, frame selection, mirrored coordinates,
+media ranges and cancellation during completed-manifest publication. See
+[saved-review checks](../docs/superpowers/specs/2026-10-29-saved-review-verification.md)
+and the [CP4 test-case table](../docs/checkpoints/cp4-test-cases.md).
+
+`test_review_setup.py` covers quantized constant cadence, inconsistent/unavailable
+timestamps, actual CFR decoding, persistent detections, no-head manual fallback,
+and keeping nearby heads distinct when suggested padding would overlap.
+
 Model/data integration evidence is separate: permitted labeled images, recorded validation results, saved-video overlays/FPS, and clean-folder reproduction. Synthetic tests cannot establish classroom generalization or real temporal-event accuracy. Another human member's reproduction, target-laptop performance, final held-out scoring, and personal code contributions remain explicit checkpoint obligations.
 
 Repository automation tests live in .github/tests/; The updated CI definition runs both suites once this branch is published. Keep generated artifacts and temporary environments out of ordinary commits.

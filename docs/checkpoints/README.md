@@ -2,6 +2,16 @@
 
 For each hand-in, record the checkpoint, submission commit, member contributions, reproduction steps, evidence links, measurements, and remaining limitations. Follow the [root roadmap](../../ROADMAP.md) and tag only the actual hand-in commit. No checkpoint completion is claimed by this documentation.
 
+## CP4 preparation
+
+Use the [seven-item progress checklist](cp4-checklist.md),
+[technical test cases](cp4-test-cases.md), and [before/after table](cp4-before-after.md).
+The [faculty setup comparison](faculty-setup-before-after.md) covers the later
+simplification, automatic suggestions and timing inspection.
+The [saved-review verification record](../superpowers/specs/2026-10-29-saved-review-verification.md)
+records integration evidence separately from remaining held-out evaluation,
+representative laptop performance, report/slides, backup recording and team acceptance.
+
 ## CP2 evidence record
 
 When implementation evidence exists, prepare a CP2 report in this folder. Keep the report consistent with the repository and live Issue/Project state. Milestone 2 - Checkpoint Guide.pdf (pages 1-3) is the source for the course gates; GAZE adds the three-face video and FPS commitment.
