@@ -11,6 +11,9 @@ The separate `/analyze` page accepts one image or saved video and invokes the
 existing Python runner on the same computer. It returns actual annotated media,
 direction counts, and downloadable records. It does not make misconduct decisions.
 
+The **Camera** source adds live direction observations with the same models.
+See [Live camera](#live-camera).
+
 ## Run locally
 
 Use Node.js 20.9 or newer (verified here with Node.js 24.21.0 and npm 11.19.0).
@@ -64,6 +67,60 @@ Open `/analyze` or use **Analyze** in the navigation. Select **Image** or
 automatic head model or geometric baseline, and optionally specify mirrored
 pixels or baseline detector tiling. Input previews use local browser object URLs.
 Only clicking **Analyze** sends the file to this loopback Next.js server.
+
+## Live camera
+
+Open `/analyze`, select **Camera**, choose a camera and method, then click
+**Start camera** and allow browser camera access. The continuous preview is
+shown beside the latest processed frame with direction boxes and per-frame
+counts. Annotations belong to that exact captured frame; they may trail the
+continuous preview when inference is slower. The interface does not mirror
+camera pixels. Left/right remain subject-relative.
+
+Click **Stop** to release the camera and Python worker. Switching sources,
+navigating away, hiding the tab, or processing failure also stops capture.
+Denied permissions, unavailable devices, missing models, and processing failures
+show recovery messages. An abandoned session expires after 15 seconds without
+work; active frames have a 30-second timeout and model startup a 60-second
+timeout. Termination escalates to a forced kill after two seconds. The inference
+reservation remains held until the worker actually exits.
+
+The selected model stays loaded for the session. Browser JPEG frames are scaled
+to at most 1280 × 720, with one frame in flight and at most ten capture requests
+per second. Actual speed may be lower; displayed throughput includes request,
+response, and scheduling time. Capture timestamps use monotonic elapsed seconds
+from the start of frame processing. No camera pixels, recordings, or observation
+records are saved by this mode. Microphone access is not requested.
+
+Camera and saved-file inference share one processing reservation. Stop camera
+analysis before running an upload or another live session. This supports a
+single local server, not public or multi-worker hosting. Use a browser with
+camera support at the loopback URL; remote-device access is not supported.
+
+`POST /api/camera` starts a session with `method`, `mirrored`, and `tileGrid`.
+`POST /api/camera/<uuid>` sends `id`, `timestamp_seconds`, and a base64 JPEG;
+`DELETE /api/camera/<uuid>` stops it. Routes retain the local-origin guards and
+enforce bounded request sizes. Frames pass in memory through stdin/stdout to
+`scripts/camera_worker.py`, using `.venv` and project-local caches.
+
+This mode provides directions only. Seat association, calibrated seat-relative
+directions, histories, events, recording, and live-session downloads are outside
+this version. Physical-camera behavior and the authorized three-seat
+demonstration remain human checks; classroom accuracy remains unvalidated.
+See the [design](../docs/superpowers/specs/2026-10-29-live-camera-design.md).
+
+To verify a production build alongside a development server (macOS/Linux):
+
+```sh
+NEXT_DIST_DIR=.next-verify npm run build -- --webpack
+NEXT_DIST_DIR=.next-verify npm run start -- --port 3001
+```
+
+The separate output directory protects development artifacts. On PowerShell set
+`$env:NEXT_DIST_DIR` first. The webpack option avoids a Turbopack build-process
+port failure observed in the agent environment.
+
+## Processor setup and saved-file outputs
 
 The processor must be installed in the repository's `.venv`, with models under
 `models/downloads`. Use Python 3.12 and the root README's project-local cache

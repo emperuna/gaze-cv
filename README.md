@@ -135,7 +135,10 @@ session example. The `/analyze` workspace accepts one image or saved video and
 calls the existing automatic Python runner locally, once the project `.venv` and
 selected models are installed. It previews the input and provides annotated
 outputs and observation downloads. Seat histories and movement events remain a
-separate configured workflow. The website has not been published; this interface
+separate configured workflow. The **Camera** source also provides live directions
+through the same models, with Start/Stop, in-memory frames, and a persistent
+local Python worker. See [camera use and limitations](frontend/README.md#live-camera).
+Physical-camera and classroom checks remain unverified. The website has not been published; this interface
 does not establish a checkpoint gate or classroom accuracy.
 
 ## Organization and collaboration

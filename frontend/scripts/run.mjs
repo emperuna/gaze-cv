@@ -28,7 +28,7 @@ if (!["dev", "build", "start", "typecheck", "test"].includes(mode)) {
 const executable = mode === "test" ? "--experimental-strip-types" : mode === "typecheck"
   ? resolve(frontend, "node_modules/typescript/bin/tsc")
   : resolve(frontend, "node_modules/next/dist/bin/next");
-const args = mode === "test" ? ["--test", resolve(frontend, "tests/analysis.test.mjs")] : mode === "typecheck"
+const args = mode === "test" ? ["--test", resolve(frontend, "tests/analysis.test.mjs"), resolve(frontend, "tests/camera.test.mjs"), resolve(frontend, "tests/camera-client.test.mjs")] : mode === "typecheck"
   ? ["--noEmit"]
   : [mode, ...(["dev", "start"].includes(mode) ? ["--hostname", "127.0.0.1"] : [])];
 const child = spawn(process.execPath, [executable, ...args, ...process.argv.slice(3)], {

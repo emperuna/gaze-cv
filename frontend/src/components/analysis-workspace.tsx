@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, ArrowDownToLine, ArrowRight, Check, ChevronDown, FileImage, FileJson, FileVideo, ImageIcon, LoaderCircle, RefreshCw, ScanLine, Settings2, ShieldCheck, Upload, Video, X } from "lucide-react";
+import { AlertCircle, ArrowDownToLine, ArrowRight, Check, ChevronDown, FileImage, FileJson, FileVideo, LoaderCircle, RefreshCw, ScanLine, Settings2, ShieldCheck, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DIRECTIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, validateUpload } from "@/lib/analysis-contract";
 import type { AnalysisMethod, AnalysisResult, BackendStatus, MediaKind } from "@/lib/analysis-contract";
 
 function formatSize(bytes: number) { return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`; }
 
-export function AnalysisWorkspace() {
-  const [kind, setKind] = useState<MediaKind>("image");
+export function AnalysisWorkspace({initialKind = 'image', onRunningChange}: {initialKind?:MediaKind;onRunningChange?:(running:boolean) => void}) {
+  const [kind, setKind] = useState<MediaKind>(initialKind);
   const [method, setMethod] = useState<AnalysisMethod>("head");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -27,6 +27,8 @@ export function AnalysisWorkspace() {
   const input = useRef<HTMLInputElement>(null);
   const active = useRef(true);
   const checkingNow = useRef(false);
+
+  useEffect(() => {onRunningChange?.(running);},[running,onRunningChange]);
 
   async function checkBackend() {
     if (checkingNow.current) return;
@@ -90,8 +92,6 @@ export function AnalysisWorkspace() {
 
     <div className="analysis-grid">
       <section className="workspace-card input-card" aria-labelledby="input-heading"><div className="workspace-card-header"><h2 id="input-heading"><span className="panel-number">01</span> Input</h2><span>{file ? "READY TO REVIEW" : "SELECT A SOURCE"}</span></div><div className="input-card-body">
-        <div className="media-switch" role="group" aria-label="Input type">{(["image", "video"] as const).map((item) => <button type="button" key={item} aria-pressed={kind === item} disabled={running} onClick={() => { if (kind !== item) { clearInput(); setKind(item); } }}>{item === "image" ? <ImageIcon size={16} /> : <Video size={16} />}{item === "image" ? "Image" : "Saved video"}</button>)}</div>
-
         {file && preview ? <div className="selected-input"><div className="input-media">{previewError ? <div className="preview-fallback"><AlertCircle size={25} /><strong>Browser preview unavailable</strong><p>This format can still be sent to the Python decoder.</p></div> : kind === "image" ? <img src={preview} alt={`Selected input: ${file.name}`} onError={() => setPreviewError(true)} /> : <video src={preview} controls preload="metadata" onError={() => setPreviewError(true)} aria-label={`Selected video: ${file.name}`} />}</div><div className="selected-file"><span className="file-type-icon">{kind === "image" ? <FileImage size={20} /> : <FileVideo size={20} />}</span><div><strong title={file.name}>{file.name}</strong><span>{formatSize(file.size)} · {kind === "image" ? "Image" : "Saved video"}</span></div><button type="button" onClick={clearInput} disabled={running} aria-label="Remove selected file"><X size={17} /></button></div></div> : <label className={`upload-zone${dragging ? " is-dragging" : ""}`} onDragOver={(event) => { event.preventDefault(); if (!running) setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); if (event.dataTransfer.files.length > 1) setError("Choose one file at a time for this workspace."); else chooseFile(event.dataTransfer.files[0]); }}><input ref={input} type="file" accept={(kind === "image" ? IMAGE_EXTENSIONS : VIDEO_EXTENSIONS).join(",")} disabled={running} onChange={(event) => chooseFile(event.target.files?.[0])} className="sr-only" aria-label={`Choose ${kind === "image" ? "an image" : "a saved video"}`} /><span className="upload-icon"><Upload size={26} strokeWidth={1.5} /></span><strong>Drop your {kind === "image" ? "image" : "video"} here</strong><span>or <u>browse files</u> on this computer</span><small>{kind === "image" ? "JPG, PNG, WEBP, BMP, TIFF" : "MP4, AVI, MOV, MKV, WEBM, M4V"} · up to 64 MB</small></label>}
 
         <div className="analysis-settings"><label htmlFor="analysis-method">Analysis method <span>CPU PROCESSING</span></label><div className="select-wrap"><select id="analysis-method" value={method} disabled={running} onChange={(event) => { setMethod(event.target.value as AnalysisMethod); setResult(null); }}><option value="head">Automatic head model</option><option value="baseline">Geometric baseline</option></select><ChevronDown size={16} /></div><p>{method === "head" ? "Camera-relative head direction without seat calibration. Uses the head detector and rotation model." : "Head direction from facial landmarks. Useful as the reference approach for comparison."}</p></div>
