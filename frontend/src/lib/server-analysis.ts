@@ -4,17 +4,17 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { MAX_UPLOAD_BYTES, OUTPUT_FILES, validateUpload } from "./analysis-contract.ts";
 import type { AnalysisMethod, AnalysisResult, BackendStatus } from "./analysis-contract.ts";
+import { acquireProcessingSlot } from './processing-slot.ts';
 
 export const projectRoot = resolve(process.cwd(), "..");
 export const analysisRoot = join(projectRoot, "outputs", "runs", "web");
-const python = join(projectRoot, ".venv", process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
-const shared = globalThis as typeof globalThis & { gazeAnalysisBusy?: boolean };
+export const python = join(projectRoot, ".venv", process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
 
 async function exists(path: string) {
   try { await access(path); return true; } catch { return false; }
 }
 
-function pythonEnvironment() {
+export function pythonEnvironment() {
   const local = (name: string) => join(projectRoot, ".work", name);
   return {
     ...process.env,
@@ -80,8 +80,9 @@ export async function analyzeFile(file: File, methodValue: unknown, mirrored: bo
   try { upload = validateUpload(file.name, file.size, methodValue); }
   catch (error) { throw new AnalysisError((error as Error).message, file.size > MAX_UPLOAD_BYTES ? 413 : 400); }
   if (!Number.isInteger(tileGrid) || tileGrid < 1 || tileGrid > 4) throw new AnalysisError("Detector tiling must be between 1 and 4.", 400);
-  if (shared.gazeAnalysisBusy) throw new AnalysisError("Another analysis is running. Wait for it to finish before starting another.", 409);
-  shared.gazeAnalysisBusy = true;
+  let release;
+  try { release = acquireProcessingSlot(); }
+  catch (error) { throw new AnalysisError((error as Error).message, 409); }
   try {
     const status = await backendStatus();
     if (!status.methods[upload.method].ready) throw new AnalysisError(status.methods[upload.method].message, 503);
@@ -114,5 +115,5 @@ export async function analyzeFile(file: File, methodValue: unknown, mirrored: bo
       height: upload.kind === "image" ? details.result.height : details.source.height,
       files,
     };
-  } finally { shared.gazeAnalysisBusy = false; }
+  } finally { release(); }
 }

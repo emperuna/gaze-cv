@@ -197,3 +197,26 @@
   .analysis-footer { align-items: flex-start; font-size: 10px; flex-direction: column; gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+.source-selector { width: min(100%, 460px); margin-bottom: 24px; }
+.source-selector button { flex: 1; width: auto; min-height: 44px; }
+.source-selector button:focus-visible, .camera-actions button:focus-visible { outline: 3px solid #48846b; outline-offset: 3px; }
+.camera-preview, .camera-processed { position: relative; min-height: 220px; background: #18271f; border-radius: 6px; overflow: hidden; }
+.camera-preview video, .camera-processed canvas { display: block; width: 100%; height: auto; }
+.camera-preview video { min-height: 220px; max-height: 350px; object-fit: contain; }
+.camera-processed canvas[hidden] { display: none; }
+.camera-placeholder { min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #d6e4cf; padding: 24px; text-align: center; }
+.camera-placeholder p { font-size: 13px; line-height: 1.7; max-width: 32ch; }
+.camera-preview .camera-placeholder { position: absolute; inset: 0; }
+.camera-actions { display: flex; gap: 12px; margin-top: 24px; }
+.camera-actions button { min-height: 44px; flex: 1; }
+.camera-status { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 12px; color: #48623e; min-height: 20px; }
+.camera-note { margin-top: 14px; color: #53664a; font-size: 12px; line-height: 1.8; }
+.camera-counts { margin-top: 24px; }
+.camera-counts h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.camera-counts > div { display: flex; justify-content: space-between; gap: 16px; padding-block: 10px; border-bottom: 1px solid #e6eade; color: #48623e; font-size: 13px; text-transform: capitalize; }
+.camera-counts strong, .camera-output .result-stats strong { font-variant-numeric: tabular-nums; }
+.camera-output .result-disclaimer { color: #53664a; }
+.camera-output .result-stats span { color: #53664a; line-height: 1.6; }
+.camera-grid .analysis-settings > p { color: #53664a; }
+@media (max-width: 420px) { .source-selector button { padding-inline: 7px; gap: 5px; } }
