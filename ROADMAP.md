@@ -145,6 +145,13 @@ The guide's example layouts, `predict.py` name, 70/15/15 split, and algorithms a
 
 **Dependencies:** Reliable direction observations, seat histories, and labeled movement intervals. Relevant requirements: FR05 through FR10, saved-video input in FR01, and expanded FR11. Live camera support is optional and does not block CP4 or project completion.
 
+Implementation note, 29 October 2026: browser Camera mode now provides live
+directions using either existing method, with Start/Stop and in-memory frames.
+[Technical verification](docs/superpowers/specs/2026-10-29-live-camera-verification.md)
+covers real models and synthetic browser lifecycle checks. Physical-camera and
+authorized three-seat demonstrations remain pending. Camera mode has no seats,
+histories, or event review; no CP4 gate is marked complete by this extension.
+
 | Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Distinguish brief, sustained, and repeated movements. | Jeremy with Jose | Labeled sequences demonstrate each behavior, with gaps excluded from continuous duration. |

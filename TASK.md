@@ -435,13 +435,14 @@ Scope update (27 October 2026): live camera support (`cp4-camera`) is optional. 
   - **Status**: Backlog
   - **Milestone**: CP4
   - **Tags**: camera
-  - **Files**: `src/gaze/`, `scripts/`, `tests/`
+  - **Files**: `src/gaze/`, `scripts/`, `tests/`, `frontend/`
   - **Issue**: https://github.com/emperuna/gaze-cv/issues/27
   - **Related work**: cp4-export-review
   - **Blocked by**: cp4-export-review
   - **Acceptance**: Optional extension; not required for checkpoint or project completion. If implemented, live input uses the shared observation workflow and elapsed session time; unavailable camera input receives an understandable message.
   - **Verification**: Run the authorized three-seat camera demonstration and verify startup, stop, camera failure, and time semantics.
-  - **Remaining**: Live-camera support and authorized camera startup/stop/failure demonstrations are unimplemented; the integrated review workflow (#26) is still incomplete. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
+  - **Evidence**: Direction-only browser Camera mode was implemented on 29 October 2026 in `1b0478d`: Start/Stop, device/method selection, shared head/baseline pipelines, elapsed capture timestamps, in-memory frames, and bounded worker cleanup. Both real models and synthetic browser lifecycle checks passed; see [camera verification](docs/superpowers/specs/2026-10-29-live-camera-verification.md).
+  - **Remaining**: Physical-camera startup/stop/failure checks and the authorized three-seat demonstration remain unverified. Camera mode does not include configured seats, histories, recording, or event review; the integrated review workflow (#26) is still incomplete. The historical [acceptance audit](docs/checkpoints/task-reconciliation.md) predates this implementation. Assignee/Status above remain the last synchronized snapshot; no live Issue/Project claim or status change is established by this documentation update.
 
 - [ ] Evaluate movement events and false alerts during writing
   - **ID**: cp4-event-evaluation

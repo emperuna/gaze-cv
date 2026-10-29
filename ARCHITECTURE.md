@@ -35,6 +35,23 @@ Movement observations support the instructor's judgment. A sideways or downward 
 
 If a face cannot be observed reliably, the session should show that uncertainty. An observation gap must not be presented as a continuous movement.
 
+## Implemented processing paths
+
+| Entry point | Processing path | Available outputs |
+| --- | --- | --- |
+| Website Image/Saved video | Next.js upload API → `scripts/run.py` → shared head or baseline pipeline | Annotated PNG/AVI, direction counts, JSON/JSONL, run metadata. |
+| Website Camera | Browser capture → local camera API → persistent `scripts/camera_worker.py` → shared head or baseline pipeline | Continuous preview, matching processed-frame annotations, per-frame counts, elapsed capture time, measured processing throughput. |
+| Configured saved-video command | `scripts/process_video.py` → selected pipeline → fixed-seat association → histories → optional movement rules | Annotated video, observations, seat histories, settings, and optional movement events. Head mode requires seat-bound neutral calibration. |
+
+The Camera path is an optional direction-only extension. The browser owns camera
+permission and device selection; Python keeps the selected model loaded. Frames
+remain in memory, with one in flight and no recording. Capture timestamps use
+elapsed monotonic time. Stop, source navigation, hidden tabs, and processing
+failures release the camera and worker; idle/processing timeouts bound abandoned
+sessions. Live and upload processing share one inference reservation per local
+server process. Seat histories and events are available through the configured
+saved-video path and are not connected to Camera mode.
+
 ## Information used and produced
 
 | Information | Project purpose |
@@ -77,4 +94,4 @@ Use only authorized footage and respect dataset permissions. Agree on who can ac
 
 ## Current evidence boundary
 
-The prototype now supports image direction observations, saved-video annotation, configured fixed seats, source-time histories, and movement-rule records. Validation images and an office video proxy establish limited technical evidence. Final held-out results, classroom event labels, writing-related false alerts, a target laptop run, and each member's own contribution/defense remain separate obligations. See [the checkpoint report](docs/checkpoints/cp2-progress.md).
+The prototype now supports image direction observations, saved-video annotation, configured fixed seats, source-time histories, movement-rule records, and optional browser camera directions. Validation images and an office video proxy establish limited technical evidence. Camera integration was checked with both real model pipelines and synthetic browser media; physical-camera behavior and the authorized three-seat camera demonstration remain unverified. See [camera verification](docs/superpowers/specs/2026-10-29-live-camera-verification.md). Final held-out results, classroom event labels, writing-related false alerts, integrated representative laptop performance, and each member's own contribution/defense remain separate obligations. See [the checkpoint report](docs/checkpoints/cp2-progress.md).

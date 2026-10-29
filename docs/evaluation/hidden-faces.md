@@ -5,7 +5,11 @@ inside manually configured seat head regions; 6DRepNet360 predicts rotation
 without requiring facial landmarks. The learned method processes all detected
 heads in this mode so camera-relative baseline labels cannot mix with calibrated
 seat-relative directions. Baseline and approximate PnP remain the default choices
-for existing commands. Live camera input remains optional and unimplemented.
+for existing commands. Live camera input remains optional. The website now has
+a separate [direction-only Camera mode](../../frontend/README.md#live-camera)
+using the automatic head or baseline pipeline. Calibrated seat-relative camera
+processing is not implemented; the calibrated workflow described here still
+uses saved video. Physical-camera and classroom checks remain unverified.
 
 “Face unavailable” means the head is still sufficiently visible, for example in
 a profile or rear view. It does not mean the head can be fully hidden. This

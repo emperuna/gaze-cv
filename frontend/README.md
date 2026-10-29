@@ -157,7 +157,8 @@ codec is supported. TIFF and some video codecs may also lack browser previews
 while remaining decodable by Python. Saved-video timestamps assume constant
 frame rate. Video counts aggregate frame observations, not unique people.
 
-This page uses the automatic camera-relative runner only. Seat configuration,
+The saved-file workspace uses the automatic camera-relative runner. Camera mode
+uses the same inference adapters through a persistent worker. Seat configuration,
 neutral calibration, seat histories, event generation, and synchronized event
 review are not included and do not complete `cp4-export-review`.
 
@@ -167,7 +168,7 @@ They show a left turn, a writing-compatible downward observation, and a missing
 observation. At mobile widths, check the menu's open/close behavior and section
 links. Verify keyboard focus and respect reduced-motion preferences.
 
-### Verification recorded on 28 October 2026
+### Historical verification recorded on 28 October 2026
 
 - Production build passed with Next.js 16.4.3; the homepage was prerendered.
 - `npm run typecheck` passed.
@@ -187,7 +188,7 @@ Scope: the user-requested public landing page, with no existing backlog task
 claimed or live Issue/Project state changed. The local production server was
 used for HTTP verification and stopped afterward.
 
-### Analysis page verification, 29 October 2026
+### Historical upload-page verification, 29 October 2026
 
 - Production build and TypeScript checks passed for `/analyze` and its API routes.
 - Eight Node tests passed for supported formats, upload limits, method validation,
@@ -206,6 +207,26 @@ used for HTTP verification and stopped afterward.
 - Desktop/mobile visual and browser-interaction checks remain unverified because
   browser automation was blocked in this environment during the earlier check.
 
+### Camera integration verification, 29 October 2026
+
+The earlier sections record their original checkout/environment. In the later
+macOS checkout, the project `.venv` and verified models were available:
+
+- 143 application tests, 16 automation tests, and 20 frontend tests passed.
+- TypeScript checks and a separate webpack production build passed.
+- Both real model workers processed successive repository sample frames;
+  Stop and cancelled startup released the inference reservation.
+- Synthetic-camera browser checks passed for both methods, denied permission,
+  pending-permission cleanup, Stop during model startup, source navigation,
+  hidden-tab/disconnected-track events, and a subsequent real image upload.
+- Desktop/mobile layouts were inspected; 390px had no horizontal overflow.
+- Physical-device permission, camera selection/removal, the three-seat
+  demonstration, and classroom performance remain unverified.
+
+See [full verification details](../docs/superpowers/specs/2026-10-29-live-camera-verification.md),
+including environment constraints and the distinction between simulated events
+and physical-device checks. Camera mode does not save frames or recordings.
+
 ## Edit
 
 - `src/app/page.tsx`: landing-page sections, wording, and research links.
@@ -218,6 +239,10 @@ used for HTTP verification and stopped afterward.
 - `src/app/api/analyze/` and `src/lib/server-analysis.ts`: local Python invocation and downloads.
 - `src/lib/analysis-contract.ts`: shared formats, limits, types, and request guards.
 - `tests/analysis.test.mjs`: Node tests (run with Node.js 22.18+).
+- `src/components/analysis-modes.tsx` and `camera-workspace.tsx`: source selection and camera controls/display.
+- `src/app/api/camera/`, `src/lib/server-camera.ts`, and `camera-session.ts`: live worker/session lifecycle.
+- `src/lib/camera-client.ts`, `camera-contract.ts`, and `processing-slot.ts`: sequential capture, frame contracts, and inference reservation.
+- `tests/camera.test.mjs` and `camera-client.test.mjs`: camera transport, cleanup, timing, and frame-loop tests.
 
 Keep copy consistent with the root PRD and current checkpoint evidence. Do not
 turn targets into achieved results or describe head movements as misconduct.
