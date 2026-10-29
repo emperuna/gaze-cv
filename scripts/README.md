@@ -15,6 +15,8 @@ Run from the repository root using the project interpreter after [README setup](
 | download_head_models.py | Acquire only the selected, SHA256-verified CPU head-detector and full-rotation pose ONNX files from bounded upstream archive streams. |
 | calibrate_heads.py | Build source/model/seat-bound neutral rotations from manually selected forward reference frames for `process_video.py --method head`. |
 | camera_worker.py | Persistent JSONL worker for the website Camera source; reuses one head/baseline pipeline, validates bounded JPEG frames and elapsed capture times, and keeps frames in memory. Camera permission and capture are owned by the browser. |
+| review_video.py | Processes one saved review session from validated settings/seat JSON, using shared video/history/event modules; persists aligned raw and compact records. The web API supplies the stored source/settings and publishes completed sessions. |
+| prepare_review.py | Checks decoded video timestamp cadence and optionally suggests fixed regions from persistent head detections across sampled frames. Suggestions require faculty correction/confirmation; setup is not identity tracking. |
 
 The head mode requires optional dependencies in `requirements-head-pose.txt`.
 See [the head-mode guide](../docs/evaluation/hidden-faces.md) before calibration;

@@ -30,17 +30,24 @@ export function runnerArguments(input: string, output: string, method: AnalysisM
     ...(method === "baseline" ? ["--tile-grid", String(tileGrid)] : [])];
 }
 
-function runPython(args: string[], timeoutMs: number) {
+export function runPython(args: string[], timeoutMs: number, signal?:AbortSignal) {
   return new Promise<{ code: number | null; stdout: string; stderr: string }>((resolvePromise, reject) => {
+    if (signal?.aborted) {reject(new Error('Processing cancelled.'));return;}
     const child = spawn(python, args, { cwd: projectRoot, env: pythonEnvironment(), windowsHide: true, shell: false });
     let stdout = "", stderr = "", expired = false;
-    const timer = setTimeout(() => { expired = true; child.kill(); }, timeoutMs);
+    let killer:ReturnType<typeof setTimeout>|undefined;
+    const terminate=() => {child.kill();killer ??=setTimeout(() => child.kill('SIGKILL'),2000);killer.unref();};
+    const abort=() => terminate();
+    signal?.addEventListener('abort',abort,{once:true});
+    const timer = setTimeout(() => { expired = true; terminate(); }, timeoutMs);
+    const cleanup=() => {clearTimeout(timer);clearTimeout(killer);signal?.removeEventListener('abort',abort);};
     child.stdout.on("data", (chunk) => { stdout = (stdout + chunk.toString()).slice(-65536); });
     child.stderr.on("data", (chunk) => { stderr = (stderr + chunk.toString()).slice(-65536); });
-    child.once("error", (error) => { clearTimeout(timer); reject(error); });
+    child.once("error", (error) => { cleanup(); reject(error); });
     child.once("close", (code) => {
-      clearTimeout(timer);
-      if (expired) reject(new Error("Analysis exceeded the 10-minute limit. Use a shorter saved clip."));
+      cleanup();
+      if (expired) reject(new Error(timeoutMs>=600_000?"Analysis exceeded the 10-minute limit. Use a shorter saved clip.":'Video setup timed out. Try a shorter clip.'));
+      else if(signal?.aborted) reject(new Error('Processing cancelled.'));
       else resolvePromise({ code, stdout, stderr });
     });
   });
