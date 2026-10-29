@@ -2,6 +2,12 @@
 
 GAZE is a local computer vision prototype for reviewing visible head movements. It processes images and saved video, labels head direction, and can associate observations with fixed seat regions. Head movement does not establish cheating; outputs support instructor review.
 
+The local website also supports live camera direction analysis. Open `/analyze`,
+choose **Camera**, select a method, and click **Start camera**. Allow browser
+camera access; **Stop** releases capture and the local processor. Camera frames
+stay in memory. This mode does not create seat histories, movement events, or
+recordings. See [website setup and camera use](frontend/README.md#live-camera).
+
 ## Current state
 
 Working CPU prototype merged into `main` through [PR #44](https://github.com/emperuna/gaze-cv/pull/44), with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. The technical CP2 hand-in files are linked below; instructor acceptance and personal class checks remain unverified. The final held-out test split remains locked. Earlier checkpoint measurements used a desktop; the new CP3 package records a separate laptop workload. Another human member's reproduction remains unverified.
@@ -20,7 +26,7 @@ Start with the [seven-item submission index](docs/checkpoints/cp2-hand-in/README
 
 ## Windows setup on F:
 
-Run from this repository on F:. The following settings apply only to this PowerShell process and child programs; they do not change Windows configuration. They keep local environments, temporary downloads, and library caches in this project. No administrator shell, global Python install, driver change, or camera permission is required.
+Run from this repository on F:. The following settings apply only to this PowerShell process and child programs; they do not change Windows configuration. They keep local environments, temporary downloads, and library caches in this project. No administrator shell, global Python install, or driver change is required. Image/saved-video processing does not require camera permission; the optional browser Camera mode does.
 
 ```powershell
 $taskRoot = (Get-Location).Path

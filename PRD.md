@@ -2,6 +2,15 @@
 
 Status: Requirements for team review, with implementation evidence as of 22 October 2026. Working image/video and core session behavior are recorded in [the checkpoint report](docs/checkpoints/cp2-progress.md); final targets and academic submission are not claimed.
 
+Implementation update, 29 October 2026: the local website now provides optional
+live camera direction analysis with Start/Stop, device/method selection, and
+elapsed capture timestamps. It reuses the existing head and baseline pipelines.
+Camera integration checks used real models and synthetic browser media; physical
+camera and three-seat checks remain unverified. This path does not implement
+seat histories, event review, or recording and does not change the requirements
+or acceptance gates below. See [camera use](frontend/README.md#live-camera) and
+[verification evidence](docs/superpowers/specs/2026-10-29-live-camera-verification.md).
+
 GAZE will help instructors review head movements during classroom examinations. The semester prototype will detect multiple visible faces, estimate head direction, associate observations with fixed seats, and record sustained or repeated movements. This draft translates the concept paper into project goals, user needs, and measurable requirements.
 
 ## Source documents
@@ -52,6 +61,11 @@ The minimum fallback is multi-face detection and frame-level direction labels on
 6. Stop the session and save its configuration and event log for later review.
 
 Saved video is the required input workflow for demonstrations, evaluation, and project completion. Live camera support is an optional extension and is not a completion gate.
+
+The implemented website Camera mode follows a shorter direction-only flow:
+choose Camera and a method, Start and grant permission, review processed frames,
+then Stop. The six-step seat/event workflow above remains a separate configured
+saved-video workflow; camera directions do not establish completion of it.
 
 ## Functional requirements
 

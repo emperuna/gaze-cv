@@ -29,7 +29,7 @@ python -m unittest discover -s .github/tests -v
 git diff --check
 ```
 
-CI currently checks repository Python syntax, local documentation links, conflict markers, task ID/dependency consistency, whitespace, and the automation's behavior. It is not a computer vision evaluation or application test suite. Add meaningful application checks as features are implemented.
+CI currently checks repository Python syntax, local documentation links, conflict markers, task ID/dependency consistency, whitespace, and the automation's behavior. It also installs the pinned application requirements and runs the Python application suite without downloaded assets. It does not run frontend tests/builds, real-model inference, camera demonstrations, or computer vision accuracy evaluation; those require separate recorded verification.
 
 ## Safe rebasing and local work
 
