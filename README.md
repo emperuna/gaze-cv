@@ -1,6 +1,11 @@
-# GAZE
+# Ocular
 
-GAZE is a local computer vision prototype for reviewing visible head movements. It processes images and saved video, labels head direction, and can associate observations with fixed seat regions. Head movement does not establish cheating; outputs support instructor review.
+Ocular is the interface brand for the project previously presented as GAZE.
+The Python package, repository URL, task IDs, and historical checkpoint evidence
+retain their existing names. See the [local website](frontend/README.md) for the
+Ocular workspace and setup.
+
+Ocular is a local computer vision prototype for reviewing visible head movements. It processes images and saved video, labels head direction, and can associate observations with fixed seat regions. Head movement does not establish cheating; outputs support instructor review.
 
 The local website also supports live camera direction analysis. Open `/analyze`,
 choose **Camera**, select a method, and click **Start camera**. Allow browser
