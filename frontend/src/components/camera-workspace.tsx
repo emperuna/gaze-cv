@@ -92,7 +92,7 @@ export function CameraWorkspace() {
     run.current=current;
     const valid=() => mounted.current && current.active && run.current===current;
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access is unavailable. Open GAZE at http://127.0.0.1:3000 in a browser with camera support.');
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access is unavailable. Open Ocular at http://127.0.0.1:3000 in a browser with camera support.');
       const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{width:{ideal:1280},height:{ideal:720},...(device ? {deviceId:{exact:device}} : {})}});
       if (!valid()) {stream.getTracks().forEach(track => track.stop());return;}
       current.stream=stream;
