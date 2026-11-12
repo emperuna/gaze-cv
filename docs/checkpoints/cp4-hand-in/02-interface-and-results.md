@@ -48,4 +48,4 @@ The following screenshots come from the running production application with actu
 
 ![Saved session with synchronized annotations and records](../../../outputs/evidence/cp4/review-interface.png)
 
-The [browser execution record](../../../outputs/evidence/cp4/browser-verification.json) checks image upload, video timing, four-seat processing, downloads, byte-range access, saved-session reopening and the 390px viewport. The [captioned backup recording](ocular-cp4-demo.webm) shows the actual workflow. A human keyboard/usability check and physical-camera check remain separate; webcam use is optional.
+The [browser execution record](../../../outputs/evidence/cp4/browser-verification.json) checks image upload, video timing, four-seat processing, downloads, byte-range access, saved-session reopening and the 390px viewport. The [captioned backup recording](ocular-cp4-demo.mp4) shows the actual workflow. A human keyboard/usability check and physical-camera check remain separate; webcam use is optional.

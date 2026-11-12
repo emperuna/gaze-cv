@@ -166,7 +166,7 @@ Speaker cue: The package includes measured results and an actual captioned brows
 
 Deliverable 3 now contains actual held-out metrics and demo-laptop measurements. Four-seat browser mechanics have been exercised on a permitted office proxy. Independent classroom validation, team review of effort weights/completion and another member’s reproduction remain unverified. [S03]
 
-Deliverable 7 is the actual [captioned browser recording](ocular-cp4-demo.webm), approximately 198 seconds before final encoding checks. The final package index records publication/tag status. A tag does not certify 80% accepted effort or instructor acceptance. [S03]
+Deliverable 7 is the actual [captioned browser recording](ocular-cp4-demo.mp4), approximately 198 seconds before final encoding checks. The final package index records publication/tag status. A tag does not certify 80% accepted effort or instructor acceptance. [S03]
 
 ## Evidence provenance
 
