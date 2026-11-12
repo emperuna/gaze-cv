@@ -41,7 +41,7 @@ Historical measurements retain their original dates and hardware. New CP4 measur
 
 On 12 November 2026, a new project-local Python 3.12.10 environment was installed with the pinned requirements and verified model downloads. The production Next.js build, TypeScript check, 164 application tests, 26 frontend tests and 16 repository automation tests passed. Browser automation processed an actual image and the four-seat excerpt through the real head model, checked 120 saved video frames, retained settings, downloaded records and reopened the completed session. The 390px viewport had no horizontal overflow or page JavaScript errors. This is agent verification, not another human member's reproduction.
 
-Evidence: [browser verification](../../../outputs/evidence/cp4/browser-verification.json), [held-out results](03-evaluation-and-speed.md), [test log](verification.md), [backup demo](ocular-cp4-demo.webm).
+Evidence: [browser verification](../../../outputs/evidence/cp4/browser-verification.json), [held-out results](03-evaluation-and-speed.md), [test log](verification.md), [backup demo](ocular-cp4-demo.mp4).
 
 ## Progress calculation and unfinished acceptance
 

@@ -33,6 +33,6 @@ hashes, three 120-frame benchmark runs per method and the fully decoded recordin
 
 ## Final artifact checks
 
-The backup WebM decoded all 4954 frames at 25 FPS, duration **198.16 seconds** (3 minutes 18 seconds), 1440 × 1000. Representative image/setup/review/seek/reopen frames were visually inspected. [Recording verification](../../../outputs/evidence/cp4/recording-verification.json).
+The backup H.264 MP4 decoded all 4954 frames at 25 FPS, duration **198.16 seconds** (3 minutes 18 seconds), 1440 × 1000. Representative image/setup/review/seek/reopen frames were visually inspected. [Recording verification](../../../outputs/evidence/cp4/recording-verification.json).
 
 All 12 slide previews were inspected, including rerenders after the results/test updates. The PPTX finalizer passed package integrity, layout/heading fit, Arial font policy, four editable native tables and first-party reimport checks, with no findings. This does not certify native PowerPoint playback; the deck remains a draft.
