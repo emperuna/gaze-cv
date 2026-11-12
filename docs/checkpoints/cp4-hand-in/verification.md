@@ -26,3 +26,13 @@ Raw local logs: `.work/cp4-install.log`, `.work/cp4-tests-final.log`, `.work/cp4
 GitHub Issues 26/28/29/30 were read live and were open/unassigned. The authenticated account has repository push permission. Project queries were rejected for missing `read:project` scope; no live Project status or update is claimed. Task dependencies and human acceptance remain visible in TASK.md; no blocked task is marked Done here.
 
 Recording duration, final link/hash checks and publication status are recorded in the package index after final verification. Classroom event accuracy, writing false-alert rates, independent member reproduction and instructor acceptance remain unverified.
+
+Final package checks passed: local inline/reference links, 16 fresh test-case
+rows, 12 Markdown slide sections and 12 PPTX slides, exact frozen implementation
+hashes, three 120-frame benchmark runs per method and the fully decoded recording.
+
+## Final artifact checks
+
+The backup WebM decoded all 4954 frames at 25 FPS, duration **198.16 seconds** (3 minutes 18 seconds), 1440 × 1000. Representative image/setup/review/seek/reopen frames were visually inspected. [Recording verification](../../../outputs/evidence/cp4/recording-verification.json).
+
+All 12 slide previews were inspected, including rerenders after the results/test updates. The PPTX finalizer passed package integrity, layout/heading fit, Arial font policy, four editable native tables and first-party reimport checks, with no findings. This does not certify native PowerPoint playback; the deck remains a draft.

@@ -66,7 +66,7 @@ Saved review keeps source media and provenance in local ignored run directories.
 
 ## Evidence provenance
 
-Measurements and executions retain their original dates and hardware. This document does not report a new model run, live GitHub task status or academic acceptance. Links refer to the accompanying repository; the source revision above identifies the inspected snapshot.
+Historical measurements retain their original dates and hardware. New CP4 measurements are dated 12 November 2026 and linked to machine-readable evidence and frozen implementation hashes. The base revision predates the CP4 changes; the hand-in tag identifies the final package. Academic acceptance and live Project status are not claimed.
 
 [S03]: ../../../docs/checkpoints/cp4-checklist.md "Phase 4 requirements and outstanding evidence"
 [S04]: ../../../docs/superpowers/specs/2026-10-29-saved-review-verification.md "Saved review verification and faculty setup refinement"

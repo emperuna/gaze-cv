@@ -16,7 +16,7 @@ The current checkpoint focuses on integration of processing, faculty setup and r
 
 ## Data
 
-The initial direction dataset uses the author-hosted Pointing04 database with its recorded attribution condition. The repository data card documents 15 subjects and nominal pose targets in 384 by 288 color images. The selected manifest has 240 validation images from subjects 1 to 10 and 120 locked test images from subjects 11 to 15, with 60 and 30 examples per direction respectively. Twenty committed examples come from validation. Source and subject separation prevent reuse of a person or recording across these splits. No local model training is performed. [S07]
+The initial direction dataset uses the author-hosted Pointing04 database with its recorded attribution condition. The repository data card documents 15 subjects and nominal pose targets in 384 by 288 color images. The selected manifest has 240 validation images from subjects 1 to 10 and 120 held-out test images from subjects 11 to 15, with 60 and 30 examples per direction respectively. Twenty committed examples come from validation. Source and subject separation prevent reuse of a person or recording across these splits. No local model training is performed. [S07]
 
 CP3 used a separate fixed stress set from three Pexels recordings by cottonbro studio, Nicola Barts and RDNE Stock project. The set contains 15 original frames and 48 deterministic blur, dimming, occlusion and size variants, for 63 images. Its forward/left/right/down counts are 16/15/17/15. Labels were assigned before inference, with a human cross-check still pending. The small number of people and correlated transformations limit generalization and statistical independence. [S08]
 
@@ -170,7 +170,7 @@ Deliverable 7 is the actual [captioned browser recording](ocular-cp4-demo.webm),
 
 ## Evidence provenance
 
-Measurements and executions retain their original dates and hardware. This document does not report a new model run, live GitHub task status or academic acceptance. Links refer to the accompanying repository; the source revision above identifies the inspected snapshot.
+Historical measurements retain their original dates and hardware. New CP4 measurements are dated 12 November 2026 and linked to machine-readable evidence and frozen implementation hashes. The base revision predates the CP4 changes; the hand-in tag identifies the final package. Academic acceptance and live Project status are not claimed.
 
 [S01]: ../../../PRD.md "Product requirements and supported behavior"
 [S02]: ../../../ARCHITECTURE.md "Current application architecture and processing paths"
