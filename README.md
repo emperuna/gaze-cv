@@ -1,6 +1,20 @@
-# GAZE
+# Ocular
 
-GAZE is a local computer vision prototype for reviewing visible head movements. It processes images and saved video, labels head direction, and can associate observations with fixed seat regions. Head movement does not establish cheating; outputs support instructor review.
+Ocular is the interface brand for the project previously presented as GAZE.
+The Python package, repository URL, task IDs, and historical checkpoint evidence
+retain their existing names. See the [local website](frontend/README.md) for the
+Ocular workspace and setup.
+
+Ocular is a local computer vision prototype for reviewing visible head movements. It processes images and saved video, labels head direction, and can associate observations with fixed seat regions. Head movement does not establish cheating; outputs support instructor review.
+
+The [CP4 hand-in package](docs/checkpoints/cp4-hand-in/README.md) contains the
+numbered Markdown deliverables, frozen held-out results, demo-laptop speed,
+current interface evidence and backup demonstration. On the 120-image Pointing04
+test subset, baseline/head accuracy is 82.50%/76.67%. The measured four-seat
+saved-review medians are 3.44/0.95 FPS on the ASUS Ryzen 5 7520U demo laptop,
+below the 10 FPS target. Different CP3/CP4 datasets prevent an improvement claim.
+Team review of effort-weighted completion and independent classroom validation
+remain outstanding.
 
 The local website also supports live camera direction analysis. Open `/analyze`,
 choose **Camera**, select a method, and click **Start camera**. Allow browser
@@ -10,7 +24,7 @@ recordings. See [website setup and camera use](frontend/README.md#live-camera).
 
 ## Current state
 
-Working CPU prototype merged into `main` through [PR #44](https://github.com/emperuna/gaze-cv/pull/44), with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. The technical CP2 hand-in files are linked below; instructor acceptance and personal class checks remain unverified. The final held-out test split remains locked. Earlier checkpoint measurements used a desktop; the new CP3 package records a separate laptop workload. Another human member's reproduction remains unverified.
+Working CPU prototype merged into `main` through [PR #44](https://github.com/emperuna/gaze-cv/pull/44), with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. The technical CP2 hand-in files are linked below; instructor acceptance and personal class checks remain unverified. The unchanged 120-image held-out selection was frozen and scored for CP4; see the current package above. Earlier checkpoint measurements used a desktop; the new CP3 package records a separate laptop workload. Another human member's reproduction remains unverified.
 
 This branch adds automatic learned-head estimation and a [CP3 technical package](docs/checkpoints/cp3-hand-in/README.md), including a [four-page results PDF](docs/checkpoints/cp3-hand-in/results.pdf), fixed-set evaluator and failure gallery. The main method scores 20.63% versus baseline 46.03% on the initial 63-image stress set; it does not establish overall improvement. Human label review and the teacher's live three-input check remain pending.
 

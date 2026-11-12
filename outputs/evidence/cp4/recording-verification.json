@@ -1,0 +1,46 @@
+{
+  "file": "ocular-cp4-demo.mp4",
+  "container": "MP4",
+  "video_codec": "H.264 / AVC",
+  "pixel_format": "yuv420p",
+  "sha256": "9cf20f4e17df15d85ac7a746a8c9ab650622dc75d7175f8a9cfa084f51220c90",
+  "bytes": 5453001,
+  "fps": 25,
+  "advertised_frames": 4954,
+  "decoded_frames": 4954,
+  "duration_seconds": 198.16,
+  "width": 1440,
+  "height": 1000,
+  "complete_decode": true,
+  "within_five_minutes": true,
+  "conversion": {
+    "source": {
+      "file": "ocular-cp4-demo.webm",
+      "sha256": "0be505eaf6813e6a88d22804af447ae5f8de327bdb8c7980ab32fbd9deb32e6d",
+      "bytes": 11522314,
+      "fps": 25,
+      "advertised_frames": 4954,
+      "decoded_frames": 4954,
+      "duration_seconds": 198.16,
+      "width": 1440,
+      "height": 1000,
+      "complete_decode": true,
+      "within_five_minutes": true
+    },
+    "encoder": "FFmpeg 7.1 libx264",
+    "preset": "medium",
+    "crf": 20,
+    "faststart": true,
+    "audio": "none; source recording was silent",
+    "content": "Full original recording; no cuts or speed changes."
+  },
+  "browser_playback": {
+    "browser": "project-local Chromium",
+    "passed": true,
+    "duration": 198.16,
+    "width": 1440,
+    "height": 1000,
+    "paused": false,
+    "error": null
+  }
+}

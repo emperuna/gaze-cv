@@ -1,12 +1,16 @@
-# GAZE website and local analysis workspace
+# Ocular website and local analysis workspace
 
-A public-facing introduction to GAZE, built with React and the Next.js App
+A public-facing introduction to Ocular (formerly GAZE), built with React and the Next.js App
 Router, TypeScript, Tailwind CSS, Lucide icons, and a locally owned shadcn/ui
 button component. `package-lock.json` pins the installed dependency tree.
 
 The landing page explains the project, its saved-video
-workflow, research evidence, and limitations. The interactive SVG classroom
-example uses hand-authored observations; it is not footage or model output.
+workflow, research evidence, and limitations. The interactive classroom
+example uses AI-generated imagery and fictional observations; it is not footage
+or model output. Its timestamp buttons change the observation example, not the photo.
+The interface follows the centered typography, soft surfaces, pastel cards, and
+dark pill buttons of the user-selected Samfund reference. Brand and image prompts
+are recorded in [the asset notes](public/ASSETS.md).
 The separate `/analyze` page accepts one image or saved video and invokes the
 existing Python runner on the same computer. It returns actual annotated media,
 direction counts, and downloadable records. It does not make misconduct decisions.
@@ -301,12 +305,21 @@ and physical-device checks. Camera mode does not save frames or recordings.
 
 ## Edit
 
+- `src/components/target-cursor.jsx`, `target-cursor.css`, and `hero-target-cursor.tsx`:
+  user-supplied React Bits TargetCursor, scoped to the hero heading/cards/principles.
+  The hero kicker, all six feature cards, and four principle labels are hover
+  targets, including non-interactive containers. Links also receive target locking.
+  Links and enabled buttons keep the pointing-hand cursor, including over icons
+  and other nested content. The reticle
+  spins, snaps to targets, leans with the pointer, and squeezes on press; the
+  normal cursor returns outside the hero. Touch keeps native behavior, and
+  reduced motion disables animation. No additional dependency is required.
 - `src/app/page.tsx`: landing-page sections, wording, and research links.
 - `src/app/globals.css`: colors, typography, layouts, and responsive styles.
-- `src/components/session-preview.tsx`: illustrative SVG and timestamp interaction.
+- `src/components/session-preview.tsx`: generated classroom photo and fictional timestamp interaction.
 - `src/components/site-header.tsx`: desktop and mobile navigation.
 - `src/components/ui/button.tsx`: local shadcn/ui-style component, using Radix Slot and CVA.
-- `src/app/layout.tsx` and `src/app/icon.svg`: metadata and favicon.
+- `src/app/layout.tsx` and `public/brand/ocular-logo-yellow.png`: metadata and favicon.
 - `src/app/analyze/` and `src/components/analysis-workspace.tsx`: media workspace.
 - `src/app/api/analyze/` and `src/lib/server-analysis.ts`: local Python invocation and downloads.
 - `src/lib/analysis-contract.ts`: shared formats, limits, types, and request guards.

@@ -9,7 +9,12 @@ import { VideoWorkspace } from './video-workspace';
 export function AnalysisModes() {
   const [mode,setMode]=useState<'image'|'video'|'camera'>('image');
   const [fileRunning,setFileRunning]=useState(false);
-  useEffect(()=>{if(new URLSearchParams(window.location.search).has('session'))setMode('video');},[]);
+  useEffect(()=>{
+    const query = new URLSearchParams(window.location.search);
+    const requested = query.get('mode');
+    if (query.has('session')) setMode('video');
+    else if (requested === 'image' || requested === 'video' || requested === 'camera') setMode(requested);
+  },[]);
   return <>
     <div className="media-switch source-selector" role="group" aria-label="Analysis source">
       {([{id:'image',label:'Image',icon:ImageIcon},{id:'video',label:'Saved video',icon:Video},{id:'camera',label:'Camera',icon:Camera}] as const).map(({id,label,icon:Icon}) =>
