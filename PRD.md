@@ -13,6 +13,17 @@ or acceptance gates below. See [camera use](frontend/README.md#live-camera) and
 
 GAZE will help instructors review head movements during classroom examinations. The semester prototype will detect multiple visible faces, estimate head direction, associate observations with fixed seats, and record sustained or repeated movements. This draft translates the concept paper into project goals, user needs, and measurable requirements.
 
+Implementation/evaluation update, 12 November 2026: the user's Phase 4 hand-in
+requires held-out evaluation now. The existing 120-image Pointing04 test
+selection was frozen and scored through `src/evaluate.py`, without changing
+direction settings. Baseline/head accuracy is 82.50%/76.67%; four-seat integrated
+saved-review speed on the confirmed ASUS Ryzen 5 7520U laptop is 3.44/0.95 FPS.
+The 10 FPS target is not met. These are laboratory-pose and office-proxy
+measurements, not classroom seat/event accuracy. The test set is now exposed
+and must not be treated as an untouched final set after further development.
+See the [CP4 package](docs/checkpoints/cp4-hand-in/README.md) for protocol,
+measurements, current verification and outstanding acceptance.
+
 ## Source documents
 
 - `Mamaw_ConceptPaper.pdf`, pages 1–4: project scope, algorithms, data plan, responsibilities, targets, and risks.

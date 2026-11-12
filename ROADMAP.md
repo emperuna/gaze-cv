@@ -21,6 +21,16 @@ All hand-ins are due at 11:30 PM in the course timezone, which needs confirmatio
 
 The guide has five project checkpoints plus a separately marked individual defense, totaling 100 points. The 50% and 80% checkpoint names do not establish actual completion. Milestone 2 requires a reported completion percentage calculated from completed tasks weighted by effort; document the scope, weights, and evidence rather than counting every task equally.
 
+Phase 4 update, 12 November 2026: the user-supplied brief requires held-out
+scoring at CP4. This run supersedes the earlier CP5-only test-lock sequencing:
+the unchanged Pointing04 test selection was frozen and scored using
+`src/evaluate.py`. No thresholds were tuned on the outcomes. The split is now
+exposed; later development cannot relabel it as a newly untouched test set.
+The [CP4 package](docs/checkpoints/cp4-hand-in/README.md) records results,
+demo-laptop speed below target, the saved-video fallback, and human acceptance
+still required. This update does not establish 80% accepted effort or completion
+of the dependent academic tasks.
+
 Task leads below reflect the original suggested allocation, not exclusive ownership. Any collaborator may claim unassigned shared work; prerequisites and acceptance criteria determine readiness. Individual defenses remain personal responsibilities. Live claims are recorded in GitHub Issues.
 
 ## Starting position and priorities

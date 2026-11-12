@@ -1,0 +1,12 @@
+{
+  "method": "baseline",
+  "mirrored": false,
+  "tileGrid": 2,
+  "seats": [
+    {"id": "seat-1", "roi": [0.15, 0.28, 0.34, 0.62]},
+    {"id": "seat-2", "roi": [0.35, 0.28, 0.55, 0.62]},
+    {"id": "seat-3", "roi": [0.57, 0.28, 0.77, 0.62]},
+    {"id": "seat-4", "roi": [0.79, 0.2, 1.0, 0.62]}
+  ],
+  "movement": {"min_duration": 1.0, "repetition_count": 2, "repetition_window": 4.0, "repeat_min_duration": 0.25, "max_gap": 0.5}
+}

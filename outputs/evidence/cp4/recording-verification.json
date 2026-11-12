@@ -1,0 +1,13 @@
+{
+  "file": "ocular-cp4-demo.webm",
+  "sha256": "0be505eaf6813e6a88d22804af447ae5f8de327bdb8c7980ab32fbd9deb32e6d",
+  "bytes": 11522314,
+  "fps": 25.0,
+  "advertised_frames": 4954.0,
+  "decoded_frames": 4954,
+  "duration_seconds": 198.16,
+  "width": 1440.0,
+  "height": 1000.0,
+  "complete_decode": true,
+  "within_five_minutes": true
+}
