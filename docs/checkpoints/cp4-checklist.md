@@ -10,6 +10,18 @@ Checked implementation items have technical evidence in the
 Unchecked items need team work or human acceptance. Historical checkpoint
 records remain historical; a working UI is not proof of classification accuracy.
 
+## Verified evidence update — 12 November 2026
+
+The [current numbered package](cp4-hand-in/README.md) contains frozen 120-image
+test results (baseline/head 82.50%/76.67%), three-run integrated video benchmarks
+on the user-confirmed ASUS Ryzen 5 7520U laptop (3.44/0.95 FPS), 16 fresh cases,
+report sections, a 12-slide editable deck and a fully decoded 198.16-second
+captioned real-browser recording. A four-seat public-domain office proxy was
+processed; this does not replace classroom event/seat validation. The 10 FPS
+target was not met. Team review of effort weights, independent reproduction
+and academic acceptance remain unchecked. Issue reads succeeded; Project
+reads lacked scope, and no Project update is claimed.
+
 ## 1. Nearly complete working application
 
 - [x] Image input and automatic/baseline direction processing exist.
@@ -55,22 +67,21 @@ do not invent confidence values or unsupported outputs.
 ## 3. Held-out evaluation, laptop speed and CP3 comparison
 
 - [ ] Confirm held-out labels, source/subject separation, permissions and leakage checks.
-- [ ] Freeze preprocessing/model/threshold/settings versions before test inference.
-- [ ] Reconcile the new CP4 held-out-test requirement with the older roadmap/task
+- [x] Freeze preprocessing/model/threshold/settings versions before test inference.
+- [x] Reconcile the new CP4 held-out-test requirement with the older roadmap/task
   sequencing that locked final test scoring until CP5. The supplied Phase 4
   instruction governs this hand-in; record the revised protocol before scoring.
-- [ ] Provide the requested `src/evaluate.py` entry point, or confirm that the
-  instructor accepts the existing evaluator location. The current
-  `scripts/evaluate.py` deliberately scores validation only; it is not yet a
-  CP4 held-out evaluation entry point.
-- [ ] Run baseline and main method on identical held-out inputs with identical
+- [x] Provide the requested `src/evaluate.py` entry point, or confirm that the
+  instructor accepts the existing evaluator location. The legacy `scripts/evaluate.py` remains validation-only; the new
+  `src/evaluate.py` freeze/run commands provide the required held-out entry point.
+- [x] Run baseline and main method on identical held-out inputs with identical
   label mapping and failure accounting. Count missed/unknown cases in denominators.
-- [ ] Export accuracy, macro-F1, confusion matrices, coverage, counts and provenance.
+- [x] Export accuracy, macro-F1, confusion matrices, coverage, counts and provenance.
 - [ ] Evaluate seat consistency and movement precision/recall/writing false alerts
   against independently labeled video, if claiming those behaviors are reliable.
-- [ ] Measure representative end-to-end saved-video speed on the demo laptop;
+- [x] Measure representative end-to-end saved-video speed on the demo laptop;
   record CPU/runtime, source resolution, face count, settings, warmup and exclusions.
-- [ ] Compare with CP3, explaining changed conditions and dataset limitations.
+- [x] Compare with CP3, explaining changed conditions and dataset limitations.
 
 CP3's 63-image stress-set baseline/main accuracies were 46.03%/20.63%.
 Different test-set scores are not a directly comparable improvement. The new
@@ -87,7 +98,7 @@ event-accuracy, or representative laptop-performance evidence.
 - [ ] Collect representative successes/failures: blur, dim lighting, small/profile
   heads, occlusion, crowded/missing seats and ordinary writing.
 - [ ] Explain observed failure mechanisms using actual outputs rather than speculation.
-- [ ] Report accuracy/coverage/speed tradeoffs and conditions not designed for.
+- [x] Report accuracy/coverage/speed tradeoffs and conditions not designed for.
 - [ ] State every incomplete/unvalidated PRD requirement and any fallback decision.
 
 ## 5. At least ten test cases
@@ -102,21 +113,21 @@ event-accuracy, or representative laptop-performance evidence.
 
 ## 6. Report draft and presentation draft
 
-- [ ] Introduction: problem, users, objectives, scope and review-aid limitations.
-- [ ] Data: permissions, sources, labels, split counts, hard cases and preprocessing.
-- [ ] Method: baseline/main models, seat association, history/gap rules, movement
+- [x] Introduction: problem, users, objectives, scope and review-aid limitations.
+- [x] Data: permissions, sources, labels, split counts, hard cases and preprocessing.
+- [x] Method: baseline/main models, seat association, history/gap rules, movement
   settings, interface integration and saved-session provenance.
-- [ ] Experiments: frozen protocol, metrics, demo hardware, CP3 comparison and errors.
-- [ ] At least eight draft slides: problem; scope; data; architecture; methods;
+- [x] Experiments: frozen protocol, metrics, demo hardware, CP3 comparison and errors.
+- [x] At least eight draft slides: problem; scope; data; architecture; methods;
   application demonstration; results/speed; limitations and remaining work.
 - [ ] Each member reviews the draft and can explain their contribution.
 
 ## 7. Backup demonstration and hand-in
 
-- [ ] Record a demonstration no longer than five minutes: startup, authorized
+- [x] Record a demonstration no longer than five minutes: startup, authorized
   input, seat setup, processing, playback/event seeking, saved reopening and limitations.
-- [ ] Verify the recording plays independently and contains no unauthorized footage.
-- [ ] Package the report, slides, held-out metrics, laptop speed, analysis,
+- [x] Verify the recording plays independently and contains no unauthorized footage.
+- [x] Package the report, slides, held-out metrics, laptop speed, analysis,
   test-case table and recording with clear links from the repository.
 - [ ] Team reviews the actual submission revision and checks all seven items.
 - [ ] Commit the authorized final package, tag that hand-in commit `cp4-80`, and
