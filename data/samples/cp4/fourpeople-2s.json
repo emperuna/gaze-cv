@@ -1,0 +1,8 @@
+{
+  "source": "https://media.xiph.org/video/derf/webm/FourPeople_1280x720_60.webm",
+  "permission": "Public domain, as listed at https://media.xiph.org/video/derf/",
+  "source_sha256": "1e4a5df7e67ae985370321cc2c91b8595f7e3433ad8ee1e84da7a26ff5254deb",
+  "sha256": "f6e7daf20b31bb9904a7e02486574014ffe251c68dff1c9638e39668b65ab28f",
+  "transformation": "First 120 decoded source frames, VP8 WebM, 1280x720 at 60 FPS; no audio.",
+  "purpose": "Two-second office-meeting proxy for integration and speed, not labeled classroom accuracy."
+}

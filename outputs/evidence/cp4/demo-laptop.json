@@ -1,0 +1,19 @@
+{
+  "captured_at": "2026-11-12T09:52:01.4770981+08:00",
+  "computer": {
+    "Manufacturer": "ASUSTeK COMPUTER INC.",
+    "Model": "Vivobook Go E1504FA_E1504FA",
+    "TotalPhysicalMemory": 16407719936
+  },
+  "processor": {
+    "Name": "AMD Ryzen 5 7520U with Radeon Graphics         ",
+    "NumberOfCores": 4,
+    "NumberOfLogicalProcessors": 8
+  },
+  "battery": {
+    "BatteryStatus": 1,
+    "EstimatedChargeRemaining": 45
+  },
+  "power_scheme": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "note": "User confirmed this is the classroom demo laptop. BatteryStatus 1 reports discharging; other normal desktop apps remained open. No power settings changed."
+}

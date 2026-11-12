@@ -7,6 +7,15 @@ Ocular workspace and setup.
 
 Ocular is a local computer vision prototype for reviewing visible head movements. It processes images and saved video, labels head direction, and can associate observations with fixed seat regions. Head movement does not establish cheating; outputs support instructor review.
 
+The [CP4 hand-in package](docs/checkpoints/cp4-hand-in/README.md) contains the
+numbered Markdown deliverables, frozen held-out results, demo-laptop speed,
+current interface evidence and backup demonstration. On the 120-image Pointing04
+test subset, baseline/head accuracy is 82.50%/76.67%. The measured four-seat
+saved-review medians are 3.44/0.95 FPS on the ASUS Ryzen 5 7520U demo laptop,
+below the 10 FPS target. Different CP3/CP4 datasets prevent an improvement claim.
+Team review of effort-weighted completion and independent classroom validation
+remain outstanding.
+
 The local website also supports live camera direction analysis. Open `/analyze`,
 choose **Camera**, select a method, and click **Start camera**. Allow browser
 camera access; **Stop** releases capture and the local processor. Camera frames
