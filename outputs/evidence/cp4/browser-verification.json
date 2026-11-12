@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-12",
+  "automated": true,
+  "origin": "http://127.0.0.1:3100",
+  "session": {
+    "id": "78462513-204e-4f6c-a6ea-c11772cc35f8",
+    "filename": "fourpeople-2s.webm",
+    "createdAt": "2026-11-12T02:04:44.760Z",
+    "extension": ".webm",
+    "method": "head",
+    "frames": 120,
+    "events": 1
+  },
+  "frames": 120,
+  "seats": 4,
+  "events": 1,
+  "seconds": 197.992,
+  "pageErrors": [],
+  "checks": [
+    "both models ready",
+    "image upload and actual inference",
+    "video timestamp compatibility",
+    "four manually drawn seats",
+    "real head video inference",
+    "settings and aligned records",
+    "download",
+    "HTTP range seeking",
+    "session reopen",
+    "390px no overflow"
+  ],
+  "steps": [
+    {
+      "seconds": 2.278,
+      "text": "Ocular organizes visible head movements for instructor review."
+    },
+    {
+      "seconds": 5.456,
+      "text": "Image input uses the actual local head model."
+    },
+    {
+      "seconds": 11.289,
+      "text": "Boxes and labels describe head direction. Counts are observations, not identities."
+    },
+    {
+      "seconds": 14.774,
+      "text": "Unknowns stay explicit. Head movement alone cannot establish misconduct."
+    },
+    {
+      "seconds": 20.342,
+      "text": "This is a permitted two-second office-meeting proxy with four fixed positions."
+    },
+    {
+      "seconds": 26.069,
+      "text": "Four seats are configured manually. Direction labels remain camera-relative."
+    },
+    {
+      "seconds": 30.335,
+      "text": "Processing is real CPU inference. The interface offers Stop and does not invent progress percentages."
+    },
+    {
+      "seconds": 177.073,
+      "text": "Completed review contains synchronized source video, seat states, histories and records."
+    },
+    {
+      "seconds": 180.865,
+      "text": "Selecting a movement record seeks to its source-video time."
+    },
+    {
+      "seconds": 183.93,
+      "text": "Per-seat histories preserve observed intervals and explicit gaps."
+    },
+    {
+      "seconds": 186.133,
+      "text": "120 processed frames; 1 descriptive movement records. Event accuracy is unvalidated."
+    },
+    {
+      "seconds": 191.019,
+      "text": "Reload reopens saved results without rerunning inference."
+    },
+    {
+      "seconds": 194.979,
+      "text": "Validated here on the demo laptop. This proxy does not establish classroom event correctness."
+    }
+  ],
+  "limitations": [
+    "Browser automation, not independent human usability acceptance.",
+    "Public-domain office-meeting proxy, not classroom event ground truth.",
+    "Silent recording uses explanatory on-screen captions."
+  ]
+}

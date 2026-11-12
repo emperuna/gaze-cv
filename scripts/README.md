@@ -10,6 +10,9 @@ Run from the repository root using the project interpreter after [README setup](
 | spike.py | Process five permitted validation images and save annotated results plus metadata. |
 | predict.py | One image to annotated output and JSON; baseline or approximate pose method. |
 | evaluate.py | Score validation images only, with missing observations, metric denominators, manifest/model/code provenance, and a JSON report. Existing reports require --overwrite; input paths remain protected. |
+| ../src/evaluate.py | Required CP4 held-out entry point: `freeze` records test selection, input/code/model hashes and settings without test inference; `run` verifies that protocol and scores baseline/head on identical held-out inputs. Existing outputs and protected inputs cannot be overwritten. |
+| benchmark_review.py | Repeat integrated saved-seat review at least three times; report full-session FPS separately from frame-processing timing. Initialization, network and browser rendering are excluded. |
+| prepare_cp4_demo.py | Verify the public-domain FourPeople source and export its first 120 frames as a two-second VP8 WebM with source/derivative hashes and permission metadata. |
 | prepare_video.py | Retrieve and verify the public-domain FourPeople proxy clip. |
 | process_video.py | Annotate saved CFR video, preserve source timestamps, and export observations/FPS; optional fixed seats, histories, and movement rules. |
 | download_head_models.py | Acquire only the selected, SHA256-verified CPU head-detector and full-rotation pose ONNX files from bounded upstream archive streams. |

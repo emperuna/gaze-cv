@@ -1,5 +1,18 @@
 # Tasks
 
+CP4 evidence update, 12 November 2026: the user authorized completing the Phase 4
+package and held-out evaluation on the current C: checkout/demo laptop. New
+evidence for `cp4-performance` (#29) and `cp4-hand-in` (#30) is indexed in the
+[CP4 hand-in folder](docs/checkpoints/cp4-hand-in/README.md). The required
+`src/evaluate.py`, frozen 120-image results, repeated laptop workload and
+documentation are local technical evidence. The newer CP4 brief supersedes the
+older CP5-only test-lock sequencing; this test split is now exposed. No task
+acceptance, assignee or Project status below is changed by that evidence.
+Issues 26/28/29/30 were read live as open and unassigned; Project reads failed
+because the existing credential lacks `read:project`. Human reproduction,
+classroom event labels, team effort review and academic acceptance remain
+outstanding. Existing completion attribution and dependencies are preserved.
+
 This is the GAZE backlog derived from [ROADMAP.md](ROADMAP.md) and [PRD.md](PRD.md). All 40 tasks have linked GitHub Issues; CP2 has nine planned tasks aligned with the Milestone 2 guide. After the PR #44 acceptance reconciliation and fresh-clone spike verification, shared work remains self-claimable: 20 tasks are Done (including the two existing administrative completions), 5 are Ready, 13 remain Backlog, and 2 hand-in tasks remain Blocked. See the [per-Issue acceptance audit](docs/checkpoints/task-reconciliation.md). Creating or claiming planning work does not start application development.
 
 <!-- policy: Follow AGENTS.md and the scope authorized in the current conversation.
