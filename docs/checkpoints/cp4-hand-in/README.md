@@ -20,4 +20,7 @@ Start the website with `npm run dev` from `frontend/` after the [project setup](
 
 The earlier combined PDF is a pre-evaluation documentation draft and is superseded by the numbered Markdown files. Its pending-results statements must not be used as the current measurement record.
 
-Publication/tag status and the repository submission URL are added after the final package checks. Course-portal submission requires access to the team's actual submission destination.
+Hand-in link: [repository at tag cp4-80](https://github.com/emperuna/gaze-cv/tree/cp4-80).
+The package is published from branch `docs/cp4-hand-in`; the tag identifies the
+hand-in snapshot and does not certify 80% accepted effort or academic acceptance.
+The team will submit this repository link through the class portal themselves.

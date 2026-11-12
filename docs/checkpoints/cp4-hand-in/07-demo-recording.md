@@ -2,7 +2,7 @@
 
 [Play or download the actual browser demonstration](ocular-cp4-demo.webm).
 
-Recorded 12 November 2026 on the confirmed demo laptop. Browser workflow elapsed time was 198.0 seconds; final encoded duration is verified in [verification.md](verification.md). The silent recording uses on-screen explanatory captions and real CPU inference. It is an automated browser demonstration, not a substitute for the team's class presentation.
+Recorded 12 November 2026 on the confirmed demo laptop. Browser workflow elapsed time was 198.0 seconds; the fully decoded encoded duration is 198.16 seconds, verified in [verification.md](verification.md). The silent recording uses on-screen explanatory captions and real CPU inference. It is an automated browser demonstration, not a substitute for the team's class presentation.
 
 The recording shows the workspace, image upload and annotated output, the permitted FourPeople excerpt, four manually drawn seat regions, processing, synchronized saved results and session reopening. The excerpt is an office proxy. Directions and movement records describe observations for instructor review; no misconduct is asserted. Optional physical webcam input is not demonstrated.
 
