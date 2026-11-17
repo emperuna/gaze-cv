@@ -1,7 +1,7 @@
 # 6. Technical report and presentation draft
 
-**Ocular / GAZE — CP4 draft**  
-Prepared: 12 November 2026  
+**Ocular / GAZE — CP4 draft**\
+Prepared: 12 November 2026\
 Base source revision: `d60038d3f256f7d2bcc60e6c769018f8c47c2d3c`
 
 **Status:** Written introduction, data, method and experiments sections plus 12 Markdown draft slides; team review remains pending.

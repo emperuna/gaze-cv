@@ -1,7 +1,7 @@
 # 2. Interface and visualization of results
 
-**Ocular / GAZE — CP4 draft**  
-Prepared: 12 November 2026  
+**Ocular / GAZE — CP4 draft**\
+Prepared: 12 November 2026\
 Base source revision: `d60038d3f256f7d2bcc60e6c769018f8c47c2d3c`
 
 **Status:** Implemented interface and historical browser checks are documented; human usability and physical-camera checks remain pending.

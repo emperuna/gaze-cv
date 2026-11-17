@@ -105,4 +105,3 @@ Lighting/mood: soft directional daylight, calm and thoughtful.
 Color palette: warm walnut desk, white shirt and paper, pale sky-blue floor to match Ocular's pastel-blue card.
 Constraints: no poster typography, no logos, no watermark, no borders, no captions, no UI, no detection boxes, no surveillance overlays, no extra people. No printed readable personal information. This is illustrative website imagery, not footage or model output.
 ```
-

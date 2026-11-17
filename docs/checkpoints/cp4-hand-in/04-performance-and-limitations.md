@@ -1,7 +1,7 @@
 # 4. Performance analysis and limitations
 
-**Ocular / GAZE — CP4 draft**  
-Prepared: 12 November 2026  
+**Ocular / GAZE — CP4 draft**\
+Prepared: 12 November 2026\
 Base source revision: `d60038d3f256f7d2bcc60e6c769018f8c47c2d3c`
 
 **Status:** Analysis uses recorded failures and operating limits; representative classroom validation remains pending.
