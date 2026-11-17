@@ -55,7 +55,6 @@ export default function Home() {
             <article className="feature-card local-feature cursor-target"><HardDrive size={23} strokeWidth={1.5} /><div><h2>Made for<br />a closer look.</h2><p>Return to timestamps.<br />Keep the surrounding context.</p></div></article>
             <article className="feature-card human-feature cursor-target"><span className="card-overline">AIDING OBSERVATION. SUPPORTING PEOPLE.</span><h2>Human judgment.<br />Always at the center.</h2><div className="human-card-bottom"><p>Movement is an observation.<br />Understanding is a human responsibility.</p><ShieldCheck size={39} strokeWidth={1.2} /></div></article>
           </section>
-          <div className="principles container" aria-label="Project principles"><span className="cursor-target"><Focus size={19} /> One fixed view</span><span className="cursor-target"><ScanFace size={19} /> Visible directions</span><span className="cursor-target"><Layers3 size={19} /> Timestamped context</span><span className="cursor-target"><ShieldCheck size={19} /> Instructor-led review</span></div>
           </HeroTargetCursor>
 
           <section id="workflow" className="workflow-section container section-pad" aria-labelledby="workflow-heading">
