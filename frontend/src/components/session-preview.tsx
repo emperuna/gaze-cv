@@ -1,26 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowDown, CircleHelp, Focus, Play } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, CircleHelp, Play } from "lucide-react";
+import { EXAMPLE_DURATION, EXAMPLE_MOMENTS, EXAMPLE_SEATS, EXAMPLE_TIMELINES, directionAt, type ExampleDirection } from "@/lib/example-moments";
 
-const frames = [
-  { time: "00:12", label: "A moment to the left", direction: "Left", icon: ArrowLeft, description: "Seat 02 turns left. A direction describes an observation, not its cause.", seats: ["Forward", "Left", "Forward"] },
-  { time: "00:24", label: "A moment of writing", direction: "Down", icon: ArrowDown, description: "Seat 01 looks down. Ordinary writing can produce the same head direction.", seats: ["Down", "Forward", "Right"] },
-  { time: "00:36", label: "A moment out of view", direction: "Unknown", icon: CircleHelp, description: "Seat 02 has no reliable observation. This gap must not count as continuous movement.", seats: ["Forward", "Unknown", "Forward"] },
-];
+const icons = { Forward: ArrowUp, Left: ArrowLeft, Right: ArrowRight, Down: ArrowDown, Unknown: CircleHelp };
+const label = (direction: ExampleDirection) => direction === "Unknown" ? "Not visible" : direction;
+const clock = (seconds: number) => `00:${String(seconds).padStart(2, "0")}`;
+const percent = (seconds: number) => `${(seconds / EXAMPLE_DURATION) * 100}%`;
 
 export function SessionPreview() {
   const [selected, setSelected] = useState(0);
-  const frame = frames[selected];
-  const Icon = frame.icon;
+  const moment = EXAMPLE_MOMENTS[selected];
   return <div className="session-example">
-    <div className="example-titlebar"><span><Focus size={15} /> Ocular / Session review</span><span className="example-badge">Illustrative example</span></div>
-    <div className="example-media"><img src="/images/classroom-review.png" alt="Classroom illustration used with fictional observations" width={1536} height={1024} loading="lazy" /><span className="example-time"><Play size={10} fill="currentColor" />{frame.time} / 00:48</span></div>
-    <div className="example-body"><div className="example-status"><div><span className="card-overline">A CLOSER LOOK</span><h3>{frame.label}</h3></div><span className={`example-direction${frame.direction === "Unknown" ? " is-unknown" : ""}`}><Icon size={14} />{frame.direction}</span></div>
-      <div className="example-timeline" role="group" aria-label="Choose an illustrative timestamp">{frames.map((item, index) => <button key={item.time} type="button" aria-pressed={selected === index} aria-label={`Show illustrative observation at ${item.time}`} onClick={() => setSelected(index)}><span />{item.time}</button>)}</div>
-      <div className="example-seats" aria-label="Fictional seat observations">{frame.seats.map((direction, index) => <span key={index}>Seat 0{index + 1}<strong className={direction === "Unknown" ? "unknown-label" : ""}>{direction}</strong></span>)}</div>
-      <p className="example-observation" aria-live="polite">{frame.description}</p>
-      <div className="example-bottom"><span>Fictional observations · not model output</span><button type="button" aria-label="Next illustrative moment" onClick={() => setSelected((selected + 1) % frames.length)}><ArrowRight size={16} /></button></div>
+    <div className="example-frame">
+      <img src="/images/ocular-output-mockup.png" alt="Illustrative fixed-camera classroom view with four numbered seats; observations are fictional" width={1672} height={941} loading="lazy" />
+      {EXAMPLE_SEATS.map(seat => {
+        const direction = directionAt(seat.id, moment.time);
+        const Icon = icons[direction];
+        const [left, top, width, height] = seat.box;
+        return <span key={seat.id}>
+          {direction === "Unknown" && <span className="example-hidden-seat" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }} />}
+          <span className={`example-tag${seat.id === moment.seat ? " is-active" : ""}${direction === "Unknown" ? " is-unknown" : ""}`} style={{ left: `${seat.tag.x}%`, top: `${seat.tag.y}%` }}><Icon size={11} strokeWidth={2.5} />{label(direction)}</span>
+        </span>;
+      })}
+      <span className="example-time"><Play size={10} fill="currentColor" />{clock(moment.time)} / {clock(EXAMPLE_DURATION)}</span>
+      <span className="example-badge">Illustrative example</span>
     </div>
+    <div className="example-under">
+      <div className="example-tracks" aria-label="Fictional seat timelines">
+        {EXAMPLE_SEATS.map(seat => seat.id).sort().map(id => <div className="example-track" key={id}>
+          <span>Seat {id}</span>
+          <div className="example-bar">
+            {EXAMPLE_TIMELINES[id].map(segment => <i key={segment.start} className={`example-seg dir-${segment.direction.toLowerCase()}`} style={{ width: percent(segment.end - segment.start) }} title={`${clock(segment.start)}–${clock(segment.end)} ${label(segment.direction)}`} />)}
+            <span className="example-playhead" style={{ left: percent(moment.time) }} />
+          </div>
+        </div>)}
+        <div className="example-moments" role="group" aria-label="Choose an illustrative moment">
+          {EXAMPLE_MOMENTS.map((item, index) => <button key={item.time} type="button" aria-pressed={selected === index} aria-label={`Show illustrative moment at ${clock(item.time)}`} onClick={() => setSelected(index)} style={{ left: percent(item.time) }}>{clock(item.time)}</button>)}
+        </div>
+      </div>
+      <p className="example-note" aria-live="polite"><strong>{moment.title}</strong>{moment.note}</p>
+    </div>
+    <div className="example-bottom"><span>Fictional observations · not model output</span><button type="button" aria-label="Next illustrative moment" onClick={() => setSelected((selected + 1) % EXAMPLE_MOMENTS.length)}><ArrowRight size={16} /></button></div>
   </div>;
 }

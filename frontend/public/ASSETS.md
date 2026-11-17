@@ -38,8 +38,9 @@ File: [images/ocular-output-mockup.png](images/ocular-output-mockup.png),
 1672 × 941 PNG. Generated using the built-in ImageGen tool and inspected before
 integration. The surrounding output-panel mockup is HTML/CSS with Lucide icons.
 The seat counts, time, and direction counts are fictional sample values. The
-card previously stated “AI-generated mockup · not model output.” This asset is
-retained from that revision; the second hero card now uses the portrait below.
+card previously stated “AI-generated mockup · not model output.” It is now the
+image in the landing page’s illustrative session example (`SessionPreview`),
+where HTML direction tags and timelines with fictional values are layered on top.
 
 Prompt: “Wide classroom preview for Ocular, viewed by one fixed front camera.
 Exactly four adult university students at separate desks across two rows, all
@@ -54,7 +55,7 @@ misconduct labels. AI-generated illustrative website mockup, not model output.�
 ## Classroom
 
 File: [images/classroom-review.png](images/classroom-review.png),
-1536 × 1024 PNG. Used in the fictional example and the instructor review section.
+1536 × 1024 PNG. Used in the instructor review section.
 
 Prompt: “Premium editorial photograph of exactly three college-age Filipino
 students studying and writing at individual desks in a bright contemporary
