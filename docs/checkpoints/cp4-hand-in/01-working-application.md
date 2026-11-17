@@ -1,7 +1,7 @@
 # 1. Working application and integration
 
-**Ocular / GAZE — CP4 draft**  
-Prepared: 12 November 2026  
+**Ocular / GAZE — CP4 draft**\
+Prepared: 12 November 2026\
 Base source revision: `d60038d3f256f7d2bcc60e6c769018f8c47c2d3c`
 
 **Status:** Integrated behavior and a four-seat office-proxy demonstration are verified on the demo laptop. Team review of the 80% calculation and classroom validation remain pending.
