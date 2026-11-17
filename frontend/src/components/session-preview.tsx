@@ -21,7 +21,7 @@ export function SessionPreview() {
         const [left, top, width, height] = seat.box;
         return <span key={seat.id}>
           {direction === "Unknown" && <span className="example-hidden-seat" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }} />}
-          <span className={`example-tag${seat.id === moment.seat ? " is-active" : ""}${direction === "Unknown" ? " is-unknown" : ""}`} style={{ left: `${seat.tag.x}%`, top: `${seat.tag.y}%` }}><Icon size={11} strokeWidth={2.5} />{label(direction)}</span>
+          <span className={`example-tag${seat.id === moment.seat ? " is-active" : ""}${direction === "Unknown" ? " is-unknown" : ""}`} style={{ left: `${seat.tag.x}%`, top: `${seat.tag.y}%` }}><span className="sr-only">Seat {seat.id}: </span><Icon size={11} strokeWidth={2.5} aria-hidden="true" />{label(direction)}</span>
         </span>;
       })}
       <span className="example-time"><Play size={10} fill="currentColor" />{clock(moment.time)} / {clock(EXAMPLE_DURATION)}</span>
