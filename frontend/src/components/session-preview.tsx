@@ -14,7 +14,7 @@ export function SessionPreview() {
   const moment = EXAMPLE_MOMENTS[selected];
   return <div className="session-example">
     <div className="example-frame">
-      <img src="/images/ocular-output-mockup.png" alt="Illustrative fixed-camera classroom view with four numbered seats; observations are fictional" width={1672} height={941} loading="lazy" />
+      <img src="/images/ocular-output-mockup.webp" srcSet="/images/ocular-output-mockup-900.webp 900w, /images/ocular-output-mockup.webp 1672w" sizes="(max-width: 1240px) calc(100vw - 64px), 1130px" alt="Illustrative fixed-camera classroom view with four numbered seats; observations are fictional" width={1672} height={941} loading="lazy" />
       {EXAMPLE_SEATS.map(seat => {
         const direction = directionAt(seat.id, moment.time);
         const Icon = icons[direction];

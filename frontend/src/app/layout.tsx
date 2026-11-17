@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Ocular — Head movement, in context",
   description: "Meet Ocular, a local computer vision research prototype that organizes visible head movements for instructor review. Human judgment stays central.",
   applicationName: "Ocular",
-  icons: { icon: "/brand/ocular-logo-yellow.png", apple: "/brand/ocular-logo-yellow.png" },
+  icons: { icon: "/brand/ocular-logo-256.png", apple: "/brand/ocular-logo-180.png" },
   openGraph: {
     title: "Ocular — Head movement, in context",
     description: "A clearer view of visible head movement. A thoughtful place for human review.",

@@ -11,6 +11,21 @@ pastel card composition to the existing classroom review product. No Samfund
 branding, photos, testimonials, or performance claims were copied into the app.
 Lucide supplies the existing interface icon set.
 
+## Served derivatives
+
+The PNG files below are kept as source masters. The site serves smaller
+derivatives made from them with `cwebp` (quality 80) and `sips`:
+
+- `brand/ocular-logo-128.png` (header and footer mark), `brand/ocular-logo-256.png`
+  (favicon), and `brand/ocular-logo-180.png` (Apple touch icon), resized from
+  `brand/ocular-logo-yellow.png`.
+- `images/ocular-output-mockup.webp` (1672 wide) and `images/ocular-output-mockup-900.webp`.
+- `images/classroom-review.webp` (1536 wide) and `images/classroom-review-800.webp`.
+- `images/student-writing-portrait-600.webp`, a 600-wide copy of the portrait for
+  small screens.
+
+Regenerate the derivatives whenever a master changes.
+
 ## Monogram
 
 File: [brand/ocular-logo-yellow.png](brand/ocular-logo-yellow.png), 1254 × 1254,
