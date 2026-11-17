@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { Schibsted_Grotesk } from "next/font/google";
 import "./globals.css";
+
+// Self-hosted at build time by next/font; the adjusted fallback keeps metrics stable while it loads.
+const sans = Schibsted_Grotesk({ subsets: ["latin"], display: "swap", variable: "--font-ocular" });
 
 export const metadata: Metadata = {
   title: "Ocular — Head movement, in context",
@@ -14,5 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en" className={sans.variable}><body>{children}</body></html>;
 }
