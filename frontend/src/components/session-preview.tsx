@@ -12,7 +12,7 @@ const percent = (seconds: number) => `${(seconds / EXAMPLE_DURATION) * 100}%`;
 export function SessionPreview() {
   const [selected, setSelected] = useState(0);
   const moment = EXAMPLE_MOMENTS[selected];
-  return <div className="session-example">
+  return <div className="session-example cursor-target">
     <div className="example-frame">
       <img src="/images/ocular-output-mockup.webp" srcSet="/images/ocular-output-mockup-900.webp 900w, /images/ocular-output-mockup.webp 1672w" sizes="(max-width: 1240px) calc(100vw - 64px), 1130px" alt="Illustrative fixed-camera classroom view with four numbered seats; observations are fictional" width={1672} height={941} loading="lazy" />
       {EXAMPLE_SEATS.map(seat => {

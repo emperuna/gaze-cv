@@ -3,7 +3,7 @@ import { Brand } from "@/components/brand";
 import { SessionPreview } from "@/components/session-preview";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { HeroTargetCursor } from "@/components/hero-target-cursor";
+import { PageTargetCursor } from "@/components/page-target-cursor";
 
 const repository = "https://github.com/emperuna/gaze-cv";
 const workflow = [
@@ -25,7 +25,6 @@ export default function Home() {
       <div className="landing-top">
         <SiteHeader />
         <main id="main-content">
-          <HeroTargetCursor>
           <section className="ocular-hero container" aria-labelledby="hero-heading">
             <div className="hero-kicker cursor-target"><span className="status-dot" /> A new perspective on classroom review</div>
             <h1 id="hero-heading">See the movement. <br />Understand <span className="keep">the context.</span></h1>
@@ -55,25 +54,25 @@ export default function Home() {
             <article className="feature-card local-feature cursor-target"><HardDrive size={23} strokeWidth={1.5} /><div><h2>Made for <br />a closer look.</h2><p>Return to timestamps. <br />Keep the surrounding context.</p></div></article>
             <article className="feature-card human-feature cursor-target"><span className="card-overline">AIDING OBSERVATION. SUPPORTING PEOPLE.</span><h2>Human judgment. <br />Always at the center.</h2><div className="human-card-bottom"><p>Movement is an observation. <br />Understanding is a human responsibility.</p><ShieldCheck size={39} strokeWidth={1.2} /></div></article>
           </section>
-          </HeroTargetCursor>
 
           <section id="workflow" className="workflow-section container section-pad" aria-labelledby="workflow-heading">
             <div className="center-heading"><span className="eyebrow">A LITTLE CLARITY GOES A LONG WAY</span><h2 id="workflow-heading">From a moment of movement <br className="desktop-break" />to a more thoughtful review.</h2><p>One focused workflow. A little more perspective at every step.</p></div>
-            <div className="workflow-stack">{workflow.map(({ number, icon: Icon, title, text, label, href, color }) => <article className={`workflow-row ${color}`} key={number}><div className="workflow-identity"><span className="step-icon"><Icon size={23} strokeWidth={1.5} /></span><span className="step-number">{number}</span></div><div className="workflow-copy"><h3>{title}</h3><p>{text}</p></div><a href={href} className="workflow-link">{label}<ArrowUpRight size={15} /></a></article>)}</div>
+            <div className="workflow-stack">{workflow.map(({ number, icon: Icon, title, text, label, href, color }) => <article className={`workflow-row ${color} cursor-target`} key={number}><div className="workflow-identity"><span className="step-icon"><Icon size={23} strokeWidth={1.5} /></span><span className="step-number">{number}</span></div><div className="workflow-copy"><h3>{title}</h3><p>{text}</p></div><a href={href} className="workflow-link">{label}<ArrowUpRight size={15} /></a></article>)}</div>
           </section>
 
           <section id="example" className="example-section container section-pad" aria-labelledby="example-heading"><div className="section-heading"><div><span className="eyebrow">EVERY MOMENT HAS MORE TO IT</span><h2 id="example-heading">An observation. <br /><span>Never the whole story.</span></h2></div><a className="text-link" href="/analyze?mode=video">Explore saved-video review <ArrowUpRight size={15} /></a></div><SessionPreview /></section>
 
-          <section className="care-section container" aria-labelledby="care-heading"><div className="care-photo"><img src="/images/classroom-review.webp" srcSet="/images/classroom-review-800.webp 800w, /images/classroom-review.webp 1536w" sizes="(max-width: 640px) calc(100vw - 36px), 520px" width={1536} height={1024} loading="lazy" alt="Illustration of university students writing at separate desks" /></div><div className="care-copy"><span className="eyebrow">DESIGNED WITH CARE</span><h2 id="care-heading">People make decisions. <br />Ocular supports <span className="keep">the review.</span></h2><p>Head movement does not establish cheating. Ocular does not infer intent or make disciplinary decisions.</p><div className="care-note"><ShieldCheck size={22} /><p>Use only authorized footage. Agree on access and retention before recording or processing a session.</p></div></div></section>
+          <section className="care-section container" aria-labelledby="care-heading"><div className="care-photo cursor-target"><img src="/images/classroom-review.webp" srcSet="/images/classroom-review-800.webp 800w, /images/classroom-review.webp 1536w" sizes="(max-width: 640px) calc(100vw - 36px), 520px" width={1536} height={1024} loading="lazy" alt="Illustration of university students writing at separate desks" /></div><div className="care-copy"><span className="eyebrow">DESIGNED WITH CARE</span><h2 id="care-heading">People make decisions. <br />Ocular supports <span className="keep">the review.</span></h2><p>Head movement does not establish cheating. Ocular does not infer intent or make disciplinary decisions.</p><div className="care-note cursor-target"><ShieldCheck size={22} /><p>Use only authorized footage. Agree on access and retention before recording or processing a session.</p></div></div></section>
 
           <section id="research" className="research-section container section-pad" aria-labelledby="research-heading"><div className="section-heading"><div><span className="eyebrow">OPEN ABOUT WHAT WE KNOW</span><h2 id="research-heading">A working prototype. <br />An ongoing inquiry.</h2></div><p>Built, measured, and still being understood. <br className="desktop-break" />Explore the evidence behind the interface.</p></div><div className="research-grid"><a href={`${repository}/blob/main/README.md`} target="_blank" rel="noreferrer"><Github size={23} strokeWidth={1.5} /><h3>Explore the source</h3><p>Local setup, supported commands, <br className="desktop-break" />and the code behind Ocular.</p><ArrowUpRight size={19} /></a><a href={`${repository}/blob/main/docs/checkpoints/cp3-hand-in/README.md`} target="_blank" rel="noreferrer"><Layers3 size={23} strokeWidth={1.5} /><h3>Look into the results</h3><p>Preliminary measurements, <br className="desktop-break" />comparisons, and known gaps.</p><ArrowUpRight size={19} /></a><a href={`${repository}/blob/main/docs/evaluation/data-card.md`} target="_blank" rel="noreferrer"><FileImage size={23} strokeWidth={1.5} /><h3>Understand the data</h3><p>Sources, permissions, labels, <br className="desktop-break" />and evaluation limitations.</p><ArrowUpRight size={19} /></a></div><p className="research-footnote">Research prototype: classroom generalization and final held-out evaluation remain unvalidated. Current measurements do not establish that the main method outperforms the baseline.</p></section>
 
           <section id="faq" className="faq-section container section-pad" aria-labelledby="faq-heading"><div className="center-heading"><span className="eyebrow">A FEW THINGS TO KNOW</span><h2 id="faq-heading">Clarity, before you begin.</h2><p>A closer look at the project, its possibilities, and its limits.</p></div><div className="faq-list">{questions.map(({ question, answer }) => <details key={question}><summary>{question}<ChevronDown size={17} /></summary><p>{answer}</p></details>)}</div></section>
 
-          <section className="closing-section container"><div><span className="eyebrow">OBSERVATION WITH PERSPECTIVE</span><h2>A clearer view starts here.</h2><p>Bring a session. Keep the context.</p></div><Button size="lg" asChild className="soft-button"><a href="/analyze">Open Ocular <ArrowRight size={17} /></a></Button></section>
+          <section className="closing-section container cursor-target"><div><span className="eyebrow">OBSERVATION WITH PERSPECTIVE</span><h2>A clearer view starts here.</h2><p>Bring a session. Keep the context.</p></div><Button size="lg" asChild className="soft-button"><a href="/analyze">Open Ocular <ArrowRight size={17} /></a></Button></section>
         </main>
         <footer className="site-footer container"><div><a href="/" aria-label="Ocular home"><Brand /></a><p>Head movement, in context.</p></div><div className="footer-right"><span>A classroom computer vision research project.</span><a href={`${repository}/blob/main/PRD.md`} target="_blank" rel="noreferrer">Scope & limitations <ArrowUpRight size={13} /></a></div></footer>
       </div>
+      <PageTargetCursor />
     </>
   );
 }
