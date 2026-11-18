@@ -8,6 +8,15 @@ misconduct decisions. Related backlog references are `cp4-export-review`
 ([Issue 27](https://github.com/emperuna/gaze-cv/issues/27)). Live GitHub state was
 unavailable; no Issue assignment, Project update or acceptance claim was made.
 
+Dated note, 18 November 2026 (camera alerts, pending team agreement): the sections
+below record the 17-18 November work as it was. Since then Camera is the main
+website workflow with seat alerts, cropped alert stills, marks, resume and Past
+sessions, and its PDF is built from the saved session record; Image has no
+website workflow. The Camera checks and the Camera PDF rows and retention
+paragraph below describe the earlier direction-only mode and are superseded where
+they conflict with the [camera alerts design](superpowers/specs/2026-11-18-camera-alerts-design.md)
+and the [verification record](superpowers/specs/2026-11-18-camera-alerts-verification.md). See [Camera alerts](#camera-alerts) below.
+
 ## Saved-video review
 
 Open a completed session in **Saved video → Seats & movement review**.
@@ -74,6 +83,12 @@ These are experimental technical warnings. Poor lighting, an empty room, small
 heads, ordinary occlusion and model failures can produce warnings. The system
 does not diagnose an obstruction, infer intent or establish that all seats are
 observable. Stop clears live warnings; frames stay in memory.
+
+In the live alert workflow the expected-head-count field is gone: the number of
+confirmed seats is the expectation. A slow-processing warning ("Running slowly:
+alerts may be missed") appears when the measured gap between processed frames over
+the last ten seconds exceeds the session's maximum gap, because a gap larger than
+the maximum prevents an alert. These warnings remain technical and experimental.
 
 ## Storage and failure handling
 
@@ -158,10 +173,12 @@ without `analysis-result.json` require reprocessing once. Human edits in saved
 review must be saved or discarded before exporting the PDF, so the document never
 silently represents unsaved notes as a saved revision.
 
-Camera summaries are held in server memory without JPEGs, boxes, identities or
-recorded media. Stop/disconnection schedules expiry after 30 minutes; expiry also
-applies on access. Server restart clears the cache, and at most eight sessions
-are retained. Only the first 18,000 frame summaries are retained; totals include
+Earlier (17-18 November) camera summaries were held in server memory without
+JPEGs, boxes, identities or recorded media. That cache is superseded by the saved
+session record described under [Camera alerts](#camera-alerts). Under the earlier
+rule, Stop/disconnection scheduled expiry after 30 minutes; expiry also
+applied on access. Server restart cleared the cache, and at most eight sessions
+were retained. Only the first 18,000 frame summaries are retained; totals include
 later frames and the PDF explicitly discloses any missing detail. Download after
 Stop and before leaving the workspace. Download failures show a recovery message.
 
@@ -183,6 +200,29 @@ and local-origin guards protect all three routes:
 - `GET /api/review/<uuid>/report?format=pdf`: saved-seat PDF; the default route
   continues to provide editable Markdown.
 - `GET /api/camera/<uuid>/report`: retained numeric camera summary PDF.
+
+## Camera alerts
+
+Added 18 November 2026; pending team agreement. The live Camera workflow saves
+`outputs/runs/camera/<id>/session.json` and one cropped `stills/<alert>.jpg`
+(at most 200 KB) per alert. The camera pixels are never recorded and non-alert
+frames are never stored. A session record lists its seats, alerts (seat, direction,
+times, event count, mark, note), interruptions and unmonitored intervals. Marks are
+**Checked** or **Dismissed** with an optional note of up to 2,000 characters and do
+not conclude that anything happened. Saves use a per-record lock and revision check,
+so a stale second tab cannot silently overwrite a mark. A session left in
+`monitoring` after a restart or a hidden tab shows as **Interrupted** and can be
+resumed, or ended; an active session cannot be deleted. Deleting a session removes
+its folder, including its stills. A session ends at three hours.
+
+The Camera PDF (`GET /api/camera/sessions/<id>/report`) lists alerts with their
+stills, marks and notes, "Not monitored from A to B" intervals, per-seat coverage,
+and a confidential marking. It reads only `.jpg` files inside the session folder,
+and has at most 200 stills; the PDF output cap is 48 MB. Wording describes
+movement to look at, not misconduct, and omitted detail is disclosed. Stills may
+show students' faces: consent and a retention period must be agreed before use with
+real students, and sessions should be deleted when that period ends. Alert accuracy
+and live speed in a classroom are unmeasured; see the [verification record](superpowers/specs/2026-11-18-camera-alerts-verification.md).
 
 Verification for this extension is recorded separately from the historical
 17 November checks above. Physical-camera and representative classroom incident

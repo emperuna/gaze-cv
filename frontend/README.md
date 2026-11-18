@@ -4,8 +4,8 @@ A public-facing introduction to Ocular (formerly GAZE), built with React and the
 Router, TypeScript, Tailwind CSS, Lucide icons, and a locally owned shadcn/ui
 button component. `package-lock.json` pins the installed dependency tree.
 
-The landing page explains the project, its saved-video
-workflow, research evidence, and limitations. The interactive classroom
+The landing page explains the project, its live camera
+seat-alert workflow, research evidence, and limitations. The interactive classroom
 example uses AI-generated imagery and fictional observations; it is not footage
 or model output. Its timestamp buttons change the observation example, not the photo.
 The interface follows the centered typography, soft surfaces, pastel cards, and
@@ -96,8 +96,12 @@ interrupted sessions can be resumed, ended ones reopened from **Past
 sessions**, and each session downloads as a PDF. Movement rules, mirroring and
 detector tiling sit under **Advanced settings**. See the
 [camera alerts design](../docs/superpowers/specs/2026-11-18-camera-alerts-design.md)
-for the routes, storage and limits. Alert accuracy in real classrooms has not
-been measured; an alert is a prompt to look, not a finding.
+for the routes, storage and limits and the
+[verification record](../docs/superpowers/specs/2026-11-18-camera-alerts-verification.md)
+for what was and was not checked (the physical phone check is not performed).
+Alert accuracy in real classrooms has not been measured; an alert is a prompt to
+look, not a finding. Stills may show students' faces; agree consent and a
+retention period before use with real students, and delete sessions when it ends.
 
 **How to use Ocular** opens by itself the first time a browser shows the
 camera screen (remembered under the `localStorage` key
@@ -357,6 +361,12 @@ macOS checkout, the project `.venv` and verified models were available:
 See [full verification details](../docs/superpowers/specs/2026-10-29-live-camera-verification.md),
 including environment constraints and the distinction between simulated events
 and physical-device checks. Camera mode does not save frames or recordings.
+
+Dated note, 18 November 2026: the sentence above describes the 29 October
+direction-only camera. The live alert workflow now saves the session record and
+one cropped still per alert (never the camera video) in `outputs/runs/camera/`,
+deleted with the session; see [Live camera](#live-camera) and the
+[verification record](../docs/superpowers/specs/2026-11-18-camera-alerts-verification.md).
 
 ## Edit
 

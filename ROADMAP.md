@@ -176,6 +176,10 @@ covers real models and synthetic browser lifecycle checks. Physical-camera and
 authorized three-seat demonstrations remain pending. Camera mode has no seats,
 histories, or event review; no CP4 gate is marked complete by this extension.
 
+Dated note, 18 November 2026: the sentence above records 29 October. After
+CP5, the implemented Camera mode finds seats and opens seat alerts (see the
+CP5 note below); the CP4 gates are unchanged and none is marked complete by it.
+
 | Work item | Suggested contact | Completion evidence |
 | --- | --- | --- |
 | Distinguish brief, sustained, and repeated movements. | Jeremy with Jose | Labeled sequences demonstrate each behavior, with gaps excluded from continuous duration. |
@@ -207,6 +211,20 @@ histories, or event review; no CP4 gate is marked complete by this extension.
 | Prepare the demonstration and a saved-video backup. | Jeremy coordinates; all members present | Rehearsed demonstration, permitted backup material, and a clear account of any live-camera limitations. |
 | Complete the final report and presentation. | All members | Problem, data, approach, comparison, results, error analysis, limitations, and contribution summary. |
 | Prepare the final hand-in. | Jeremy coordinates | Reviewed repository contents and final submission commit identified for `v1.0`; repository owner pushes manually. |
+
+Dated note, 18 November 2026 (after the CP5 demonstration, which used the saved-video
+workflow above; pending team agreement, no course date or gate changed): the
+website's main workflow is now the live camera with automatic seat setup, seat
+alerts (sustained or repeated left or right movement; down never alerts), one
+cropped still per alert, Checked/Dismissed marks, resume after interruption,
+Past sessions, and a PDF with alerts, stills and marks. Saved video is a
+secondary website path (**Review a recording instead**) and Image is removed from
+the website (code and command line kept for evaluation). The live path has
+automated and fake-camera checks only; the physical three-person check on the
+ASUS laptop with Camo is not performed, and no alert accuracy is claimed. See the
+[camera alerts design](docs/superpowers/specs/2026-11-18-camera-alerts-design.md) and its
+[verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md). The post-CP5 task is `post-camera-alerts` in
+[TASK.md](TASK.md).
 
 **Completion gate:**
 
