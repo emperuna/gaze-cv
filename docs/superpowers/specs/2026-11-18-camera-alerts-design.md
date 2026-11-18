@@ -143,7 +143,7 @@ So the normal path is three clicks: Start, Start monitoring, and Stop at the end
   fewer detector tiles. The chosen value is shown under Advanced settings and
   recorded in the session.
 - **Everything else uses defaults**: the movement rules (2 s sustained; 3 turns
-  in 10 s with 0.25 s dwell), no mirroring, detector tiling 1. They sit under a
+  in 10 s with 0.25 s dwell), no mirroring, detector tiling 2 (tiling 1 found no heads on the four-person proxy clip; the 3.44 FPS laptop figure was measured at tiling 2). They sit under a
   collapsed **Advanced settings** section that the instructor never needs to open.
 
 ### Dashboard layout (sketch)
