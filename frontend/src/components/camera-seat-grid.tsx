@@ -1,16 +1,21 @@
 "use client";
 
 import type { LiveSeatState } from '@/lib/camera-contract';
-import { formatElapsed, seatNumber, seatsObserved } from '@/lib/camera-dashboard';
+import { formatElapsed, seatNumber } from '@/lib/camera-dashboard';
 import type { RunningStatus } from '@/lib/camera-dashboard';
 import type { ReviewSeat } from '@/lib/review-contract';
 
-/** One tile per seat with its current direction and whether it has an open alert, plus the status line. */
-export function CameraSeatGrid({ seats, states, openSeats, status, sessionTime }: {
-  seats: ReviewSeat[]; states: Record<string, LiveSeatState> | undefined; openSeats: Set<string>;
-  status: RunningStatus; sessionTime: number;
+/** "Running smoothly · 5/6 seats observed · 12:05"; shown in the monitoring header so it stays in sight. */
+export function SeatStatusLine({ status, observed, total, sessionTime }: { status: RunningStatus; observed: number; total: number; sessionTime: number }) {
+  return <p className={`seat-grid-status${status.slow ? ' seat-grid-slow' : ''}`}>
+    <span>{status.text}</span> · <span>{observed}/{total} seats observed</span> · <span aria-label={`Elapsed ${formatElapsed(sessionTime)}`}>{formatElapsed(sessionTime)}</span>
+  </p>;
+}
+
+/** One tile per seat with its current direction and whether it has an open alert; speed under Details. */
+export function CameraSeatGrid({ seats, states, openSeats, status }: {
+  seats: ReviewSeat[]; states: Record<string, LiveSeatState> | undefined; openSeats: Set<string>; status: RunningStatus;
 }) {
-  const observed = seatsObserved(seats.map(seat => seat.id), states);
   return <section className="seat-grid" aria-labelledby="seat-grid-title">
     <h3 id="seat-grid-title">Seats</h3>
     <ul>
@@ -26,9 +31,6 @@ export function CameraSeatGrid({ seats, states, openSeats, status, sessionTime }
         </li>;
       })}
     </ul>
-    <p className={`seat-grid-status${status.slow ? ' seat-grid-slow' : ''}`}>
-      <span>{status.text}</span> · <span>{observed}/{seats.length} seats observed</span> · <span aria-label={`Elapsed ${formatElapsed(sessionTime)}`}>{formatElapsed(sessionTime)}</span>
-    </p>
     <details className="seat-grid-details">
       <summary>Details</summary>
       <p>{status.fps === null ? 'Processing speed: measuring.' : `Processing speed over the last 10 s: ${status.fps.toFixed(1)} FPS.`}</p>
