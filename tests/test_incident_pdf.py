@@ -30,8 +30,28 @@ class IncidentPdfTests(unittest.TestCase):
                 pdf = render_incident_pdf(value)
                 self.assertTrue(pdf.startswith(b'%PDF-'))
                 self.assertTrue(pdf.rstrip().endswith(b'%%EOF'))
-                self.assertIn(b'Potential incident review report', pdf)
+                title = b'Seat check review report' if mode == 'camera' else b'Potential incident review report'
+                self.assertIn(title, pdf)
                 self.assertEqual(value, original)
+
+    def test_camera_report_is_worded_as_seat_check_prompts(self):
+        import gaze.incident_pdf as module
+        written = []
+        real = module.Paragraph
+        def spy(text, *args, **kwargs):
+            written.append(text)
+            return real(text, *args, **kwargs)
+        for items in [report('camera')['items'], []]:
+            written.clear()
+            value = {**report('camera'), 'items': items}
+            with mock.patch.object(module, 'Paragraph', spy):
+                pdf = render_incident_pdf(value)
+            self.assertIn(b'Seat check review report', pdf)
+            self.assertNotIn(b'incident', pdf.lower())
+            self.assertEqual(written[0], 'Seat check<br/>review report')
+            self.assertTrue(written[2].startswith('This report lists moments when Ocular prompted the instructor to check a seat. A prompt is not a finding'))
+            self.assertIn('head movement does not establish cheating or intent', written[2])
+            self.assertFalse([t for t in written if 'incident' in t.lower()], 'no camera-mode heading or text says incident')
 
     def test_long_notes_and_many_items_paginate_instead_of_clipping_or_failing(self):
         value = report('video')
