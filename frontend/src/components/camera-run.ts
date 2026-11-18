@@ -15,6 +15,10 @@ import type { CameraPhase, SeatOverlay } from './camera-setup';
  */
 export type Run = {
   active: boolean; controller: AbortController; stream?: MediaStream; sessionId?: string; recordId?: string;
+  /** The interrupted record this run is resuming (set before the worker starts). */
+  resumeOf?: string;
+  /** Set while a Start monitoring request is with the server, so Stop can wait for it and end that record. */
+  monitorPending?: Promise<void>;
   commands: (() => Promise<void>)[]; progress: SetupProgress; setupQueued: boolean; still: HTMLCanvasElement;
 };
 /** A preview frame is a plain `CameraResult`; a monitoring frame adds the alert fields. */
@@ -45,6 +49,16 @@ export async function stopSession(id: string): Promise<{ ok: true } | { ok: fals
   } catch {
     return { ok: false, message: 'Ocular could not be reached to save the session. Press Stop again.' };
   }
+}
+
+/**
+ * Pause: the worker closes without ending the record, which the server saves as `interrupted`.
+ * `keepalive` lets it finish while the tab is hidden or closing. Failures are ignored; the worker's idle
+ * timeout interrupts the record anyway.
+ */
+export async function interruptSession(id: string): Promise<void> {
+  try { await fetch(`/api/camera/${id}/interrupt`, { method: 'POST', keepalive: true, signal: AbortSignal.timeout(STOP_TIMEOUT_MS) }); }
+  catch { /* the idle timeout interrupts the record */ }
 }
 
 export interface CaptureLoop {

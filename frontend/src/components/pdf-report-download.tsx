@@ -4,7 +4,10 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowDownToLine, LoaderCircle } from 'lucide-react';
 import { Button } from './ui/button';
 
-export function PdfReportDownload({ url, filename, disabled = false, descriptionId }: { url: string | null; filename: string; disabled?: boolean; descriptionId?: string }) {
+export function PdfReportDownload({ url, filename, disabled = false, descriptionId, variant, size, buttonClassName }: {
+  url: string | null; filename: string; disabled?: boolean; descriptionId?: string;
+  variant?: 'default' | 'outline'; size?: 'default' | 'lg'; buttonClassName?: string;
+}) {
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const pending = useRef<AbortController | null>(null);
   useEffect(() => { setError(''); return () => pending.current?.abort(); }, [url]);
@@ -27,7 +30,7 @@ export function PdfReportDownload({ url, filename, disabled = false, description
     } catch (error) { if (!controller.signal.aborted) setError(error instanceof Error ? error.message : 'PDF download failed.'); }
     finally { if (pending.current === controller) { pending.current = null; setBusy(false); } }
   }
-  return <div className="pdf-report-download"><Button type="button" aria-describedby={descriptionId} disabled={disabled || busy || !url} onClick={() => void download()}>{busy ? <LoaderCircle size={16} className="spin" /> : <ArrowDownToLine size={16} />}{busy ? 'Preparing PDF…' : 'Download PDF report'}</Button>{error && <p className="analysis-error" role="alert">{error}</p>}</div>;
+  return <div className="pdf-report-download"><Button type="button" variant={variant} size={size} className={buttonClassName} aria-describedby={descriptionId} disabled={disabled || busy || !url} onClick={() => void download()}>{busy ? <LoaderCircle size={16} className="spin" /> : <ArrowDownToLine size={16} />}{busy ? 'Preparing PDF…' : 'Download PDF report'}</Button>{error && <p className="analysis-error" role="alert">{error}</p>}</div>;
 }
 
 export function PdfReportBar({ url, filename, disabled, description }: { url: string | null; filename: string; disabled: boolean; description: string }) {

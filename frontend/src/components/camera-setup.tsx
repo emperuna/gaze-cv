@@ -10,8 +10,11 @@ import type { LiveSeatState } from '@/lib/camera-contract';
 import type { DEFAULT_MOVEMENT } from '@/lib/review-contract';
 import '@/app/analyze/saved-review.css';
 
-/** Camera screen phases. Tasks 8–9 render `monitoring`, `interrupted` and `ended` in full. */
-export type CameraPhase = 'idle' | 'permission' | 'loading' | 'preparing' | 'found' | 'monitoring' | 'interrupted' | 'ended' | 'stopping';
+/**
+ * Camera screen phases. `interrupted`: frames stopped without Stop (the record can be resumed); `confirming`:
+ * the camera is open again with the saved seats drawn, asking whether they still line up before resuming.
+ */
+export type CameraPhase = 'idle' | 'permission' | 'loading' | 'preparing' | 'found' | 'monitoring' | 'interrupted' | 'confirming' | 'ended' | 'stopping';
 export type MovementRules = Omit<typeof DEFAULT_MOVEMENT, 'max_gap'>;
 export interface MeasuredSpeed { maxGap: number; tooSlow: boolean; medianInterval: number }
 

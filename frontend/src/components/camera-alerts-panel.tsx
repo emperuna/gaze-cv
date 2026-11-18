@@ -46,13 +46,16 @@ export class Chime {
 
 const stillUrl = (recordId: string, alertId: string) => `/api/camera/sessions/${encodeURIComponent(recordId)}/stills/${encodeURIComponent(alertId)}`;
 
-/** The alert list, newest first, with a still, Checked / Dismiss and an optional note per alert. */
-export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, onMark, message, announcement }: {
+/**
+ * The alert list, newest first, with a still, Checked / Dismiss and an optional note per alert.
+ * With `live` false (a stopped, interrupted or reopened session) there is no sound toggle; marking still works.
+ */
+export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, onMark, message, announcement, live = true }: {
   recordId: string | null; alerts: LiveAlert[]; events: MovementEvent[];
   muted: boolean; onMuted: (muted: boolean) => void;
   /** Resolves once the server answered; the parent shows any failure in `message`. */
   onMark: (alert: LiveAlert, mark: AlertMark, note: string) => Promise<void>;
-  message: string; announcement: string;
+  message: string; announcement: string; live?: boolean;
 }) {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [pending, setPending] = useState<string | null>(null);
@@ -82,14 +85,14 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
   return <section className="workspace-card camera-alerts" aria-labelledby="camera-alerts-title">
     <div className="workspace-card-header">
       <h2 id="camera-alerts-title">Alerts{openCount ? <span className="alerts-open-count">{openCount} to check</span> : null}</h2>
-      <Button variant="outline" className="alerts-mute" aria-pressed={muted} onClick={() => onMuted(!muted)}>
+      {live && <Button variant="outline" className="alerts-mute" aria-pressed={muted} onClick={() => onMuted(!muted)}>
         {muted ? <BellOff size={16} /> : <Bell size={16} />}{muted ? 'Sound off' : 'Sound on'}
-      </Button>
+      </Button>}
     </div>
     <p className="sr-only" aria-live="assertive" aria-atomic="true">{announcement}</p>
     <div className="alerts-body">
       {message && <p className="setup-warning" role="alert">{message}</p>}
-      {!alerts.length && <p className="alerts-empty">No alerts yet. When a seat needs a look, it appears here with a picture and a sound.</p>}
+      {!alerts.length && <p className="alerts-empty">{live ? 'No alerts yet. When a seat needs a look, it appears here with a picture and a sound.' : 'No alerts in this session.'}</p>}
       <ol className="alerts-list">
         {alerts.map(alert => {
           const open = alert.mark === null;

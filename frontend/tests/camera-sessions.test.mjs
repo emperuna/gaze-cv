@@ -1,0 +1,67 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  DELETE_CONFIRM_TEXT, countText, displaySeats, formatClock, formatDuration, formatSessionDate, interruptedAt, interruptionText,
+  reportFilename, reportUrl, stateLabel, unmarkedText,
+} from '../src/lib/camera-sessions.ts';
+
+test('session states read in plain words', () => {
+  assert.equal(stateLabel('ended'), 'Ended');
+  assert.equal(stateLabel('interrupted'), 'Interrupted');
+  assert.equal(stateLabel('monitoring'), 'Live now');
+});
+
+test('the interruption text uses the local hh:mm clock', () => {
+  const at = new Date(2026, 10, 18, 9, 5, 42);
+  assert.equal(formatClock(at), '09:05');
+  assert.equal(interruptionText(at), 'Monitoring stopped at 09:05. Seats and alerts are saved.');
+  assert.equal(formatClock(new Date(2026, 10, 18, 22, 58)), '22:58');
+});
+
+test('durations, counts and unmarked text are plain words', () => {
+  assert.equal(formatDuration(0), '0 s');
+  assert.equal(formatDuration(44.6), '45 s');
+  assert.equal(formatDuration(60), '1 min');
+  assert.equal(formatDuration(12 * 60 + 20), '12 min');
+  assert.equal(formatDuration(3600), '1 h');
+  assert.equal(formatDuration(3600 + 5 * 60), '1 h 5 min');
+  assert.equal(formatDuration(-3), '0 s');
+  assert.equal(formatDuration(NaN), '0 s');
+  assert.equal(countText(1, 'seat'), '1 seat');
+  assert.equal(countText(3, 'alert'), '3 alerts');
+  assert.equal(unmarkedText(0, 0), 'no alerts to mark');
+  assert.equal(unmarkedText(4, 2), '2 not marked yet');
+  assert.equal(unmarkedText(4, 0), 'all marked');
+});
+
+test('the interruption time comes from the record, or is estimated for a crashed server', () => {
+  assert.equal(interruptedAt({ interruptedAt: '2026-11-18T10:58:00.000Z', segments: [], lastTime: 0, createdAt: '2026-11-18T10:00:00.000Z' }).toISOString(),
+    '2026-11-18T10:58:00.000Z');
+  // Left `monitoring`: the last segment started at 10:30 with session time 600 s, and the last frame was at 900 s.
+  const estimated = interruptedAt({ interruptedAt: null, lastTime: 900, createdAt: '2026-11-18T10:00:00.000Z',
+    segments: [{ startedAt: '2026-11-18T10:30:00.000Z', offsetSeconds: 600, endSeconds: null }] });
+  assert.equal(estimated.toISOString(), '2026-11-18T10:35:00.000Z');
+  // A first segment with a negative offset (preview time before monitoring) counts from zero.
+  const first = interruptedAt({ lastTime: 30, createdAt: 'x', segments: [{ startedAt: '2026-11-18T10:00:00.000Z', offsetSeconds: -4, endSeconds: null }] });
+  assert.equal(first.toISOString(), '2026-11-18T10:00:30.000Z');
+});
+
+test('saved seats are flipped back for a mirrored live view and copied otherwise', () => {
+  const seats = [{ id: 'seat-1', roi: [0.1, 0.2, 0.3, 0.4] }];
+  const mirrored = displaySeats({ seats, mirrored: true });
+  assert.equal(mirrored[0].roi[0].toFixed(2), '0.70');
+  assert.equal(mirrored[0].roi[2].toFixed(2), '0.90');
+  assert.deepEqual(mirrored[0].roi.slice(1, 4).filter((_, i) => i !== 1), [0.2, 0.4]);
+  const plain = displaySeats({ seats, mirrored: false });
+  assert.deepEqual(plain, seats);
+  assert.notEqual(plain[0].roi, seats[0].roi);
+});
+
+test('report links, file names and dates', () => {
+  assert.equal(reportUrl('abc'), '/api/camera/sessions/abc/report');
+  assert.equal(reportFilename(new Date(2026, 10, 18, 9, 5).toISOString()), 'ocular-camera-session-2026-11-18-0905.pdf');
+  assert.equal(reportFilename('nope'), 'ocular-camera-session.pdf');
+  assert.match(formatSessionDate(new Date(2026, 10, 18, 9, 5).toISOString()), /2026, 09:05$/);
+  assert.equal(formatSessionDate('nope'), 'Unknown date');
+  assert.equal(DELETE_CONFIRM_TEXT, 'Delete this session and its alert images? This cannot be undone.');
+});
