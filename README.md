@@ -183,7 +183,7 @@ and directions-only upload workflows are no longer reachable from the website
 adds visual/numeric seat setup, configurable movement rules, synchronized browser
 playback, clickable events, per-seat histories, saved-session reopening and JSON
 downloads. It reuses the existing Python modules; directions remain camera-relative.
-The directions-only upload and calibrated CLI workflows remain available.
+The directions-only upload workflow is available from code and the command line only, and the calibrated CLI workflows remain available.
 See [saved-review use](frontend/README.md#saved-video-seat-and-movement-review),
 the [CP4 checklist](docs/checkpoints/cp4-checklist.md), and the
 [before/after table](docs/checkpoints/cp4-before-after.md).
