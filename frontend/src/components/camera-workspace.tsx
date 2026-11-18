@@ -19,10 +19,11 @@ import type { MovementEvent, ReviewSeat } from '@/lib/review-contract';
 import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice, seatsForMonitor, writeSavedDevice } from '@/lib/camera-setup';
 import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
 import { interruptSession, newRun, runCaptureLoop, stopSession } from './camera-run';
-import { CameraPastSessions, InlineConfirm, deleteSession } from './camera-past-sessions';
+import { CameraPastSessions, InlineConfirm } from './camera-past-sessions';
+import { useSessionRecovery } from './camera-recovery';
 import { PdfReportDownload } from './pdf-report-download';
 import {
-  DELETE_CONFIRM_TEXT, END_CONFIRM_TEXT, SEATS_QUESTION, countText, displaySeats, formatSessionDate, interruptedAt, interruptionText,
+  DELETE_CONFIRM_TEXT, END_CONFIRM_TEXT, SEATS_QUESTION, countText, formatSessionDate, interruptionText,
   reportFilename, reportUrl, unmarkedText,
 } from '@/lib/camera-sessions';
 import type { MonitorFrame, Run } from './camera-run';
@@ -43,7 +44,6 @@ function cameraError(error: unknown, action = 'Start') {
 
 const HIDDEN_REASON = 'This tab was hidden or closed, so Ocular released the camera. Press Resume to continue.';
 const LOST_REASON = 'Live processing stopped unexpectedly. Press Resume to continue.';
-type RecordMeta = { createdAt: string; state: LiveSessionRecord['state']; seats: number };
 
 const initialRules = (): MovementRules => { const { max_gap: _gap, ...rules } = DEFAULT_MOVEMENT; return rules; };
 
@@ -81,18 +81,9 @@ export function CameraWorkspace() {
   const [markMessage, setMarkMessage] = useState('');
   const [muted, setMutedState] = useState(false);
   const [announcement, setAnnouncement] = useState('');
-  // Interruptions, resume and saved sessions.
-  const [recordMeta, setRecordMeta] = useState<RecordMeta | null>(null);
-  const [stoppedAt, setStoppedAt] = useState<Date | null>(null);
-  const [pauseReason, setPauseReason] = useState('');
-  const [resumeStep, setResumeStep] = useState<'' | 'loading' | 'camera' | 'ask' | 'starting'>('');
-  const [confirm, setConfirm] = useState<'' | 'end' | 'delete'>('');
-  const [action, setAction] = useState<'' | 'end' | 'delete' | 'open'>('');
   const [pastKey, setPastKey] = useState(0);
   const recordIdRef = useRef<string | null>(null);
   const recordStateRef = useRef<LiveSessionRecord['state'] | null>(null);
-  /** The worker paused from this tab; paused again before a resume in case it is still closing. */
-  const pausedSession = useRef<string | null>(null);
   const leaveRef = useRef<(reason?: string) => void>(() => {});
   const alertsRef = useRef<AlertMap>({});
   const eventsRef = useRef<MovementEvent[]>([]);
@@ -112,6 +103,15 @@ export function CameraWorkspace() {
   const seatsRef = useRef<ReviewSeat[]>([]);
   const busy = phase !== 'idle' && phase !== 'ended' && phase !== 'interrupted';
   const ready = !!status?.methods.baseline.ready && !checking;
+  // Interruptions, resume and saved sessions.
+  const recovery = useSessionRecovery(() => ({
+    run, mounted, phaseRef, seatsRef, recordIdRef, recordStateRef, frameTimes, chime, newChime: () => new Chime(),
+    ready, mirrored, tileGrid, go, isCurrent, release, fetchRecord, applyRecord, showRecord, resetDashboard, newSession,
+    openCamera, capture, captureFailed, cameraError, setError, setNotice, setSaveError, setWarnings, setStopRetry, setEditing,
+    setHasFrame, setSeats, setMirrored, setTileGrid, setSessionTime, refreshPast: () => setPastKey(key => key + 1),
+  }));
+  const { recordMeta, setRecordMeta, stoppedAt, setStoppedAt, pauseReason, setPauseReason, resumeStep, setResumeStep,
+    confirm, setConfirm, action, pausedSession, beginResume, confirmResume, endSession, deleteCurrent, openRecord } = recovery;
   useEffect(() => { seatsRef.current = seats; }, [seats]);
 
   const go = useCallback((next: CameraPhase) => { phaseRef.current = next; setPhaseState(next); }, []);
@@ -162,7 +162,7 @@ export function CameraWorkspace() {
   function announce(text: string) { setAnnouncement(previous => previous === text ? `${text}\u00a0` : text); }
   function setMuted(next: boolean) { mutedRef.current = next; setMutedState(next); writeMuted(next); }
   function resetDashboard() {
-    recordIdRef.current = null; recordStateRef.current = null; setRecordMeta(null); setStoppedAt(null); setPauseReason(''); setConfirm(''); setResumeStep('');
+    recordIdRef.current = null; recordStateRef.current = null; recovery.reset();
     setRecordId(null); setAlerts({}); eventsRef.current = []; setEventState([]); setSeatStates(undefined); setSessionTime(0);
     revision.current = 0; reloadQueued.current = false; frameTimes.current = []; setRunning(runningStatus([], 0, 1));
     setMarkMessage(''); setAnnouncement('');
@@ -498,121 +498,6 @@ export function CameraWorkspace() {
       go('preparing');
       await capture(current, stream);
     } catch (problem) { await captureFailed(current, problem); }
-  }
-
-  /** Resume step 1: load the interrupted record, open the camera and draw the saved seats over it. */
-  async function beginResume(id: string) {
-    if (run.current) return;
-    if (!ready) { setError('The local processor is not ready. Press Recheck, then press Resume again.'); return; }
-    setError(''); setNotice(''); setSaveError(''); setWarnings([]); setConfirm(''); setStopRetry(null); setEditing(null); setHasFrame(false);
-    setResumeStep('loading'); go('confirming');
-    const current = newRun(); current.resumeOf = id;
-    run.current = current;
-    const valid = () => isCurrent(current);
-    try {
-      // A worker paused from this tab may still be closing; pausing again is harmless.
-      if (pausedSession.current) { await interruptSession(pausedSession.current); pausedSession.current = null; }
-      const record = await fetchRecord(id, current.controller.signal);
-      if (!valid()) return;
-      if (record.state !== 'interrupted') {
-        throw new Error(record.state === 'ended' ? 'This session has ended, so it cannot be resumed. Open it from Past sessions to mark alerts or download the PDF.'
-          : 'This session is live in another tab or window. Use that tab to continue.');
-      }
-      resetDashboard(); showRecord(id, record);
-      setStoppedAt(interruptedAt(record)); setSessionTime(record.lastTime); setResumeStep('camera');
-      setSeats(displaySeats(record.settings)); setMirrored(record.settings.mirrored); setTileGrid(record.settings.tileGrid);
-      seatsRef.current = displaySeats(record.settings);
-      await openCamera(current);
-      if (valid()) setResumeStep('ask');
-    } catch (problem) {
-      if (!valid()) return;
-      const message = cameraError(problem, 'Resume');
-      release(current); setResumeStep('');
-      if (recordIdRef.current === id && recordStateRef.current === 'interrupted') { setPauseReason(''); setError(message); go('interrupted'); }
-      else { resetDashboard(); setError(message); setPastKey(key => key + 1); go('idle'); }
-    }
-  }
-
-  /** Resume step 2 (Yes, resume): a new worker continues the same record with its saved settings. */
-  async function confirmResume() {
-    const current = run.current;
-    const id = current?.resumeOf;
-    if (!current || !id || phaseRef.current !== 'confirming' || resumeStep !== 'ask' || !current.stream) return;
-    const stream = current.stream;
-    const valid = () => isCurrent(current);
-    setError(''); setResumeStep('starting');
-    // This click is the user gesture browsers require before the alert sound can play.
-    chime.current ??= new Chime(); chime.current.unlock();
-    try {
-      const response = await fetch('/api/camera', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mirrored, tileGrid, resume: id }), signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(65_000)]) });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Monitoring could not resume.');
-      current.sessionId = data.sessionId;
-      // Left the check while the worker started: pause it again so the record stays interrupted.
-      if (!valid()) { await interruptSession(data.sessionId); return; }
-      current.recordId = id;
-      applyRecord(data.record as LiveSessionRecord);
-      try { const record = await fetchRecord(id, current.controller.signal); if (valid()) applyRecord(record); }
-      catch { /* the record returned by Resume is already shown */ }
-      if (!valid()) return;
-      setResumeStep(''); setStoppedAt(null); setPauseReason(''); frameTimes.current = [];
-      go('monitoring');
-      await capture(current, stream);
-    } catch (problem) {
-      if (!valid()) return;
-      if (current.recordId) { await captureFailed(current, problem); return; }
-      setResumeStep('ask');
-      setError(`Monitoring could not resume: ${(problem as Error).message} Press Yes, resume to try again, or No, end this session.`);
-    }
-  }
-
-  /** End session (interrupted view, or No at the seat check): the record is ended; marking and the PDF still work. */
-  async function endSession() {
-    const id = recordIdRef.current;
-    if (!id || action) return;
-    if (run.current) release(run.current);
-    setResumeStep(''); setHasFrame(false); setError(''); setAction('end');
-    try {
-      const response = await fetch(`/api/camera/sessions/${encodeURIComponent(id)}/end`, { method: 'POST', signal: AbortSignal.timeout(20_000) });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'The session could not be ended.');
-      if (!mounted.current || recordIdRef.current !== id) return;
-      applyRecord(data.record as LiveSessionRecord);
-      setConfirm(''); setPauseReason(''); setStoppedAt(null); pausedSession.current = null;
-      go('ended');
-    } catch (problem) {
-      if (!mounted.current) return;
-      setError(`The session could not be ended (${(problem as Error).message}). Press End session again.`);
-      if (phaseRef.current === 'confirming') go('interrupted');
-    } finally { if (mounted.current) setAction(''); }
-  }
-
-  async function deleteCurrent() {
-    const id = recordIdRef.current;
-    if (!id || action) return;
-    setError(''); setAction('delete');
-    const problem = await deleteSession(id);
-    if (!mounted.current) return;
-    setAction('');
-    if (problem) { setError(problem); return; }
-    newSession();
-  }
-
-  /** Past sessions → Open: the saved record's alerts (marking allowed) and its PDF, without a live view. */
-  async function openRecord(id: string) {
-    if (run.current || action) return;
-    setError(''); setNotice(''); setSaveError(''); setAction('open');
-    try {
-      const record = await fetchRecord(id);
-      if (!mounted.current || run.current) return;
-      resetDashboard(); showRecord(id, record);
-      setSeats(displaySeats(record.settings)); setHasFrame(false); setSessionTime(record.lastTime);
-      if (record.state === 'interrupted') { setStoppedAt(interruptedAt(record)); go('interrupted'); }
-      else go('ended');
-    } catch (problem) {
-      if (mounted.current) setError(`The session could not be opened (${(problem as Error).message}). Press Open again.`);
-    } finally { if (mounted.current) setAction(''); }
   }
 
   // While asking whether the seats still line up, the live camera is drawn with the saved seat boxes (no processing yet).
