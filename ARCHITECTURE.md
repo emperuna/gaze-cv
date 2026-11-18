@@ -71,6 +71,21 @@ a download. See [session scope and checks](docs/superpowers/specs/2026-10-29-sav
 
 Seat references identify positions within a session. The project does not require recognizing a student's identity or connecting their identity across sessions.
 
+The website review layer derives grouped queue items and frame-based seat
+coverage from saved observations. Human statuses, notes, report text and local
+sign-off are saved separately with revision checks; they never replace original
+model records. Camera health checks remain transient and direction-only.
+
+All three website sources offer a PDF observation report. A bounded JSON report
+passes through `scripts/render_incident_report.py` into the shared ReportLab
+renderer in `src/gaze/incident_pdf.py`; bytes stream back as a local PDF download.
+Image/directions-only runs retain completion metadata for report provenance.
+Camera keeps bounded numeric capture summaries in an eight-session memory cache,
+with timed expiry 30 minutes after worker exit, without retaining pixels or
+tracking seats. Reports preserve source-specific uncertainty and human review.
+See [review workload tools](docs/review-workload.md) for the implemented rules
+and limitations.
+
 ## Scope and operating assumptions
 
 The target demonstration uses one fixed camera with at least three clearly visible students in a stable seating arrangement. Lighting, camera position, and face visibility affect what can be observed reliably.

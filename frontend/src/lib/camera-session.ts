@@ -21,10 +21,12 @@ export class CameraSession {
   private readonly idleMs: number;
   private readonly frameMs: number;
   private readonly child: ChildProcessWithoutNullStreams;
+  private readonly onResult?: (result: CameraResult) => void;
 
   constructor(child: ChildProcessWithoutNullStreams, release: () => void,
-    options: { idleMs?: number; frameMs?: number; startupMs?: number } = {}) {
+    options: { idleMs?: number; frameMs?: number; startupMs?: number; onResult?: (result: CameraResult) => void } = {}) {
     this.child = child;
+    this.onResult = options.onResult;
     this.idleMs = options.idleMs ?? 15_000;
     this.frameMs = options.frameMs ?? 30_000;
     this.ready = new Promise((resolve, reject) => {this.readyResolve=resolve; this.readyReject=reject;});
@@ -68,6 +70,7 @@ export class CameraSession {
           if (value.error) {void this.close(String(value.error)); return;}
           if (value.timestamp_seconds !== this.pending.frame.timestamp_seconds || !value.result || !Array.isArray(value.result.detections)) throw new Error();
           this.lastTimestamp = value.timestamp_seconds;
+          this.onResult?.(value as CameraResult);
           this.pending.resolve(value as CameraResult); this.pending=undefined;
           this.arm(this.idleMs,'Camera session expired. Start again.');
         } else throw new Error();

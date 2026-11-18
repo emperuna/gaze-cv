@@ -6,6 +6,7 @@ import { AnalysisWorkspace } from './analysis-workspace';
 import { SeatEditor } from './seat-editor';
 import { SessionPlayer } from './session-player';
 import { Button } from './ui/button';
+import { PdfReportBar } from './pdf-report-download';
 import { DEFAULT_MOVEMENT,mirrorSeats,validateReviewSettings } from '@/lib/review-contract';
 import type { ReviewSettings,ReviewSeat,ReviewRecord,SavedReview,ReviewPreparation,TimingCheck } from '@/lib/review-contract';
 import type { AnalysisMethod,BackendStatus } from '@/lib/analysis-contract';
@@ -36,6 +37,7 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
   const [status,setStatus]=useState<BackendStatus|null>(null);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
+  const [reviewPending,setReviewPending]=useState(false);
   const [sessions,setSessions]=useState<SavedReview[]>([]);
   const [meta,setMeta]=useState<SavedReview|null>(null);
   const [record,setRecord]=useState<ReviewRecord|null>(null);
@@ -45,7 +47,7 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
   const loadNumber=useRef(0);
   const setupNumber=useRef(0);
   const busyCallback=useRef(onRunningChange);busyCallback.current=onRunningChange;
-  useEffect(()=>{busyCallback.current(busy||preparing);},[busy,preparing]);
+  useEffect(()=>{busyCallback.current(busy||preparing||reviewPending);},[busy,preparing,reviewPending]);
 
   const refresh=useCallback(async()=>{
     try{const response=await fetch('/api/review',{cache:'no-store'});if(!response.ok)throw new Error('Could not read saved sessions.');const list=await response.json();if(active.current)setSessions(list);}
@@ -97,7 +99,7 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
   }
 
   async function process() {
-    if(!file||!settings||busy||preparing||!timing?.verified||!playable)return;
+    if(!file||!settings||busy||preparing||reviewPending||!timing?.verified||!playable)return;
     const controller=new AbortController();request.current=controller;
     setBusy(true);setError('');loadNumber.current++;setRecord(null);setMeta(null);
     try {
@@ -111,10 +113,11 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
   }
 
   return <div className="saved-video-workspace">
-    <section className="review-library" aria-label="Saved sessions"><label>Reopen a saved session<select aria-label="Saved session" value={meta?.id??''} disabled={busy||preparing||loading} onChange={event=>{if(event.target.value)void openSession(event.target.value);}}><option value="">Choose a completed session</option>{meta&&!sessions.some(s=>s.id===meta.id)&&<option value={meta.id}>{meta.filename} · opened by link</option>}{sessions.map(session=><option key={session.id} value={session.id}>{session.filename} · {new Date(session.createdAt).toLocaleString()} · {session.events} events</option>)}</select></label><button type="button" disabled={busy||preparing||loading} onClick={()=>void refresh()}>Refresh sessions</button><p>The latest 50 sessions are listed. Bookmark the session URL to reopen an older one. Files remain on this computer until you remove their local run folders.</p></section>
+    <PdfReportBar url={meta?`/api/review/${meta.id}/report?format=pdf`:null} filename={meta?`ocular-video-${meta.id}.pdf`:'ocular-video-report.pdf'} disabled={!meta||!record||busy||preparing||loading||reviewPending} description={reviewPending?'Save or discard review edits to enable the PDF download.':busy||preparing||loading?'Finish processing or opening the session to enable the PDF download.':meta&&record?'Your session report is ready. It includes saved review statuses and notes.':'Process a video or reopen a saved session to enable the PDF download.'}/>
+    <section className="review-library" aria-label="Saved sessions"><label>Reopen a saved session<select aria-label="Saved session" value={meta?.id??''} disabled={busy||preparing||loading||reviewPending} onChange={event=>{if(event.target.value)void openSession(event.target.value);}}><option value="">Choose a completed session</option>{meta&&!sessions.some(s=>s.id===meta.id)&&<option value={meta.id}>{meta.filename} · opened by link</option>}{sessions.map(session=><option key={session.id} value={session.id}>{session.filename} · {new Date(session.createdAt).toLocaleString()} · {session.events} events</option>)}</select></label><button type="button" disabled={busy||preparing||loading} onClick={()=>void refresh()}>Refresh sessions</button><p>The latest 50 sessions are listed. Bookmark the session URL to reopen an older one. Files remain on this computer until you remove their local run folders.</p></section>
     <div className="review-layout">
       <section className="workspace-card review-setup"><div className="workspace-card-header"><h2>Set up a video review</h2></div><div className="input-card-body">
-        <label className="review-upload">Saved video<input type="file" accept=".mp4,.webm" disabled={busy||preparing} onChange={event=>{
+        <label className="review-upload">Saved video<input type="file" accept=".mp4,.webm" disabled={busy||preparing||reviewPending} onChange={event=>{
           const selected=event.target.files?.[0];if(!selected)return;
           if(!/\.(mp4|webm)$/i.test(selected.name)||selected.size<=0||selected.size>64*1024*1024){setError('Choose a nonempty MP4/WebM of at most 64 MB.');event.target.value='';return;}
           loadNumber.current++;setFile(selected);setSeats([]);setPlayable(false);setTiming(null);setSuggestionNote('');setPendingSeats(null);setRecord(null);setMeta(null);setError('');window.history.replaceState(null,'',window.location.pathname);void prepare(selected,false);
@@ -139,11 +142,11 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
         </details>
         {file&&validation&&<p className="review-validation" role="status">{validation}</p>}
         <p className="review-help">Confirm the boxes cover the correct fixed seats before processing. Add or edit any missed regions.</p>
-        <div className="camera-actions"><Button disabled={busy||preparing||!file||!settings||!timing?.verified||!playable||!status?.methods[method]?.ready} onClick={()=>void process()}>{busy?<LoaderCircle size={16} className="spin"/>:<Play size={16}/>}Confirm seats & process</Button><Button variant="outline" disabled={!busy&&!preparing} onClick={()=>request.current?.abort()}><Square size={15}/>Stop</Button></div>
+        <div className="camera-actions"><Button disabled={busy||preparing||reviewPending||!file||!settings||!timing?.verified||!playable||!status?.methods[method]?.ready} onClick={()=>void process()}>{busy?<LoaderCircle size={16} className="spin"/>:<Play size={16}/>}Confirm seats & process</Button><Button variant="outline" disabled={!busy&&!preparing} onClick={()=>request.current?.abort()}><Square size={15}/>Stop</Button></div>
         {busy&&<p role="status" className="review-help">Processing locally. Keep this page open; model loading and longer clips take time. No percentage is estimated.</p>}
         {error&&<p className="analysis-error" role="alert">{error}</p>}
       </div></section>
-      <div className="review-results" aria-busy={busy||loading}>{record&&meta?<SessionPlayer key={meta.id} meta={meta} record={record}/>:<section className="workspace-card review-waiting"><h2>{loading?'Opening saved records…':busy?'Building this session’s review…':'Review directions over time'}</h2><p>Upload a clip and define fixed seats. After processing, play the annotated source, inspect explicit observation gaps, and select movement events to jump to their source time.</p><p>Completed sessions reopen from the list above without running inference again.</p></section>}</div>
+      <div className="review-results" aria-busy={busy||loading}>{record&&meta?<SessionPlayer key={meta.id} meta={meta} record={record} onPendingChange={setReviewPending}/>:<section className="workspace-card review-waiting"><h2>{loading?'Opening saved records…':busy?'Building this session’s review…':'Review directions over time'}</h2><p>Upload a clip and define fixed seats. After processing, play the annotated source, inspect explicit observation gaps, and select movement events to jump to their source time.</p><p>Completed sessions reopen from the list above without running inference again.</p></section>}</div>
     </div>
   </div>;
 }

@@ -66,6 +66,13 @@ is part of this change.
 
 ## Image/video input and output
 
+After analysis, **Download PDF report** generates a real PDF document containing
+observations for potential incident review. Image reports have no session
+timestamps or inferred durations. Directions-only video reports list individual
+source frames without inventing identities or movement histories. Empty/unknown
+results explicitly preserve uncertainty. PDF generation requires the updated
+Python `requirements.txt`, including ReportLab; it does not require new models.
+
 Open `/analyze` or use **Analyze** in the navigation. Select **Image** or
 **Saved video**, browse/drop one supported file (maximum 64 MB), select the
 automatic head model or geometric baseline, and optionally specify mirrored
@@ -73,6 +80,12 @@ pixels or baseline detector tiling. Input previews use local browser object URLs
 Only clicking **Analyze** sends the file to this loopback Next.js server.
 
 ## Live camera
+
+**Camera and coverage checks** warn about interrupted tracks, a frozen preview,
+stale processed frames, fewer usable heads than the manually configured
+expectation, and very dark/low-detail views. These are experimental technical
+warnings; they cannot establish the cause of poor visibility or classroom
+accuracy. See [check thresholds and limitations](../docs/review-workload.md#camera-checks).
 
 Open `/analyze`, select **Camera**, choose a camera and method, then click
 **Start camera** and allow browser camera access. The continuous preview is
@@ -107,9 +120,14 @@ camera support at the loopback URL; remote-device access is not supported.
 enforce bounded request sizes. Frames pass in memory through stdin/stdout to
 `scripts/camera_worker.py`, using `.venv` and project-local caches.
 
-This mode provides directions only. Seat association, calibrated seat-relative
-directions, histories, events, recording, and live-session downloads are outside
-this version. Physical-camera behavior and the authorized three-seat
+Stop camera processing, then use **Download PDF report**. It includes processed
+capture timestamps, direction counts and sampling gaps. No camera pixels or
+video are retained. Up to 18,000 numeric frame summaries remain in local server
+memory for 30 minutes after Stop, until a server restart, or until the eight-session
+cache evicts them. Download before leaving the workspace. This mode provides
+directions only; seat association, calibrated seat-relative directions,
+histories, movement events and recording remain outside this version.
+Physical-camera behavior and the authorized three-seat
 demonstration remain human checks; classroom accuracy remains unvalidated.
 See the [design](../docs/superpowers/specs/2026-10-29-live-camera-design.md).
 
@@ -125,6 +143,21 @@ The separate output directory protects development artifacts. On PowerShell set
 port failure observed in the agent environment.
 
 ## Saved-video seat and movement review
+
+The review workspace now includes a grouped **Review queue** with Unreviewed,
+Reviewed and Follow-up needed statuses, per-item notes and surrounding-footage
+playback. **Seat coverage checks** expose unavailable intervals. **Session
+report** provides an editable summary, proctor notes, local human sign-off and a
+saved Markdown download. Save or discard edits before switching sessions or
+sources. Original model records remain unchanged. See [review workload tools](../docs/review-workload.md)
+for grouping rules, storage, limits and conflict recovery.
+
+**Download PDF report** is prominently displayed in the report bar above the
+analysis controls in every source mode, including before processing. Its helper
+text explains when the download becomes available. Save edited
+notes/statuses before downloading; the PDF uses the latest saved review
+revision, including coverage gaps and local sign-off. An unedited session can
+also export a draft PDF. The editable Markdown download remains available.
 
 Choose **Saved video → Seats & movement review**. Upload an authorized
 browser-playable MP4/WebM from one fixed camera. Video timing is checked

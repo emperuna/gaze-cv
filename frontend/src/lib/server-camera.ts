@@ -5,6 +5,8 @@ import { AnalysisError, backendStatus, projectRoot, python, pythonEnvironment } 
 import { acquireProcessingSlot } from './processing-slot.ts';
 import { CameraSession } from './camera-session.ts';
 import type { CameraSettings } from './camera-contract.ts';
+import { CameraReportLog } from './incident-report.ts';
+import { cameraReports } from './camera-report-store.ts';
 
 const shared = globalThis as typeof globalThis & { gazeCameraSession?: {id:string; session:CameraSession} };
 
@@ -20,15 +22,18 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal)
     const child=spawn(python,[join(projectRoot,'scripts','camera_worker.py'),'--method',settings.method,
       ...(settings.mirrored ? ['--mirrored'] : []), ...(settings.method==='baseline' ? ['--tile-grid',String(settings.tileGrid)] : [])],
       {cwd:projectRoot,env:pythonEnvironment(),windowsHide:true,shell:false});
-    session=new CameraSession(child,release);
     const id=randomUUID();
+    const reportLog=new CameraReportLog(id,settings);
+    session=new CameraSession(child,release,{onResult:result=>reportLog.add(result)});
     shared.gazeCameraSession={id,session};
-    child.once('close',() => {if (shared.gazeCameraSession?.id===id) shared.gazeCameraSession=undefined;});
+    child.once('close',() => {reportLog.end();cameraReports.finish(id);if (shared.gazeCameraSession?.id===id) shared.gazeCameraSession=undefined;});
     const current=session;
     const abort=() => {void current.close('Camera startup cancelled.');};
     signal.addEventListener('abort',abort,{once:true});
     try {await session.ready; if (signal.aborted) throw new Error('Camera startup cancelled.');}
     finally {signal.removeEventListener('abort',abort);}
+    reportLog.snapshot.startedAt=new Date().toISOString();
+    cameraReports.add(reportLog);
     return {sessionId:id};
   } catch (error) {
     if (session) await session.close(); else release();

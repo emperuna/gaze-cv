@@ -101,6 +101,20 @@ Phase 4 hand-in instructions, including held-out evaluation, to remaining eviden
 | FR09 | Export events and configuration locally. | Saved records can be reviewed independently and traced to the session and settings used. |
 | FR10 | Handle unreliable or missing observations explicitly. | A face that disappears or loses usable landmarks becomes unknown; missing observations do not accumulate movement duration, and histories do not bridge gaps as continuous evidence. |
 | FR11 | Run both methods through a common evaluation procedure. | The same held-out labeled inputs, label mapping, and failure accounting are used for baseline and main-method comparison. |
+| FR12 | Group related saved-video movement records into review items with surrounding footage, human statuses and notes. | Same-seat/direction grouping preserves original events, respects unavailable observations, and saved decisions survive reopening; conflicting saves cannot silently overwrite notes. |
+| FR13 | Show technical camera warnings and per-seat saved-video coverage gaps. | Interrupted/stale input and experimental image-quality/visibility checks are explicit, recover when observations recover, and cannot be presented as confirmed obstructions or accuracy measurements. |
+| FR14 | Generate local PDF reports for Image, Saved video and Camera; retain editable saved-seat reports with human sign-off. | Each source offers a PDF download with mode-appropriate observations, timestamps where available and explicit uncertainty. Saved-seat reports include statuses, notes and sign-off; edits clear sign-off. No image durations, camera seat identities or misconduct conclusions are invented. |
+
+FR12–FR14 are the user-requested workload extensions of 17 November 2026.
+Their rules and verification boundaries are documented in [review workload tools](docs/review-workload.md).
+They do not expand camera mode to recording/seat tracking, introduce identity
+recognition, or establish multi-room/examination-scale readiness.
+
+On 18 November, the user extended FR14 to require a PDF document in all three
+analysis options. Camera now retains bounded numeric summaries in server memory
+for reporting after Stop; it still does not record camera pixels, track seats or
+establish continuous movement events. [PDF reporting rules](docs/review-workload.md#pdf-reports-for-all-three-options)
+define retention, truncation, source distinctions and human-review wording.
 
 Unknown and unassigned are processing states, not extra head-direction classes. Proposed event fields are session ID, seat ID, event type, direction, start time, end time, duration, repetition count where relevant, and a reference to the configuration used. Seat IDs identify positions rather than people.
 

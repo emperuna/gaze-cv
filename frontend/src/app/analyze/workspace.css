@@ -262,3 +262,20 @@
   .analysis-heading h1 { font-size: 36px; }
   .workspace-card-header { padding: 18px; }
 }
+.camera-health { border:1px solid #cfdbc9; background:#f4f7f3; border-radius:10px; padding:14px; margin-top:16px; color:#334254; font-size:12px; line-height:1.8; }
+.camera-health h3 { font-size:13px; font-weight:600; margin-bottom:6px; }
+.camera-health-warning { border-color:#e7d5a9; background:#fff8e8; }
+.camera-health ul { padding-left:18px; }
+.pdf-report-download { margin-top:18px; }
+.pdf-report-download button { max-width:100%; min-height:44px; height:auto; white-space:normal; }
+.pdf-report-download .analysis-error { font-size:12px; line-height:1.7; }
+.report-export-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px; padding:18px 20px; border:1px solid #ccd8bf; border-radius:14px; background:#edf3e7; }
+.report-export-copy { flex:1 1 220px; min-width:0; }
+.report-export-copy strong { display:block; font-size:14px; font-weight:600; color:#293b30; }
+.report-export-copy p { margin-top:5px; font-size:12px; line-height:1.7; color:#4d5e50; }
+.report-export-bar .pdf-report-download { margin-top:0; max-width:100%; }
+.report-export-bar .pdf-report-download button { background:#263b2e; color:#fff; border:1px solid #263b2e; box-shadow:0 2px 4px #263b2e18; }
+.report-export-bar .pdf-report-download button:hover:not(:disabled) { background:#354e3e; }
+.report-export-bar .pdf-report-download button:disabled { opacity:1; color:#4d5b47; background:#dce4d5; border-color:#becbb3; box-shadow:none; cursor:not-allowed; }
+.report-export-bar .analysis-error { max-width:42ch; }
+@media(max-width:600px){.report-export-bar{padding:16px;gap:12px;}.report-export-copy{flex-basis:100%;}.report-export-bar .pdf-report-download,.report-export-bar .pdf-report-download button{width:100%;}}
