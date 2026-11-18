@@ -5,13 +5,14 @@ import { RevisionError, applyFrame, markAlert, newRecord, openAlertKeys } from '
 import type { AlertMark, LiveAlert, LiveSessionRecord } from './live-alerts.ts';
 import { validateReviewSettings } from './review-contract.ts';
 import type { ReviewSeat } from './review-contract.ts';
-import { saveRecord, writeStill } from './server-camera-record.ts';
+import { saveNewRecord, saveRecord, takeRecord, writeStill } from './server-camera-record.ts';
 import type { RecordOptions } from './server-camera-record.ts';
 import { AnalysisError } from './server-analysis.ts';
 
 export const SESSION_LIMIT_SECONDS = 10_800;
 export const SESSION_WARNING_SECONDS = 9_900;
 export const LIMIT_MESSAGE = 'Monitoring stopped at the 3-hour limit.';
+export const RESUME_GONE = 'This session was ended or deleted in another tab.';
 export const FINAL_SAVE_FAILED = 'The session stopped, but it could not be saved. Try Stop again.';
 const SAVE_INTERVAL_MS = 5_000;
 const FINAL_SAVE_ATTEMPTS = 3;
@@ -108,29 +109,43 @@ export class LiveCamera {
     const record = newRecord(randomUUID(), settings, this.now());
     // Session time starts at zero when monitoring starts, not when the preview started.
     record.segments[0].offsetSeconds = this.lastTimestamp > 0 ? -this.lastTimestamp : 0;
-    await saveRecord(record, this.recordOptions());
+    await saveNewRecord(record, this.recordOptions());
     this.record = record;
     this.lastSave = Date.now();
     return { recordId: record.id, record };
   }
 
-  /** Continues an interrupted record on this fresh worker; the gap is wall time since the interruption, never bridged. */
-  async resume(record: LiveSessionRecord): Promise<void> {
+  /**
+   * Continues an interrupted record on this fresh worker; the gap is wall time since the interruption, never
+   * bridged. The worker is configured first, then the record is re-read from disk and taken under its lock, so
+   * a mark saved meanwhile is kept, and a session ended or deleted meanwhile is not resumed (409).
+   */
+  async resume(recordId: string, settings: LiveSessionRecord['settings']): Promise<LiveSessionRecord> {
     this.requirePreview();
-    await this.configure(record.settings);
-    const now = this.now();
-    const previous = record.segments.at(-1);
-    if (previous && previous.endSeconds === null) previous.endSeconds = record.lastTime;
-    // A record left `monitoring` by a server crash has no interruption time; estimate its last frame's wall time.
-    const stoppedAt = record.interruptedAt ? Date.parse(record.interruptedAt)
-      : previous ? Date.parse(previous.startedAt) + (record.lastTime - Math.max(previous.offsetSeconds, 0)) * 1000 : now.getTime();
-    const gap = Math.max(0, (now.getTime() - stoppedAt) / 1000);
-    record.segments.push({ startedAt: now.toISOString(), offsetSeconds: record.lastTime + gap, endSeconds: null });
-    record.state = 'monitoring';
-    record.interruptedAt = null;
-    record.endedAt = null;
-    this.record = record;
+    await this.configure(settings);
+    this.requirePreview();
+    try {
+      await takeRecord(recordId, record => {
+        if (record.state === 'ended') throw new AnalysisError(RESUME_GONE, 409);
+        const now = this.now();
+        const previous = record.segments.at(-1);
+        if (previous && previous.endSeconds === null) previous.endSeconds = record.lastTime;
+        // A record left `monitoring` by a server crash has no interruption time; estimate its last frame's wall time.
+        const stoppedAt = record.interruptedAt ? Date.parse(record.interruptedAt)
+          : previous ? Date.parse(previous.startedAt) + (record.lastTime - Math.max(previous.offsetSeconds, 0)) * 1000 : now.getTime();
+        const gap = Math.max(0, (now.getTime() - stoppedAt) / 1000);
+        record.segments.push({ startedAt: now.toISOString(), offsetSeconds: record.lastTime + gap, endSeconds: null });
+        record.state = 'monitoring';
+        record.interruptedAt = null;
+        record.endedAt = null;
+        this.record = record;
+      }, this.recordOptions());
+    } catch (error) {
+      if (error instanceof AnalysisError && error.status === 404) throw new AnalysisError(RESUME_GONE, 409);
+      throw error;
+    }
     await this.save();
+    return this.record!;
   }
 
   async frame(frame: CameraFrame): Promise<CameraResult | LiveFrameResult> {

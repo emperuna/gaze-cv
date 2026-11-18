@@ -59,16 +59,32 @@ async function withRecordLock<T>(dir: string, timeoutMs: number, fn: () => Promi
   finally { await lock.close(); await unlink(lockPath).catch(() => {}); }
 }
 
+/** Saves an existing record. It never creates the session folder, so a deleted session stays deleted (404). */
 export async function saveRecord(record: LiveSessionRecord, { root = cameraRecordRoot, lockTimeoutMs = 1000 }: RecordOptions = {}): Promise<void> {
   const dir = folder(record.id, root);
-  await mkdir(dir, { recursive: true });
   await withRecordLock(dir, lockTimeoutMs, () => writeRecordFile(record, dir));
+}
+
+/** Creates the session folder for a new record, then saves it. */
+export async function saveNewRecord(record: LiveSessionRecord, options: RecordOptions = {}): Promise<void> {
+  await mkdir(folder(record.id, options.root ?? cameraRecordRoot), { recursive: true });
+  await saveRecord(record, options);
 }
 
 export async function createRecord(settings: LiveSessionRecord['settings'], options: RecordOptions = {}): Promise<LiveSessionRecord> {
   const record = newRecord(randomUUID(), settings, new Date());
-  await saveRecord(record, options);
+  await saveNewRecord(record, options);
   return record;
+}
+
+/**
+ * Reads a saved record under its lock and hands it to `take` before the lock is released, so no mark, End
+ * or Delete can land between the read and the caller taking ownership (resume). 404 if it was deleted.
+ */
+export async function takeRecord(id: string, take: (record: LiveSessionRecord) => void,
+  { root = cameraRecordRoot, lockTimeoutMs = 1000 }: RecordOptions = {}): Promise<void> {
+  const dir = folder(id, root);
+  await withRecordLock(dir, lockTimeoutMs, async () => { take(await readRecord(id, root)); });
 }
 
 async function readRecord(id: string, root: string): Promise<LiveSessionRecord> {
@@ -104,7 +120,12 @@ export async function writeStill(recordId: string, alertId: string, jpeg: Buffer
   checkAlertId(alertId);
   if (jpeg.length > MAX_STILL_BYTES) throw new AnalysisError('Still image is too large.', 413);
   if (jpeg.length < 3 || jpeg[0] !== 0xff || jpeg[1] !== 0xd8 || jpeg[2] !== 0xff) throw new AnalysisError('Still image must be a JPEG.', 400);
-  await mkdir(join(dir, 'stills'), { recursive: true });
+  // Only the stills folder is created: a deleted session folder is not brought back.
+  try { await mkdir(join(dir, 'stills')); }
+  catch (error) {
+    if (missing(error)) throw new AnalysisError('Session not found.', 404);
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+  }
   await atomicWrite(join(dir, 'stills', `${alertId}.jpg`), jpeg);
   return `stills/${alertId}.jpg`;
 }
@@ -145,6 +166,8 @@ export async function updateAlertMark(recordId: string, alertId: string, mark: A
   checkAlertId(alertId);
   if (isActive(recordId)) throw new AnalysisError('This session is live. Mark the alert from the live dashboard.', 409);
   return withRecordLock(dir, lockTimeoutMs, async () => {
+    // A resume may have taken the record while this waited for the lock.
+    if (isActive(recordId)) throw new AnalysisError('This session is live. Mark the alert from the live dashboard.', 409);
     const record = await readRecord(recordId, root);
     if (!record.alerts.some(a => a.id === alertId)) throw new AnalysisError('Alert not found.', 404);
     let alert: LiveAlert;
@@ -177,6 +200,7 @@ export async function endSavedRecord(recordId: string, { root = cameraRecordRoot
   const dir = folder(recordId, root);
   if (isActive(recordId)) throw new AnalysisError('This session is live. Stop it from the live dashboard.', 409);
   return withRecordLock(dir, lockTimeoutMs, async () => {
+    if (isActive(recordId)) throw new AnalysisError('This session is live. Stop it from the live dashboard.', 409);
     const record = await readRecord(recordId, root);
     if (record.state === 'ended') return record;
     record.state = 'ended';
