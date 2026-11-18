@@ -155,8 +155,10 @@ open a saved session, save review edits, or Stop the camera. On narrow screens t
 button spans the report bar's width.
 
 The 18 November extension adds **Download PDF report** to Image, Saved video
-(both workflows) and Camera. The document is titled **Potential incident review
-report**. It lists observations to check for possible examination irregularities;
+(both workflows) and Camera. The Image and Saved video document is titled
+**Potential incident review report**; the live camera session document is titled
+**Seat check review report** and lists the moments Ocular prompted a seat check.
+It lists observations to check for possible examination irregularities;
 it does not identify cheating or assign misconduct scores.
 
 | Source | Report evidence and limits |

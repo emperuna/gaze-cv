@@ -109,12 +109,23 @@ def render_incident_pdf(value):
         'table': {'fontSize': 8, 'leading': 12, 'spaceAfter': 0},
     }.items()}
     para = lambda value, style='body': Paragraph(text(value), styles[style])
+    camera = data['mode'] == 'camera'
+    if camera:
+        # A live-session report shows students' faces, so it is worded as seat-check prompts, never as findings.
+        title, heading = 'Seat check review report', 'Seat check\nreview report'
+        intro = ('This report lists moments when Ocular prompted the instructor to check a seat. A prompt is not a finding: '
+                 'head movement does not establish cheating or intent, and ordinary writing or brief turns can trigger it.')
+        empty = 'No seat check prompts are listed in this session. This does not establish that all heads were observed.'
+    else:
+        title, heading = 'Potential incident review report', 'Potential incident\nreview report'
+        intro = 'This report lists observations to check for potential examination irregularities. It does not identify cheating, intent, or a disciplinary finding.'
+        empty = 'No review observations are listed in the retained results. This does not establish that no relevant incident occurred or that all heads were observed.'
     output = BytesIO()
     doc = SimpleDocTemplate(output, pagesize=A4, rightMargin=44, leftMargin=44, topMargin=58, bottomMargin=52,
-                            title='Potential incident review report', author='Ocular', pageCompression=1)
-    story = [para('Potential incident\nreview report', 'title'),
+                            title=title, author='Ocular', pageCompression=1)
+    story = [para(heading, 'title'),
              para(f"OCULAR / {data['mode'].upper()} / HUMAN REVIEW REQUIRED", 'small'),
-             para('This report lists observations to check for potential examination irregularities. It does not identify cheating, intent, or a disciplinary finding.'),
+             para(intro),
              para('Head movements alone cannot establish misconduct. Writing, looking around briefly, occlusion and model errors can produce review prompts.'),
              para('Session record', 'section')]
     metadata = [('Source', data['source']), ('Report ID', data['id']), ('Generated at (UTC)', data['generatedAt']), *data['metadata']]
@@ -127,7 +138,7 @@ def render_incident_pdf(value):
                               ('LINEBELOW', (0, 0), (-1, -1), .3, colors.HexColor('#d6dfe5'))]))
     story += [table, para('Summary', 'section'), para(data['summary']), para('Observations for review', 'section')]
     if not data['items']:
-        story.append(para('No review observations are listed in the retained results. This does not establish that no relevant incident occurred or that all heads were observed.'))
+        story.append(para(empty))
     for index, item in enumerate(data['items'], 1):
         story += [para(f"{index}. {item['label']}", 'item'), para(f"{item['time']} | {item['status']}", 'itemmeta'), para(item['detail'])]
         if item.get('image') is not None:
