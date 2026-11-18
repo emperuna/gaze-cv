@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PassThrough } from 'node:stream';
 import { EventEmitter } from 'node:events';
 import { CameraSession } from '../src/lib/camera-session.ts';
-import { validateCameraSettings, validateCameraFrame, readCameraJson } from '../src/lib/camera-contract.ts';
+import { MAX_ALERT_NOTE, validateAlertMark, validateCameraSettings, validateCameraFrame, readCameraJson } from '../src/lib/camera-contract.ts';
 import { acquireProcessingSlot } from '../src/lib/processing-slot.ts';
 
 function worker() {
@@ -22,6 +22,14 @@ test('camera settings and frames reject invalid methods, types, sizes and timest
   assert.equal(validateCameraFrame({id:1,timestamp_seconds:.5,image:'/9j/'}).id, 1);
   for (const value of [-1, NaN, Infinity, '1']) assert.throws(() => validateCameraFrame({id:1,timestamp_seconds:value,image:'/9j/'}));
   assert.throws(() => validateCameraFrame({id:1,timestamp_seconds:0,image:'x'.repeat(1_400_000)}));
+});
+
+test('alert notes are accepted up to 2000 characters', () => {
+  assert.equal(MAX_ALERT_NOTE, 2000);
+  assert.equal(validateAlertMark({mark:'Checked',note:'x'.repeat(2000),revision:0}).note.length, 2000);
+  assert.throws(() => validateAlertMark({mark:'Checked',note:'x'.repeat(2001),revision:0}), /2000 characters/);
+  // A full note of escaped characters still fits the mark route's body limit.
+  assert.ok(JSON.stringify({mark:'Dismissed',note:'\u0001'.repeat(2000),revision:2**40}).length < 16384);
 });
 
 test('bounded JSON reader rejects an oversized streamed body', async () => {
