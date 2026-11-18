@@ -19,6 +19,9 @@ camera and three-seat checks remain unverified. This path does not implement
 seat histories, event review, or recording and does not change the requirements
 or acceptance gates below. See [camera use](frontend/README.md#live-camera) and
 [verification evidence](docs/superpowers/specs/2026-10-29-live-camera-verification.md).
+Dated note, 18 November 2026: that description is of 29 October. The camera now
+has seats, alerts and saved stills and is the main workflow, pending team
+agreement; see the status note at the top of this document.
 
 GAZE will help instructors review head movements during classroom examinations. The semester prototype will detect multiple visible faces, estimate head direction, associate observations with fixed seats, and record sustained or repeated movements. This draft translates the concept paper into project goals, user needs, and measurable requirements.
 
@@ -219,7 +222,7 @@ At the planning date, the guide's CP1 deadline has passed and CP2 is the next li
 
 1. Confirm the accessible labeled dataset, permissions, class counts, and subject split.
 2. Agree on how direction labels are interpreted, including left and right and movements in more than one direction.
-3. Confirm the test laptop, saved-video resolution, and three-seat arrangement; confirm camera hardware only if the optional live workflow is pursued.
+3. Confirm the test laptop, saved-video resolution, and three-seat arrangement; confirm camera hardware only if the optional live workflow is pursued (dated 18 November 2026: see item 7, which proposes live camera as the main workflow, pending agreement).
 4. Agree on seat setup, handling unclear observations, and the criteria for reviewing movement events.
 5. Confirm a local preview is sufficient for the course demonstration and agree on footage retention.
 6. Confirm checkpoint submission status, GitHub visibility, repository license, and asset publication permissions.

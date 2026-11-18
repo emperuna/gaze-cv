@@ -13,7 +13,7 @@ laptop is claimed here. The 80% accuracy and 10 FPS values remain targets.
 
 ## Environment
 
-macOS (Darwin) laptop, project `.venv`, Node/npm in `frontend/`, Google Chrome
+macOS laptop (model Mac17,3, Apple M5, 16 GB memory), project `.venv`, Node/npm in `frontend/`, Google Chrome
 headless. This is not the ASUS Ryzen 5 7520U laptop named in the design.
 
 ## Automated checks run for this record
@@ -24,11 +24,11 @@ Run from the repository root on 18 November 2026, after the documentation change
 | --- | --- |
 | `.venv/bin/python .github/automation.py check` | Passed: Python syntax, local document links, conflict markers and task dependencies checked. |
 | `.venv/bin/python -m unittest discover -s .github/tests -v` | 16 tests, OK. |
-| `.venv/bin/python -m unittest discover -s tests -v` | 189 tests, 2 failures: `test_data.DataTests.test_manifest_preserves_object_and_resolves_image` and `test_evaluation.MetricsTests.test_report_cannot_overwrite_inputs_even_with_explicit_flag`. Both are a pre-existing macOS `/private/var` temporary-path quirk, not related to this work, and were not fixed. All other tests pass. |
+| `.venv/bin/python -m unittest discover -s tests -v` | 189 tests, 2 failures: `test_data.DataTests.test_manifest_preserves_object_and_resolves_image` and `test_evaluation.MetricsTests.test_report_cannot_overwrite_inputs_even_with_explicit_flag`. Both are believed pre-existing (macOS `/private/var` path quirk); not caused by files this branch changed (not verified on a clean base). They were not fixed. All other tests pass. |
 | `cd frontend && npm test` | 124 tests, 124 pass, 0 fail. |
 | `cd frontend && npm run typecheck` | Passed (exit 0). |
 | `cd frontend && npm run build` | Passed (exit 0), including all `/api/camera/...` routes. One existing Turbopack warning about dynamic filesystem access tracing. `frontend/next-env.d.ts` was copied to `.work/tmp/next-env.d.ts.bak` before the build and restored afterwards; `cmp` confirmed it byte-identical. |
-| `git diff --check` | Run before commit; see the task report. |
+| `git diff --check` | Clean (no output, exit 0) on the working tree before the documentation commit and again before the fix commit. |
 
 Limits: unit tests use synthetic detections and temporary directories. They do not
 use a physical camera and do not measure accuracy.
@@ -45,7 +45,7 @@ not repeatable from a committed script.
 - Seat finding, FourPeople proxy at detector tiling 2 (task 7): 4 seats found
   about 6 s after Start, numbered left to right; Start monitoring, then Stop saved
   the session (three clicks on the normal path). Measured 7.4 frames per second
-  on this Mac, giving an automatic maximum gap of 0.5 s. At tiling 1 the Baseline
+  on this Mac (1280x720 clip, 4 faces, tiling 2, development server, headless Chrome; one run, not repeated), giving an automatic maximum gap of 0.5 s. At tiling 1 the Baseline
   found no heads on this clip (confirmed in Python), so the default tiling was
   changed to 2.
 - Alerts, local Pexels 8419341 classroom clip converted to Y4M (task 8): an alert
