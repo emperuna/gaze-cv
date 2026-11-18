@@ -17,10 +17,10 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal)
   let session: CameraSession | undefined;
   try {
     const status=await backendStatus();
-    if (!status.methods[settings.method].ready) throw new AnalysisError(status.methods[settings.method].message,503);
+    if (!status.methods.baseline.ready) throw new AnalysisError(status.methods.baseline.message,503);
     if (signal.aborted) throw new AnalysisError('Camera startup cancelled.',499);
-    const child=spawn(python,[join(projectRoot,'scripts','camera_worker.py'),'--method',settings.method,
-      ...(settings.mirrored ? ['--mirrored'] : []), ...(settings.method==='baseline' ? ['--tile-grid',String(settings.tileGrid)] : [])],
+    const child=spawn(python,[join(projectRoot,'scripts','camera_worker.py'),'--method','baseline',
+      ...(settings.mirrored ? ['--mirrored'] : []), '--tile-grid',String(settings.tileGrid)],
       {cwd:projectRoot,env:pythonEnvironment(),windowsHide:true,shell:false});
     const id=randomUUID();
     const reportLog=new CameraReportLog(id,settings);

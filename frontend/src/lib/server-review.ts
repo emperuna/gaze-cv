@@ -5,9 +5,10 @@ import { join,relative,isAbsolute } from 'node:path';
 import { AnalysisError,backendStatus,projectRoot,runPython } from './server-analysis.ts';
 import { acquireProcessingSlot } from './processing-slot.ts';
 import { MAX_UPLOAD_BYTES,validRunId } from './analysis-contract.ts';
+import type { AnalysisMethod } from './analysis-contract.ts';
 import { validateReviewSettings } from './review-contract.ts';
 import type { ReviewRecord,SavedReview } from './review-contract.ts';
-import { validateCameraSettings } from './camera-contract.ts';
+import { validateInputSettings } from './camera-contract.ts';
 import type { ReviewPreparation } from './review-contract.ts';
 
 export const reviewRoot=join(projectRoot,'outputs','runs','review');
@@ -30,7 +31,9 @@ function videoExtension(file:File) {
 
 export async function prepareReview(file:File,value:unknown,signal:AbortSignal):Promise<ReviewPreparation> {
   const extension=videoExtension(file);
-  const settings=validateCameraSettings(value);
+  const {method}=value as {method?:AnalysisMethod};
+  if(method!=='head'&&method!=='baseline')throw new Error('Choose the head model or geometric baseline.');
+  const settings={...validateInputSettings(value),method};
   const suggest=(value as {suggest?:unknown}).suggest;
   if(typeof suggest!=='boolean')throw new Error('Choose whether to suggest seats.');
   let release;

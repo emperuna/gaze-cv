@@ -66,7 +66,7 @@ export interface CameraReportSnapshot {
 export class CameraReportLog {
   readonly snapshot: CameraReportSnapshot;
   constructor(id: string, settings: CameraSettings) {
-    this.snapshot = { id, method: settings.method, startedAt: new Date().toISOString(), endedAt: null, settings: { ...settings },
+    this.snapshot = { id, method: 'baseline', startedAt: new Date().toISOString(), endedAt: null, settings: { ...settings },
       frames: 0, lastTimestamp: -1, samples: [], omittedSamples: 0, totals: countDirections([]), gaps: [], omittedGaps: 0, framesWithoutUsableHeads: 0 };
   }
   add(result: CameraResult) {

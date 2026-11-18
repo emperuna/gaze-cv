@@ -16,8 +16,9 @@ function worker() {
 }
 
 test('camera settings and frames reject invalid methods, types, sizes and timestamps', () => {
-  assert.deepEqual(validateCameraSettings({method: 'head', mirrored: false, tileGrid: 1}), {method: 'head', mirrored: false, tileGrid: 1});
-  for (const settings of [{method:'pose'}, {method:'head',mirrored:'false'}, {method:'head',tileGrid:5}, null]) assert.throws(() => validateCameraSettings(settings));
+  assert.deepEqual(validateCameraSettings({mirrored: false, tileGrid: 1}), {mirrored: false, tileGrid: 1});
+  assert.deepEqual(validateCameraSettings({method:'baseline', mirrored: true, tileGrid: 2}), {mirrored: true, tileGrid: 2});
+  for (const settings of [{method:'pose'}, {method:'head'}, {mirrored:'false'}, {tileGrid:5}, null]) assert.throws(() => validateCameraSettings(settings));
   assert.equal(validateCameraFrame({id:1,timestamp_seconds:.5,image:'/9j/'}).id, 1);
   for (const value of [-1, NaN, Infinity, '1']) assert.throws(() => validateCameraFrame({id:1,timestamp_seconds:value,image:'/9j/'}));
   assert.throws(() => validateCameraFrame({id:1,timestamp_seconds:0,image:'x'.repeat(1_400_000)}));
@@ -113,4 +114,54 @@ test('mismatched worker frames close the session rather than returning stale det
   child.stdout.write('{"id":2,"timestamp_seconds":0.5,"result":{"detections":[]}}\n');
   await assert.rejects(pending,/Invalid/);
   await session.close(); assert.equal(released,true);
+});
+
+const FRAME_RESULT = id => `{"id":${id},"timestamp_seconds":0.${id},"counts":{},"result":{"width":1,"height":1,"detections":[],"processing_ms":1}}\n`;
+
+test('frames forward open alerts verbatim', async () => {
+  const child = worker(); const session = new CameraSession(child, () => {});
+  let written = ''; child.stdin.on('data', chunk => {written += chunk;});
+  child.stdout.write('{"ready":true}\n'); await session.ready;
+  const frame = {id:1,timestamp_seconds:.1,image:'/9j/',setup:true,open_alerts:[['seat-1','right']]};
+  const pending = session.frame(frame);
+  assert.deepEqual(JSON.parse(written), frame);
+  child.stdout.write(FRAME_RESULT(1)); await pending; await session.close();
+});
+
+test('commands resolve by key, share the single slot, and reject without closing on a command error', async () => {
+  const child = worker(); const session = new CameraSession(child, () => {});
+  child.stdout.write('{"ready":true}\n'); await session.ready;
+  const configure = session.command({type:'configure',settings:{}});
+  await assert.rejects(session.command({type:'suggest_seats'}), /already processing/);
+  await assert.rejects(session.frame({id:1,timestamp_seconds:.1,image:'/9j/'}), /already processing/);
+  child.stdout.write('{"configured":true,"seats":[{"id":"seat-1","roi":[0,0,1,1]}]}\n');
+  assert.equal((await configure).configured, true);
+  const suggest = session.command({type:'suggest_seats'});
+  child.stdout.write('{"id":null,"error":"No heads found"}\n');
+  await assert.rejects(suggest, /No heads found/);
+  const frame = session.frame({id:1,timestamp_seconds:.1,image:'/9j/'});
+  child.stdout.write(FRAME_RESULT(1)); assert.equal((await frame).id, 1);
+  const wrong = session.command({type:'suggest_seats'});
+  child.stdout.write('{"configured":true}\n');
+  await assert.rejects(wrong, /Invalid/);
+  await session.close();
+});
+
+test('onExit reports failed on a crash and stopped on close', async () => {
+  const crashed = worker(); const a = new CameraSession(crashed, () => {}); const exits = [];
+  a.onExit((reason, message) => exits.push([reason, message]));
+  crashed.stdout.write('{"ready":true}\n'); await a.ready;
+  crashed.emit('close', 1);
+  await a.close();
+  assert.equal(exits.length, 1); assert.equal(exits[0][0], 'failed'); assert.match(exits[0][1], /exited/);
+  const child = worker(); const b = new CameraSession(child, () => {}); const stops = [];
+  b.onExit((reason, message) => stops.push([reason, message]));
+  child.stdout.write('{"ready":true}\n'); await b.ready;
+  await b.close();
+  assert.deepEqual(stops, [['stopped','Camera session stopped.']]);
+  const timed = worker(); const c = new CameraSession(timed, () => {}, {frameMs:10}); const failed = [];
+  c.onExit(reason => failed.push(reason));
+  timed.stdout.write('{"ready":true}\n'); await c.ready;
+  await assert.rejects(c.frame({id:1,timestamp_seconds:0,image:'/9j/'}), /timed out/);
+  await c.close(); assert.deepEqual(failed, ['failed']);
 });
