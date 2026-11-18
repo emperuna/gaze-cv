@@ -29,6 +29,8 @@ finding. That stance from the PRD stays unchanged.
 6. A session PDF with alerts, stills, marks, settings and coverage gaps.
 7. Works with Mac or the ASUS Windows laptop, and an iPhone or Android phone.
 8. The landing page describes the camera-and-alerts product (see Landing page).
+9. The interface is as easy to use as possible, and it explains how to use it
+   (see Ease of use and the how-to guide). Requested by the user.
 
 ## Non-goals
 
@@ -348,6 +350,67 @@ disconnect, tab reload, laptop sleep or worker crash all end the session.
 - Every page is marked "Confidential: contains images of students. Keep only as
   long as your institution allows." The existing disclaimer stays.
 - Unmarked alerts are listed as "Not reviewed".
+
+## Ease of use and the how-to guide
+
+The user's requirement: make the interface as easy to use as possible, and
+include information on how to use it. The instructor is not technical and is
+supervising an exam while using it.
+
+**Rules for every camera screen (design calls):**
+
+- One clear next step per screen, shown as the only large primary button
+  (Start → Start monitoring → Stop). Everything else is a smaller secondary
+  action or sits under Advanced settings.
+- Plain words only. No "ROI", "FPS", "tiling", "max gap", "worker" or "model"
+  outside Advanced settings. The status line says "Running smoothly" or
+  "Running slowly: alerts may be missed", not a number; the number is in
+  Advanced settings.
+- Every wait shows what is happening ("Starting the camera…", "Getting
+  ready: looking for students…"), never a bare spinner.
+- Every error says what happened and the one thing to do next, with a button
+  for it where possible ("The phone camera disconnected. Reconnect it in the
+  Camo app, then press Resume.").
+- A step indicator at the top of setup: **1 Connect camera · 2 Find seats ·
+  3 Monitor**, with the current step highlighted.
+- Alerts are readable from a few steps away: large seat number, short title,
+  still image; **Checked** and **Dismiss** are large buttons. Keyboard
+  shortcuts on the newest open alert: `C` for Checked, `D` for Dismiss, shown
+  as hints on the buttons.
+- Tooltips or one-line help under any control that is not self-explanatory.
+- Works with keyboard only and with a screen reader: labelled controls,
+  visible focus, a live region that announces new alerts ("New alert: check
+  seat 4").
+- Nothing destructive happens without an in-page confirmation (Delete
+  session, End session).
+
+**How-to guide (new):**
+
+- A **How to use Ocular** panel on the Camera screen. It opens automatically
+  the first time (remembered per browser, with a try/catch around storage) and
+  can be reopened any time from a **How to use** button in the screen header.
+- Content, in short numbered steps with one picture-free line each:
+  1. **Before the exam:** install Camo on the phone and on this laptop; connect
+     them over USB or the same Wi-Fi.
+  2. **Place the phone:** mount it high at the front so every desk and face is
+     visible; landscape; good lighting; do not move it after setup.
+  3. **Start:** choose the phone in the camera list and press **Start**.
+  4. **Seats:** Ocular finds the students and numbers the seats left to right.
+     Use **Adjust seats** only if a seat is missing or wrong.
+  5. **Monitor:** press **Start monitoring**. An alert tells you which seat to
+     look at. Look up, decide, then press **Checked** or **Dismiss**.
+  6. **If it stops:** reconnect the phone and press **Resume**. Your seats and
+     alerts are kept.
+  7. **After the exam:** press **Stop**, download the PDF, and delete the
+     session when your institution's retention period ends.
+- A **Troubleshooting** section: the phone is not in the camera list; "No
+  students found"; "Running slowly"; the alert sound does not play (click the
+  page once, check mute); the seats no longer line up (end the session and
+  start again).
+- A one-paragraph **What alerts mean** note: an alert is a prompt to look, not
+  a finding; down (writing) never alerts; seats are positions, not people.
+- The same guide text is published in `frontend/README.md` so it can be
+  printed for instructors.
 
 ## Landing page
 

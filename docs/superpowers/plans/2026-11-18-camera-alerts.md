@@ -24,6 +24,7 @@
 - Frames ≤ 1280×720 (existing worker limit). Files stay under `outputs/runs/camera/<recordId>/` (Git-ignored); nothing else is written.
 - Run Python with the project interpreter (`.venv/bin/python` on macOS, `.venv\Scripts\python.exe` on Windows) and keep caches in `.work/` as in README.
 - New frontend test files must be added to the explicit list in `frontend/scripts/run.mjs`, or `npm test` will not run them.
+- Ease of use (user requirement; full rules in the spec's "Ease of use and the how-to guide" section, binding on Tasks 7–10): one large primary button per screen (Start → Start monitoring → Stop); plain words, no "ROI", "FPS", "tiling", "max gap", "worker" or "model" outside Advanced settings; every wait names what is happening; every error says the one next step; step indicator "1 Connect camera · 2 Find seats · 3 Monitor"; keyboard shortcuts `C` (Checked) and `D` (Dismiss) on the newest open alert; a live region announces "New alert: check seat N"; destructive actions need an in-page confirmation.
 
 ## Review Focus
 
@@ -271,17 +272,21 @@ async function deleteRecord(recordId, root?): Promise<void>
 - [ ] **Step 5: Verify** with the fake camera: kill the dev server mid-session, restart, the session is listed as interrupted, Resume continues it and the PDF shows one "Not monitored" gap; Delete removes the folder under `outputs/runs/camera/`.
 - [ ] **Step 6: Commit** `feat(camera): resume interrupted sessions and list past sessions`.
 
-### Task 10: Source navigation and Saved video as a secondary path
+### Task 10: Source navigation, Saved video link, how-to guide and ease-of-use pass
 
 **Files:**
-- Modify: `frontend/src/components/analysis-modes.tsx`, `frontend/src/app/analyze/page.tsx`, `frontend/src/components/video-workspace.tsx`
+- Modify: `frontend/src/components/analysis-modes.tsx`, `frontend/src/app/analyze/page.tsx`, `frontend/src/components/video-workspace.tsx`, `frontend/src/components/camera-workspace.tsx` and the Task 7–9 camera components (ease-of-use pass), `frontend/README.md`
+- Create: `frontend/src/components/camera-guide.tsx`
 
 - [ ] **Step 1:** `AnalysisModes`: no switcher. `?mode=video` or `?session=` → `VideoWorkspace`; everything else (including `?mode=image`) → `CameraWorkspace`.
 - [ ] **Step 2:** Camera screen: text link "Review a recording instead" → `/analyze?mode=video`. Video screen: "Back to live camera" → `/analyze`.
 - [ ] **Step 3:** `VideoWorkspace`: remove the method selector, fix `method` to `'baseline'`, drop the directions-only video option (seat review only).
 - [ ] **Step 4:** Analyze page copy: description "Live seat alerts from one fixed camera, on your device."; heading text kept; paragraph "Start the camera, let Ocular find the seats, and check the seats it points you to."
-- [ ] **Step 5: Verify** `npm run typecheck && npm test`, then in the browser: `/analyze`, `/analyze?mode=image` open Camera; the link round trip works; a saved session reopens via `?session=`.
-- [ ] **Step 6: Commit** `feat(analyze): make camera the main workspace with recording review as a link`.
+- [ ] **Step 5:** Create `frontend/src/components/camera-guide.tsx`: the **How to use Ocular** panel with the seven steps, Troubleshooting and What alerts mean, using the spec's text. Opens automatically on first visit (`localStorage` key `ocular.camera.guideSeen`, try/catch), reopened by a **How to use** button in the Camera screen header; closable with Escape; focus moves into it on open and back to the button on close.
+- [ ] **Step 6:** Ease-of-use pass over the Camera screens built in Tasks 7–9 against the spec's rules: one primary button per screen, step indicator, plain-word status line ("Running smoothly" / "Running slowly: alerts may be missed"), named waits, every error with its next step, `C`/`D` shortcuts with visible hints, live-region announcement of new alerts. Fix what fails.
+- [ ] **Step 7: Verify** `npm run typecheck && npm test`, then in the browser: `/analyze`, `/analyze?mode=image` open Camera; the link round trip works; a saved session reopens via `?session=`; the guide opens on first visit only and from the button; keyboard-only run from Start to marking an alert works; a screen reader announces a new alert.
+- [ ] **Step 8:** Copy the guide text into `frontend/README.md` under "Using the live camera".
+- [ ] **Step 9: Commit** `feat(analyze): make camera the main workspace with a how-to guide`.
 
 ### Task 11: Landing page
 
