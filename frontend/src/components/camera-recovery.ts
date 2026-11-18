@@ -4,6 +4,8 @@ import { useRef, useState } from 'react';
 import type { LiveSessionRecord } from '@/lib/live-alerts';
 import type { ReviewSeat } from '@/lib/review-contract';
 import { displaySeats, interruptedAt } from '@/lib/camera-sessions';
+import { PlainError, describeProblem } from '@/lib/camera-messages';
+import type { CameraAction, CameraScreen, Problem } from '@/lib/camera-messages';
 import { deleteSession } from './camera-past-sessions';
 import { interruptSession, newRun } from './camera-run';
 import type { Run } from './camera-run';
@@ -13,6 +15,7 @@ import type { Chime } from './camera-alerts-panel';
 export type RecordMeta = { createdAt: string; state: LiveSessionRecord['state']; seats: number };
 export type ResumeStep = '' | 'loading' | 'camera' | 'ask' | 'starting';
 type Ref<T> = { current: T };
+const RESUME_FAILED = 'Monitoring could not resume. Press Yes, resume to try again, or No, end this session.';
 
 /** What the session-recovery handlers need from the camera workspace; read when a handler runs. */
 export interface RecoveryHost {
@@ -31,8 +34,9 @@ export interface RecoveryHost {
   openCamera: (current: Run) => Promise<MediaStream>;
   capture: (current: Run, stream: MediaStream) => Promise<void>;
   captureFailed: (current: Run, problem: unknown) => Promise<void>;
-  cameraError: (problem: unknown, action?: string) => string;
-  setError: (text: string) => void; setNotice: (text: string) => void; setSaveError: (text: string) => void;
+  cameraProblem: (problem: unknown, action?: CameraAction, screen?: CameraScreen) => Problem;
+  /** The screen's error line; `detail` (raw server text) is shown only under More information. */
+  setError: (text: string, detail?: string) => void; setNotice: (text: string) => void; setSaveError: (text: string) => void;
   setWarnings: (warnings: string[]) => void; setStopRetry: (id: string | null) => void; setEditing: (editing: null) => void;
   setHasFrame: (value: boolean) => void; setSeats: (seats: ReviewSeat[]) => void; setMirrored: (value: boolean) => void;
   setTileGrid: (value: number) => void; setSessionTime: (time: number) => void; refreshPast: () => void;
@@ -76,7 +80,7 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       const record = await h.fetchRecord(id, current.controller.signal);
       if (!valid()) return;
       if (record.state !== 'interrupted') {
-        throw new Error(record.state === 'ended' ? 'This session has ended, so it cannot be resumed. Open it from Past sessions to mark alerts or download the PDF.'
+        throw new PlainError(record.state === 'ended' ? 'This session has ended, so it cannot be resumed. Open it from Past sessions to mark alerts or download the PDF.'
           : 'This session is live in another tab or window. Use that tab to continue.');
       }
       h.resetDashboard(); h.showRecord(id, record);
@@ -87,10 +91,15 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       if (valid()) setResumeStep('ask');
     } catch (problem) {
       if (!valid()) return;
-      const message = h.cameraError(problem, 'Resume');
       h.release(current); setResumeStep('');
-      if (h.recordIdRef.current === id && h.recordStateRef.current === 'interrupted') { setPauseReason(''); h.setError(message); h.go('interrupted'); }
-      else { h.resetDashboard(); h.setError(message); h.refreshPast(); h.go('idle'); }
+      // The interrupted view has no camera list; the idle screen (Past sessions) has one.
+      if (h.recordIdRef.current === id && h.recordStateRef.current === 'interrupted') {
+        const message = h.cameraProblem(problem, 'Resume', 'interrupted');
+        setPauseReason(''); h.setError(message.text, message.detail); h.go('interrupted');
+      } else {
+        const message = h.cameraProblem(problem, 'Resume', 'setup');
+        h.resetDashboard(); h.setError(message.text, message.detail); h.refreshPast(); h.go('idle');
+      }
     }
   }
 
@@ -109,7 +118,7 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       const response = await fetch('/api/camera', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mirrored: h.mirrored, tileGrid: h.tileGrid, resume: id }), signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(65_000)]) });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Monitoring could not resume.');
+      if (!response.ok) throw new PlainError(RESUME_FAILED, data.error || '');
       current.sessionId = data.sessionId;
       // Left the check while the worker started: pause it again so the record stays interrupted.
       if (!valid()) { await interruptSession(data.sessionId); return; }
@@ -125,7 +134,8 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       if (!valid()) return;
       if (current.recordId) { await h.captureFailed(current, problem); return; }
       setResumeStep('ask');
-      h.setError(`Monitoring could not resume: ${(problem as Error).message} Press Yes, resume to try again, or No, end this session.`);
+      const message = describeProblem(problem, RESUME_FAILED);
+      h.setError(message.text, message.detail);
     }
   }
 
@@ -157,7 +167,8 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       h.go('ended');
     } catch (problem) {
       if (!h.mounted.current) return;
-      h.setError(`The session could not be ended (${(problem as Error).message}). Press End session again.`);
+      const message = describeProblem(problem, 'The session could not be ended. Press End session again.');
+      h.setError(message.text, message.detail);
       if (h.phaseRef.current === 'confirming') h.go('interrupted');
     } finally { if (h.mounted.current) setAction(''); }
   }
@@ -187,7 +198,7 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       if (record.state === 'interrupted') { setStoppedAt(interruptedAt(record)); h.go('interrupted'); }
       else h.go('ended');
     } catch (problem) {
-      if (h.mounted.current) h.setError(`The session could not be opened (${(problem as Error).message}). Press Open again.`);
+      if (h.mounted.current) { const message = describeProblem(problem, 'The session could not be opened. Press Open again.'); h.setError(message.text, message.detail); }
     } finally { if (h.mounted.current) setAction(''); }
   }
 

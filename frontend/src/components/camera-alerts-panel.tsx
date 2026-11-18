@@ -86,7 +86,7 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
     <div className="workspace-card-header">
       <h2 id="camera-alerts-title">Alerts{openCount ? <span className="alerts-open-count">{openCount} to check</span> : null}</h2>
       {live && <Button variant="outline" className="alerts-mute" aria-pressed={muted} onClick={() => onMuted(!muted)}>
-        {muted ? <BellOff size={16} /> : <Bell size={16} />}{muted ? 'Sound off' : 'Sound on'}
+        {muted ? <BellOff size={16} aria-hidden="true" /> : <Bell size={16} aria-hidden="true" />}Mute alerts
       </Button>}
     </div>
     <p className="sr-only" aria-live="assertive" aria-atomic="true">{announcement}</p>
@@ -107,11 +107,11 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
               <div className="alert-still">
                 {alert.still && recordId
                   ? <img src={stillUrl(recordId, alert.id)} alt={`Seat ${seatNumber(alert.seatId)} when the alert opened`} />
-                  : <p>{alert.stillError ? `No still: ${alert.stillError}` : 'No still for this alert.'}</p>}
+                  : <p>{alert.stillError ? 'The picture for this alert could not be saved.' : 'No picture for this alert.'}</p>}
               </div>
               {open ? <>
                 <label className="alert-note" htmlFor={noteId}>Note (optional)
-                  <textarea id={noteId} rows={1} maxLength={MAX_ALERT_NOTE} value={notes[alert.id] ?? alert.note ?? ''} disabled={busy}
+                  <textarea id={noteId} rows={1} maxLength={MAX_ALERT_NOTE} value={notes[alert.id] ?? alert.note ?? ''} readOnly={busy} aria-busy={busy || undefined}
                     onChange={event => setNotes(current => ({ ...current, [alert.id]: event.target.value }))} />
                 </label>
                 <div className="alert-actions">

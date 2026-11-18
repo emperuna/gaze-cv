@@ -415,3 +415,14 @@
   .camera-past-actions button { flex:1 1 90px; }
   .camera-past-body { padding:14px; }
 }
+
+/* Ease-of-use pass (Task 10) */
+.camera-setup select:focus-visible, .camera-advanced :is(input, select):focus-visible { outline:3px solid #5b6879; outline-offset:2px; }
+.setup-blocked { margin-top:10px; font-size:12px; line-height:1.6; color:#4a596c; }
+.analysis-error-text { min-width:0; }
+.error-detail { margin-top:6px; }
+.error-detail summary { cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+.error-detail summary:focus-visible { outline:3px solid #5b6879; outline-offset:2px; }
+.error-detail p { margin-top:4px; color:#5c4a3e; }
+.alerts-mute[aria-pressed="true"] { background:#1f2c3b; border-color:#1f2c3b; color:#fff; }
+.seat-adjuster h3:focus-visible, .camera-past h2:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }

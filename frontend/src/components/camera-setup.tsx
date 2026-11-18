@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ComponentProps } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { SeatEditor } from './seat-editor';
-import { SETUP_FRAMES, seatLabel } from '@/lib/camera-setup';
+import { SETUP_FRAMES, seatLabel, setupStep } from '@/lib/camera-setup';
 import type { ReviewSeat } from '@/lib/review-contract';
 import type { LiveSeatState } from '@/lib/camera-contract';
 import type { DEFAULT_MOVEMENT } from '@/lib/review-contract';
@@ -20,13 +21,9 @@ export interface MeasuredSpeed { maxGap: number; tooSlow: boolean; medianInterva
 
 const STEPS = ['Connect camera', 'Find seats', 'Monitor'] as const;
 
-export function setupStep(phase: CameraPhase): number {
-  if (phase === 'idle' || phase === 'permission' || phase === 'loading') return 0;
-  return phase === 'preparing' || phase === 'found' ? 1 : 2;
-}
-
-export function SetupSteps({ phase }: { phase: CameraPhase }) {
-  const step = setupStep(phase);
+/** `stoppedFrom`: the step shown when Stop was pressed, kept while stopping. */
+export function SetupSteps({ phase, stoppedFrom = null }: { phase: CameraPhase; stoppedFrom?: number | null }) {
+  const step = setupStep(phase, stoppedFrom);
   return <ol className="setup-steps" aria-label="Setup steps">
     {STEPS.map((label, index) => <li key={label} aria-current={index === step ? 'step' : undefined} className={index < step ? 'setup-step-done' : undefined}>
       <span aria-hidden="true">{index < step ? <Check size={12} /> : index + 1}</span>{label}
@@ -73,8 +70,11 @@ export function SeatAdjuster({ image, initial, onSave, onCancel }: {
 }) {
   const [draft, setDraft] = useState(initial);
   const [ready, setReady] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
+  // The adjuster replaces the setup buttons, so keyboard focus moves to its heading.
+  useEffect(() => { heading.current?.focus(); }, []);
   return <div className="seat-adjuster">
-    <h3>{initial.length ? 'Adjust seats' : 'Draw seats'}</h3>
+    <h3 ref={heading} tabIndex={-1}>{initial.length ? 'Adjust seats' : 'Draw seats'}</h3>
     <p className="review-help">This is a still picture from the camera. Drag a box around each student’s head area. Seats are numbered left to right when you save them.</p>
     <SeatEditor source={{ kind: 'image', url: image }} seats={draft} onChange={setDraft} disabled={false} onPlayable={setReady} />
     <div className="camera-actions">
@@ -83,6 +83,24 @@ export function SeatAdjuster({ image, initial, onSave, onCancel }: {
     </div>
     {!draft.length && <p className="review-help">Add at least one seat to continue.</p>}
   </div>;
+}
+
+/**
+ * A number input that keeps what is typed (an empty field, "0.") until it loses focus, instead of snapping
+ * back to the last valid number. `onValue` gets each finite value, or null when the field is cleared.
+ */
+function NumberField({ value, onValue, ...props }: Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'type'> & {
+  value: number | null; onValue: (value: number | null) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  return <input type="number" {...props} value={draft ?? (value === null ? '' : String(value))}
+    onChange={event => {
+      const text = event.target.value;
+      setDraft(text);
+      if (text.trim() === '') onValue(null);
+      else if (Number.isFinite(Number(text))) onValue(Number(text));
+    }}
+    onBlur={event => { setDraft(null); props.onBlur?.(event); }} />;
 }
 
 const RULE_FIELDS = [
@@ -111,12 +129,12 @@ export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onM
     <fieldset disabled={rulesLocked} className="camera-advanced-group"><legend>Movement rules</legend>
       <div className="review-setting-grid">
         {RULE_FIELDS.map(({ key, label, max, step, help }) => <label key={key}>{label}
-          <input type="number" min={key === 'repetition_count' ? 2 : step} max={max} step={step} value={rules[key]} aria-describedby={`camera-rule-${key}`}
-            onChange={event => onRules({ ...rules, [key]: Number(event.target.value) })} />
+          <NumberField min={key === 'repetition_count' ? 2 : step} max={max} step={step} value={rules[key]} aria-describedby={`camera-rule-${key}`}
+            onValue={next => onRules({ ...rules, [key]: next ?? Number.NaN })} />
           <small id={`camera-rule-${key}`}>{help}</small></label>)}
         <label>Maximum gap (s)
-          <input type="number" min={.05} max={5} step={.05} value={gapOverride ?? measured?.maxGap ?? ''} placeholder="Automatic" aria-describedby="camera-rule-max-gap"
-            onChange={event => onGapOverride(event.target.value === '' ? null : Number(event.target.value))} />
+          <NumberField min={.05} max={5} step={.05} value={gapOverride ?? measured?.maxGap ?? null} placeholder="Automatic" aria-describedby="camera-rule-max-gap camera-max-gap-help"
+            onValue={onGapOverride} />
           <small id="camera-rule-max-gap">{gapOverride === null ? 'Set automatically.' : 'Set by you.'}</small></label>
       </div>
       <p id="camera-max-gap-help">A larger maximum gap lets unseen moments between processed frames count as one continuous movement. Ocular sets it from the speed measured during Getting ready.</p>

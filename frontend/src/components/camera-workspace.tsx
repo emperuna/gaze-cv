@@ -16,7 +16,7 @@ import {
 import type { AlertMap, RunningStatus } from '@/lib/camera-dashboard';
 import { DEFAULT_MOVEMENT, validateReviewSettings } from '@/lib/review-contract';
 import type { MovementEvent, ReviewSeat } from '@/lib/review-contract';
-import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice, seatsForMonitor, writeSavedDevice } from '@/lib/camera-setup';
+import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice, seatsForMonitor, setupStep, writeSavedDevice } from '@/lib/camera-setup';
 import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
 import { interruptSession, newRun, runCaptureLoop, stopSession } from './camera-run';
 import { CameraPastSessions, InlineConfirm } from './camera-past-sessions';
@@ -30,20 +30,12 @@ import type { MonitorFrame, Run } from './camera-run';
 import { CameraAlertsPanel, Chime } from './camera-alerts-panel';
 import { CameraSeatGrid, SeatStatusLine } from './camera-seat-grid';
 import type { CameraPhase, MeasuredSpeed, MovementRules } from './camera-setup';
-
-/** `action` is the button that tries again: Start for a new session, Resume for an interrupted one. */
-function cameraError(error: unknown, action = 'Start') {
-  if (error instanceof DOMException) {
-    if (error.name === 'NotAllowedError') return `Camera access was denied. Allow the camera in your browser and system settings, then press ${action} again.`;
-    if (error.name === 'NotFoundError') return `No camera was found. Connect the camera, then press ${action} again.`;
-    if (error.name === 'NotReadableError') return `The camera could not open. Close other apps using it, then press ${action} again.`;
-    if (error.name === 'OverconstrainedError') return `The selected camera is unavailable. Choose another camera, then press ${action} again.`;
-  }
-  return error instanceof Error ? error.message : `The camera stopped unexpectedly. Press ${action} again.`;
-}
+import { PlainError, cameraProblem, describeProblem } from '@/lib/camera-messages';
+import type { Problem } from '@/lib/camera-messages';
 
 const HIDDEN_REASON = 'This tab was hidden or closed, so Ocular released the camera. Press Resume to continue.';
 const LOST_REASON = 'Live processing stopped unexpectedly. Press Resume to continue.';
+const MONITOR_FAILED = 'Monitoring could not start. Check the seats, then press Start monitoring again.';
 
 const initialRules = (): MovementRules => { const { max_gap: _gap, ...rules } = DEFAULT_MOVEMENT; return rules; };
 
@@ -58,7 +50,10 @@ export function CameraWorkspace() {
   const [phase, setPhaseState] = useState<CameraPhase>('idle');
   const [status, setStatus] = useState<BackendStatus | null>(null);
   const [checking, setChecking] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setErrorState] = useState<Problem>({ text: '', detail: '' });
+  /** The screen's error line, in plain words; `detail` (raw server text) shows only under More information. */
+  const setError = (text: string, detail = '') => setErrorState({ text, detail });
+  const showProblem = (problem: Problem) => setErrorState(problem);
   const [notice, setNotice] = useState('');
   const [saveError, setSaveError] = useState('');
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -71,6 +66,8 @@ export function CameraWorkspace() {
   const [requesting, setRequesting] = useState<'' | 'setup' | 'monitor'>('');
   const [stopRetry, setStopRetry] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
+  /** The setup step shown when Stop was pressed, kept highlighted while stopping. */
+  const [stoppedFrom, setStoppedFrom] = useState<number | null>(null);
   // Monitoring dashboard. Refs hold what the frame loop reads; state mirrors them for rendering.
   const [recordId, setRecordId] = useState<string | null>(null);
   const [alerts, setAlertState] = useState<AlertMap>({});
@@ -94,6 +91,9 @@ export function CameraWorkspace() {
   const mutedRef = useRef(false);
   const chime = useRef<Chime | null>(null);
   const grid = useRef<HTMLDivElement>(null);
+  const setupBody = useRef<HTMLDivElement>(null);
+  /** A selector in the setup card to focus after the next render. */
+  const focusNext = useRef<string | null>(null);
   const health = useRef<CameraHealth | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const output = useRef<HTMLCanvasElement>(null);
@@ -107,7 +107,7 @@ export function CameraWorkspace() {
   const recovery = useSessionRecovery(() => ({
     run, mounted, phaseRef, seatsRef, recordIdRef, recordStateRef, frameTimes, chime, newChime: () => new Chime(),
     ready, mirrored, tileGrid, go, isCurrent, release, fetchRecord, applyRecord, showRecord, resetDashboard, newSession,
-    openCamera, capture, captureFailed, cameraError, setError, setNotice, setSaveError, setWarnings, setStopRetry, setEditing,
+    openCamera, capture, captureFailed, cameraProblem, setError, setNotice, setSaveError, setWarnings, setStopRetry, setEditing,
     setHasFrame, setSeats, setMirrored, setTileGrid, setSessionTime, refreshPast: () => setPastKey(key => key + 1),
   }));
   const { recordMeta, setRecordMeta, stoppedAt, setStoppedAt, pauseReason, setPauseReason, resumeStep, setResumeStep,
@@ -148,7 +148,7 @@ export function CameraWorkspace() {
       const saved = recordIdRef.current;
       if (!saved) return;
       void fetchRecord(saved).then(record => { if (mounted.current && recordIdRef.current === saved) applyRecord(record); })
-        .catch(problem => { if (mounted.current) setMarkMessage(`The alerts could not be reloaded (${(problem as Error).message}). Open the session again.`); });
+        .catch(() => { if (mounted.current) setMarkMessage('The alerts could not be reloaded. Open the session again from Past sessions.'); });
       return;
     }
     if (reloadQueued.current) return;
@@ -156,7 +156,7 @@ export function CameraWorkspace() {
     current.commands.push(async () => {
       reloadQueued.current = false;
       try { const record = await fetchRecord(id, current.controller.signal); if (isCurrent(current)) applyRecord(record); }
-      catch (problem) { if (isCurrent(current)) setMarkMessage(`The alerts could not be reloaded (${(problem as Error).message}). They will reload after the next change.`); }
+      catch { if (isCurrent(current)) setMarkMessage('The alerts could not be reloaded. They will reload after the next change.'); }
     });
   }
   function announce(text: string) { setAnnouncement(previous => previous === text ? `${text}\u00a0` : text); }
@@ -198,7 +198,7 @@ export function CameraWorkspace() {
       const data = await response.json().catch(() => ({}));
       if (!mounted.current) return;
       if (response.status === 409) { setMarkMessage(CONFLICT_TEXT); reloadRecord(); return; }
-      if (!response.ok) { setMarkMessage(`${data.error || 'The alert could not be marked.'} Press ${mark === 'Checked' ? 'Checked' : 'Dismiss'} again.`); return; }
+      if (!response.ok) { setMarkMessage(`The alert could not be marked. Press ${mark === 'Checked' ? 'Checked' : 'Dismiss'} again.`); return; }
       revision.current = Math.max(revision.current, data.revision);
       setAlerts(withAlert(alertsRef.current, data.alert as LiveAlert));
       if (data.saveError) setSaveError(data.saveError);
@@ -212,7 +212,7 @@ export function CameraWorkspace() {
   let validation = '';
   if (phase === 'found' && seats.length) {
     try { validateReviewSettings({ method: 'baseline', mirrored, tileGrid, seats: seatsForMonitor(seats, mirrored), movement }); }
-    catch (problem) { validation = `Check Advanced settings: ${(problem as Error).message}`; }
+    catch (problem) { validation = `Check Advanced settings: ${(problem as Error).message.replace(/^max gap/, 'maximum gap')}`; }
   }
 
   const check = useCallback(async () => {
@@ -222,7 +222,9 @@ export function CameraWorkspace() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not check the local processor.');
       if (mounted.current) { setStatus(data); setError(''); }
-    } catch (problem) { if (mounted.current) { setStatus(null); setError(cameraError(problem)); } }
+    } catch (problem) {
+      if (mounted.current) { setStatus(null); showProblem(describeProblem(problem, 'Ocular could not check the local processor. Make sure Ocular is running, then press Recheck.')); }
+    }
     finally { if (mounted.current) setChecking(false); }
   }, []);
 
@@ -245,14 +247,14 @@ export function CameraWorkspace() {
     const current = run.current;
     if (!current) return;
     release(current);
-    if (mounted.current) { go('stopping'); setWarnings([]); setEditing(null); setRequesting(''); }
+    if (mounted.current) { setStoppedFrom(setupStep(phaseRef.current)); go('stopping'); setWarnings([]); setEditing(null); setRequesting(''); }
     // A Start monitoring request already with the server may still create the record; wait, then stop that record.
     if (current.monitorPending) await current.monitorPending;
     const monitored = !!current.recordId;
     if (current.sessionId) {
       const outcome = await stopSession(current.sessionId);
       // A preview has nothing to save; a monitored session keeps Stop available until it is saved.
-      if (!outcome.ok && monitored) { if (mounted.current) { setStopRetry(current.sessionId); setError(outcome.message); } return; }
+      if (!outcome.ok && monitored) { if (mounted.current) { setStopRetry(current.sessionId); setError(outcome.message, outcome.detail); } return; }
     }
     if (mounted.current && !run.current) {
       if (!monitored) { setHasFrame(false); go('idle'); return; }
@@ -266,7 +268,7 @@ export function CameraWorkspace() {
     const outcome = await stopSession(stopRetry);
     if (!mounted.current) return;
     setRetrying(false);
-    if (outcome.ok) { setStopRetry(null); go('ended'); if (recordIdRef.current) void loadEnded(recordIdRef.current); } else setError(outcome.message);
+    if (outcome.ok) { setStopRetry(null); go('ended'); if (recordIdRef.current) void loadEnded(recordIdRef.current); } else setError(outcome.message, outcome.detail);
   }
 
   /**
@@ -345,6 +347,22 @@ export function CameraWorkspace() {
   // Monitoring starts with the dashboard at the top of the window, so the live view and alerts are in sight.
   useEffect(() => { if (phase === 'monitoring') grid.current?.scrollIntoView({ block: 'start' }); }, [phase]);
 
+  // When the screen changes, keyboard focus moves to its one primary button (Start monitoring, Stop, Resume…).
+  const primaryKey = `${phase}:${resumeStep}:${phase === 'found' ? (setupError || !seats.length ? 'retry' : 'monitor') : ''}:${editing ? 'edit' : ''}:${recordId ?? ''}`;
+  const primaryShown = useRef(primaryKey);
+  useEffect(() => {
+    if (primaryShown.current === primaryKey) return;
+    primaryShown.current = primaryKey;
+    if (editing) return; // the seat adjuster focuses its own heading
+    setupBody.current?.querySelector<HTMLElement>('.camera-primary:not(:disabled)')?.focus({ preventScroll: phase === 'monitoring' });
+  }, [primaryKey, editing, phase]);
+  // After an in-page confirmation closes without acting, focus returns to the button that opened it.
+  useEffect(() => {
+    if (!focusNext.current) return;
+    setupBody.current?.querySelector<HTMLElement>(focusNext.current)?.focus();
+    focusNext.current = null;
+  });
+
   const live = phase === 'preparing' || phase === 'found' || phase === 'monitoring';
   useEffect(() => {
     if (!live) return;
@@ -374,9 +392,9 @@ export function CameraWorkspace() {
       if (!response.ok) throw new Error(data.error || 'Seats could not be found.');
       if (!isCurrent(current)) return;
       setSeats(numberSeats(data.seats as ReviewSeat[])); setSeatsEdited(false); setSetupError('');
-    } catch (problem) {
+    } catch {
       if (!isCurrent(current)) return;
-      setSeats([]); setSetupError(`Seats could not be found (${(problem as Error).message}). Press Try again.`);
+      setSeats([]); setSetupError('Ocular could not number the seats this time. Press Try again, or draw the seats yourself.');
     } finally {
       if (isCurrent(current)) { setMeasured(chooseMaxGap(current.progress.intervals)); setRequesting(''); go('found'); }
     }
@@ -411,7 +429,7 @@ export function CameraWorkspace() {
         // Not tied to the run's abort signal: if Stop is pressed meanwhile, Stop waits for this answer and ends the record.
         const response = await fetch(`/api/camera/${current.sessionId}/monitor`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: AbortSignal.timeout(65_000) });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Monitoring could not start.');
+        if (!response.ok) throw new PlainError(MONITOR_FAILED, data.error || '');
         current.recordId = data.recordId;
         if (!isCurrent(current)) return;
         resetDashboard(); showRecord(data.recordId, data.record as LiveSessionRecord);
@@ -421,7 +439,7 @@ export function CameraWorkspace() {
         if (!isCurrent(current)) return;
         go('monitoring');
       } catch (problem) {
-        if (isCurrent(current)) setError(`Monitoring could not start: ${(problem as Error).message} Check the seats, then press Start monitoring again.`);
+        if (isCurrent(current)) showProblem(describeProblem(problem, MONITOR_FAILED));
       } finally {
         current.monitorPending = undefined; settle();
         if (isCurrent(current)) setRequesting('');
@@ -439,7 +457,7 @@ export function CameraWorkspace() {
   /** Opens the chosen camera into the hidden video element; a disconnect pauses a monitored session. */
   async function openCamera(current: Run): Promise<MediaStream> {
     const valid = () => isCurrent(current);
-    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access is unavailable here. Open Ocular at http://127.0.0.1:3000 in Chrome, Edge or Firefox.');
+    if (!navigator.mediaDevices?.getUserMedia) throw new PlainError('Camera access is unavailable here. Open Ocular at http://127.0.0.1:3000 in Chrome, Edge or Firefox.');
     const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 }, ...(device ? { deviceId: { exact: device } } : {}) } });
     if (!valid()) { stream.getTracks().forEach(track => track.stop()); throw new DOMException('Camera start cancelled.', 'AbortError'); }
     current.stream = stream;
@@ -454,7 +472,7 @@ export function CameraWorkspace() {
     });
     const used = stream.getVideoTracks()[0]?.getSettings().deviceId;
     if (used) { writeSavedDevice(used); setDevice(used); }
-    if (!video.current) throw new Error('The camera picture could not open. Press Start again.');
+    if (!video.current) throw new PlainError('The camera picture could not open. Press Start again.');
     video.current.srcObject = stream;
     await video.current.play();
     void navigator.mediaDevices.enumerateDevices().then(list => { if (valid()) setDevices(list.filter(item => item.kind === 'videoinput')); }).catch(() => {});
@@ -463,7 +481,7 @@ export function CameraWorkspace() {
 
   /** The frame loop for a run whose worker is ready; it returns when the run is released. */
   function capture(current: Run, stream: MediaStream) {
-    if (!output.current || !video.current) throw new Error('Camera drawing is unavailable in this browser. Use Chrome, Edge or Firefox.');
+    if (!output.current || !video.current) throw new PlainError('Camera drawing is unavailable in this browser. Use Chrome, Edge or Firefox.');
     return runCaptureLoop({ run: current, video: video.current, target: output.current, stream, health, valid: () => isCurrent(current),
       phase: () => phaseRef.current, seats: () => seatsRef.current,
       overlay: () => ({ highlighted: openAlertSeats(alertsRef.current) }),
@@ -478,7 +496,7 @@ export function CameraWorkspace() {
   async function captureFailed(current: Run, problem: unknown) {
     if (!isCurrent(current)) return;
     if (leaveAction(current) === 'pause') await pause(LOST_REASON);
-    else { setError(cameraError(problem)); await stop(); }
+    else { showProblem(cameraProblem(problem)); await stop(); }
   }
 
   async function start() {
@@ -496,7 +514,7 @@ export function CameraWorkspace() {
       const response = await fetch('/api/camera', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mirrored, tileGrid }), signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(65_000)]) });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'The camera could not start. Press Start again.');
+      if (!response.ok) throw new PlainError('The camera could not start. Press Start again.', data.error || '');
       current.sessionId = data.sessionId;
       if (!valid()) { await stopSession(data.sessionId); return; }
       go('preparing');
@@ -553,17 +571,23 @@ export function CameraWorkspace() {
         <p className="camera-note">No video is recorded. While monitoring, the session and a small picture of the seat for each alert are saved on this computer. Hiding this tab pauses monitoring and releases the camera; press Resume to continue.</p>
   </>;
   const cameraName = (item: MediaDeviceInfo, index: number) => item.label || `Camera ${index + 1}`;
+  const seatCount = countText(seats.length, 'seat');
+  const foundTitle = setupError ? 'Seats could not be found' : !seats.length ? 'No students found' : seatsEdited ? `${seatCount} ready` : `Found ${seatCount}`;
+  /** Why Start or Resume is unavailable, shown next to the disabled button. */
+  const notReadyText = checking ? 'Checking the local processor…' : !ready ? 'Not available until the local processor is ready. Finish the setup shown at the top, then press Recheck.' : '';
 
   return <>
-    <div className={`backend-banner${ready ? ' backend-ready' : ''}`} role="status"><Camera size={20} /><div><strong>{checking ? 'Checking the local processor' : ready ? 'Ocular is ready on this computer' : 'Python setup needed'}</strong><p>{status?.methods.baseline.message || 'Use the project README to prepare Python and the models.'}</p></div><button type="button" onClick={check} disabled={busy || checking} aria-label="Recheck local processor"><RefreshCw size={15} /><span>Recheck</span></button></div>
+    <div className={`backend-banner${ready ? ' backend-ready' : ''}`} role="status"><Camera size={20} /><div><strong>{checking ? 'Checking the local processor' : ready ? 'Ocular is ready on this computer' : 'Python setup needed'}</strong><p>{ready ? 'Live alerts can run on this computer.' : status?.methods.baseline.message || 'Use the project README to prepare Python and the models.'}</p></div><button type="button" onClick={check} disabled={busy || checking} aria-label="Recheck local processor"><RefreshCw size={15} /><span>Recheck</span></button></div>
     <div ref={grid} className={`analysis-grid camera-grid${monitoring ? ' camera-dashboard' : ''}`}>
-      <section className="workspace-card camera-setup" aria-labelledby="camera-setup-title"><div className="workspace-card-header"><h2 id="camera-setup-title">Live camera</h2><span>LOCAL CAMERA</span></div><div className="input-card-body">
-        <SetupSteps phase={phase} />
+      <section className="workspace-card camera-setup" aria-labelledby="camera-setup-title"><div className="workspace-card-header"><h2 id="camera-setup-title">Live camera</h2><span>LOCAL CAMERA</span></div><div className="input-card-body" ref={setupBody}>
+        <SetupSteps phase={phase} stoppedFrom={stoppedFrom} />
+        <p className="sr-only" role="status">{phase === 'found' && !editing ? foundTitle : ''}</p>
 
         {(phase === 'idle' || phase === 'permission' || phase === 'loading') && <>
           <div className="analysis-settings"><label htmlFor="camera-device">Camera</label><div className="select-wrap"><select id="camera-device" value={device} disabled={busy} onChange={event => { setDevice(event.target.value); writeSavedDevice(event.target.value); }}><option value="">Default camera</option>{devices.filter(item => item.deviceId).map((item, index) => <option key={item.deviceId} value={item.deviceId}>{cameraName(item, index)}</option>)}</select></div>
             <p>Choose the phone or classroom camera. Ocular remembers it for next time.</p></div>
-          <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={start} disabled={busy || !ready}>{busy ? <LoaderCircle size={16} className="spin" /> : <Play size={16} />}Start</Button></div>
+          <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={start} disabled={busy || !ready} aria-describedby={!busy && notReadyText ? 'camera-start-blocked' : undefined}>{busy ? <LoaderCircle size={16} className="spin" /> : <Play size={16} />}Start</Button></div>
+          {!busy && notReadyText && <p className="setup-blocked" id="camera-start-blocked">{notReadyText}</p>}
         </>}
 
         {phase === 'preparing' && <div className="setup-panel">
@@ -573,12 +597,12 @@ export function CameraWorkspace() {
 
         {phase === 'found' && !editing && <div className="setup-panel">
           {setupError || !seats.length ? <>
-            <h3 className="setup-title">{setupError ? 'Seats could not be found' : 'No students found'}</h3>
+            <h3 className="setup-title">{foundTitle}</h3>
             <p className="setup-lead">{setupError || 'Check that the camera sees every desk and that faces are lit, then try again.'}</p>
             <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={tryAgain}><RefreshCw size={16} />Try again</Button></div>
             <div className="setup-secondary"><Button variant="outline" onClick={openEditor}>Draw seats myself</Button></div>
           </> : <>
-            <h3 className="setup-title">{seatsEdited ? `${seats.length} seat${seats.length === 1 ? '' : 's'} ready` : `Found ${seats.length} seat${seats.length === 1 ? '' : 's'}`}</h3>
+            <h3 className="setup-title">{foundTitle}</h3>
             <p className="setup-lead">The numbers on the live view are the seat numbers, left to right. Seats are positions, not people. If a seat is missing or wrong, use Adjust seats.</p>
             {measured?.tooSlow && <p className="setup-warning" role="note">This computer is processing the camera slowly, so alerts may not appear. {tileGrid > 1 ? 'Press Stop camera, choose fewer detector tiles under Advanced settings, then press Start again.' : 'Close other programs, then press Stop camera and Start again.'}</p>}
             {validation && <p className="setup-warning" role="status">{validation}</p>}
@@ -614,11 +638,13 @@ export function CameraWorkspace() {
           <p className="setup-lead" role="status">{interruptionText(stoppedAt ?? new Date())}</p>
           {pauseReason && <p className="setup-warning" role="note">{pauseReason}</p>}
           {sessionLine}
-          <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={() => recordId && void beginResume(recordId)} disabled={!recordId || !!action || !ready}><Play size={16} />Resume</Button></div>
+          <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={() => recordId && void beginResume(recordId)} disabled={!recordId || !!action || !ready}
+            aria-describedby={notReadyText ? 'camera-resume-blocked' : undefined}><Play size={16} />Resume</Button></div>
+          {notReadyText && <p className="setup-blocked" id="camera-resume-blocked">{notReadyText}</p>}
           {confirm === 'end'
             ? <InlineConfirm text={END_CONFIRM_TEXT} confirmLabel="End session" cancelLabel="Keep it" busy={action === 'end'} busyLabel="Ending…"
-                onConfirm={() => void endSession()} onCancel={() => setConfirm('')} />
-            : <div className="setup-secondary"><Button variant="outline" onClick={() => setConfirm('end')} disabled={!!action}><Square size={15} />End session</Button>{pdf(false)}</div>}
+                onConfirm={() => void endSession()} onCancel={() => { setConfirm(''); focusNext.current = '[data-focus="end-session"]'; }} />
+            : <div className="setup-secondary"><Button variant="outline" data-focus="end-session" onClick={() => setConfirm('end')} disabled={!!action}><Square size={15} />End session</Button>{pdf(false)}</div>}
           <button type="button" className="setup-link" onClick={newSession} disabled={!!action}>Back to past sessions</button>
         </div>}
 
@@ -642,13 +668,14 @@ export function CameraWorkspace() {
           {recordId && <div className="camera-actions">{pdf(true)}</div>}
           {confirm === 'delete'
             ? <InlineConfirm text={DELETE_CONFIRM_TEXT} confirmLabel="Delete" cancelLabel="Keep" busy={action === 'delete'} busyLabel="Deleting…"
-                onConfirm={() => void deleteCurrent()} onCancel={() => setConfirm('')} />
+                onConfirm={() => void deleteCurrent()} onCancel={() => { setConfirm(''); focusNext.current = '[data-focus="delete-session"]'; }} />
             : <div className="setup-secondary"><Button variant="outline" onClick={newSession} disabled={!!action}><Play size={15} />New session</Button>
-              {recordId && recordMeta?.state !== 'monitoring' && <Button variant="outline" onClick={() => setConfirm('delete')} disabled={!!action}><Trash2 size={15} />Delete session</Button>}</div>}
+              {recordId && recordMeta?.state !== 'monitoring' && <Button variant="outline" data-focus="delete-session" onClick={() => setConfirm('delete')} disabled={!!action}><Trash2 size={15} />Delete session</Button>}</div>}
         </div>}
 
         <p className="camera-status" role="status" hidden={monitoring && !statusText}>{waiting ? <LoaderCircle size={14} className="spin" /> : null}{statusText}</p>
-        {error && <div className="analysis-error" role="alert"><AlertCircle size={17} /><span>{error}</span></div>}
+        {error.text && <div className="analysis-error" role="alert"><AlertCircle size={17} /><div className="analysis-error-text"><span>{error.text}</span>
+          {error.detail && <details className="error-detail"><summary>More information</summary><p>{error.detail}</p></details>}</div></div>}
         {!monitoring && phase !== 'interrupted' && phase !== 'confirming' && phase !== 'ended' && details}
       </div></section>
 
@@ -658,7 +685,7 @@ export function CameraWorkspace() {
           onSave={next => { setSeats(numberSeats(next)); setSeatsEdited(true); setSetupError(''); setEditing(null); }}
           onCancel={() => setEditing(null)} />}
         <div className="camera-processed" hidden={!!editing}>
-          <canvas ref={output} hidden={!hasFrame} aria-label={seats.length && (phase === 'found' || phase === 'confirming' || monitoring) ? `Live camera view with ${seats.length} numbered seat boxes${monitoring ? '; seats with an alert are outlined in orange' : phase === 'confirming' ? ' from the saved session' : ''}` : 'Live camera view'} />
+          <canvas ref={output} hidden={!hasFrame} role="img" aria-label={seats.length && (phase === 'found' || phase === 'confirming' || monitoring) ? `Live camera view with ${seats.length} numbered seat boxes${monitoring ? '; seats with an alert are outlined in orange' : phase === 'confirming' ? ' from the saved session' : ''}` : 'Live camera view'} />
           {!hasFrame && <div className="camera-placeholder"><Camera size={32} /><p>{phase === 'idle' ? 'Press Start to open the camera.' : statusText || 'The camera picture appears here.'}</p></div>}
         </div>
         {monitoring && <CameraSeatGrid seats={seats} states={seatStates} openSeats={openSeats} status={running} />}
