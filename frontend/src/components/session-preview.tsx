@@ -37,7 +37,7 @@ export function SessionPreview() {
           </div>
         </div>)}
         <div className="example-moments" role="group" aria-label="Choose an illustrative moment">
-          {EXAMPLE_MOMENTS.map((item, index) => <button key={item.time} type="button" aria-pressed={selected === index} aria-label={`Show illustrative moment at ${clock(item.time)}`} onClick={() => setSelected(index)} style={{ left: percent(item.time) }}>{clock(item.time)}</button>)}
+          {EXAMPLE_MOMENTS.map((item, index) => <button key={item.time} type="button" aria-pressed={selected === index} aria-label={`Show illustrative moment at ${clock(item.time)}`} onClick={() => setSelected(index)}>{clock(item.time)}</button>)}
         </div>
       </div>
       <p className="example-note" aria-live="polite"><strong>{moment.title}</strong>{moment.note}</p>

@@ -14,7 +14,7 @@ test('segments cover 0..duration contiguously', () => {
 
 test('tag direction matches timeline at every moment', () => {
   assert.deepEqual(EXAMPLE_MOMENTS.map(m => [m.time, m.seat, directionAt(m.seat, m.time)]),
-    [[12, '03', 'Left'], [24, '01', 'Down'], [36, '02', 'Unknown']]);
+    [[12, '03', 'Left'], [24, '01', 'Down'], [36, '04', 'Right'], [38, '02', 'Unknown']]);
 });
 
 test('moments are in order and inside the session', () => {
@@ -23,4 +23,19 @@ test('moments are in order and inside the session', () => {
     assert.ok(time > 0 && time < EXAMPLE_DURATION);
     if (i) assert.ok(time > EXAMPLE_MOMENTS[i - 1].time);
   }
+});
+
+test('left and right turns are illustrative "Check seat" alerts; down and gaps are not', () => {
+  const bySeat = Object.fromEntries(EXAMPLE_MOMENTS.map(m => [m.seat, m]));
+  assert.match(bySeat['03'].title, /^Check seat 03/);
+  assert.match(bySeat['04'].title, /^Check seat 04/);
+  assert.match(bySeat['01'].note, /down never alerts/i);
+  assert.doesNotMatch(bySeat['01'].title, /^Check seat/);
+  assert.match(bySeat['02'].title, /out of view/i);
+  assert.match(bySeat['02'].note, /gaps are never filled in/i);
+});
+
+test('example copy avoids accusatory wording', () => {
+  const text = EXAMPLE_MOMENTS.map(m => `${m.title} ${m.note}`).join(' ');
+  assert.doesNotMatch(text, /cheat|suspicious|catch|incident|violation/i);
 });
