@@ -361,7 +361,9 @@ export function CameraWorkspace() {
     if (editing) return; // the seat adjuster focuses its own heading
     if (document.activeElement?.closest('.camera-guide')) return; // someone is reading the guide
     // During a wait there is no primary button; the status line (what is happening) holds focus instead of the page.
-    const target = setupBody.current?.querySelector<HTMLElement>('.camera-primary:not(:disabled)')
+    // Monitoring: focus the dashboard heading, not Stop, so a stray Enter or Space cannot end the live session.
+    const target = (phase === 'monitoring' ? setupBody.current?.querySelector<HTMLElement>('#camera-monitor-title') : null)
+      ?? setupBody.current?.querySelector<HTMLElement>('.camera-primary:not(:disabled)')
       ?? (setupBody.current?.contains(document.activeElement) || document.activeElement === document.body ? setupBody.current?.querySelector<HTMLElement>('.camera-status:not([hidden])') : null);
     target?.focus({ preventScroll: phase === 'monitoring' });
   }, [primaryKey, editing, phase]);
@@ -631,7 +633,7 @@ export function CameraWorkspace() {
 
         {monitoring && <div className="setup-panel monitor-bar">
           <div className="monitor-bar-text">
-            <h3 className="setup-title">Monitoring {seats.length} seat{seats.length === 1 ? '' : 's'}</h3>
+            <h3 className="setup-title" id="camera-monitor-title" tabIndex={-1}>Monitoring {seats.length} seat{seats.length === 1 ? '' : 's'}</h3>
             <SeatStatusLine status={running} observed={seatsObserved(seats.map(seat => seat.id), seatStates)} total={seats.length} sessionTime={sessionTime} />
             <p className="setup-lead">Keep this tab open. When an alert appears, look at that seat, then press Checked or Dismiss. Press Stop at the end of the exam.</p>
           </div>
