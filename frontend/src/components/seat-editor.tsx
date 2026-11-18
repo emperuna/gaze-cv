@@ -4,8 +4,14 @@ import { useRef,useState } from 'react';
 import { Plus,Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import type { ReviewSeat } from '@/lib/review-contract';
+import { seatLabel } from '@/lib/camera-setup';
 
-export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:string;seats:ReviewSeat[];onChange:(seats:ReviewSeat[])=>void;disabled:boolean;onPlayable:(ready:boolean)=>void}) {
+/** A video source gets a frame scrubber and a 5-minute limit; an image (a captured camera frame) gets neither. */
+export type SeatEditorSource={kind:'video';url:string}|{kind:'image';url:string};
+
+export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:SeatEditorSource;seats:ReviewSeat[];onChange:(seats:ReviewSeat[])=>void;disabled:boolean;onPlayable:(ready:boolean)=>void}) {
+  const image=source.kind==='image';
+  const name=(id:string)=>image?seatLabel(id):id;
   const video=useRef<HTMLVideoElement>(null);
   const start=useRef<[number,number]|null>(null);
   const [draft,setDraft]=useState<[number,number,number,number]|null>(null);
@@ -27,33 +33,34 @@ export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:s
   function rectangle(a:[number,number],b:[number,number]):ReviewSeat['roi'] {return [Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])];}
   return <div className="seat-editor">
     <div className="review-video-stage">
-      <video ref={video} src={source} muted playsInline preload="auto" onLoadedMetadata={event=>{
+      {image?<img src={source.url} alt="Captured camera frame for seat setup" onLoad={()=>{onPlayable(true);setError('');}} onError={()=>{setError('The captured camera frame could not be shown. Cancel and try again.');onPlayable(false);}}/>:
+      <video ref={video} src={source.url} muted playsInline preload="auto" onLoadedMetadata={event=>{
         const v=event.currentTarget;setDuration(v.duration);setPosition(0);
         if(!Number.isFinite(v.duration)||v.duration>300){setError('Choose a clip of at most 5 minutes.');onPlayable(false);}
       }} onLoadedData={event=>{
         if(Number.isFinite(event.currentTarget.duration)&&event.currentTarget.duration<=300){onPlayable(true);setError('');}
-      }} onError={()=>{setError('This browser cannot play the video. Convert it to constant-frame-rate MP4 (H.264) or WebM.');onPlayable(false);}} aria-label="Seat setup video frame"/>
-      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" role="img" aria-label="Draw seat regions over the video; numeric controls are available below" className="seat-drawing"
+      }} onError={()=>{setError('This browser cannot play the video. Convert it to constant-frame-rate MP4 (H.264) or WebM.');onPlayable(false);}} aria-label="Seat setup video frame"/>}
+      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" role="img" aria-label={`Draw seat regions over the ${image?'camera frame':'video'}; numeric controls are available below`} className="seat-drawing"
         onPointerDown={event=>{if(disabled||!drawing)return;start.current=point(event);event.currentTarget.setPointerCapture(event.pointerId);setDraft(null);}}
         onPointerMove={event=>{if(start.current)setDraft(rectangle(start.current,point(event)));}}
         onPointerCancel={()=>{start.current=null;setDraft(null);}}
         onPointerUp={event=>{if(!start.current)return;const roi=rectangle(start.current,point(event));start.current=null;setDraft(null);if(roi[2]-roi[0]<.01||roi[3]-roi[1]<.01){setError('Draw a region with visible width and height.');return;}add(roi);}}>
-        {seats.map((seat,index)=><g key={index}><rect className={editing===index?'seat-draft':''} x={seat.roi[0]*1000} y={seat.roi[1]*1000} width={(seat.roi[2]-seat.roi[0])*1000} height={(seat.roi[3]-seat.roi[1])*1000}/><text x={seat.roi[0]*1000+8} y={Math.max(36,seat.roi[1]*1000+36)}>{seat.id}</text></g>)}
+        {seats.map((seat,index)=><g key={index}><rect className={editing===index?'seat-draft':''} x={seat.roi[0]*1000} y={seat.roi[1]*1000} width={(seat.roi[2]-seat.roi[0])*1000} height={(seat.roi[3]-seat.roi[1])*1000}/><text x={seat.roi[0]*1000+8} y={Math.max(36,seat.roi[1]*1000+36)}>{name(seat.id)}</text></g>)}
         {draft&&<rect className="seat-draft" x={draft[0]*1000} y={draft[1]*1000} width={(draft[2]-draft[0])*1000} height={(draft[3]-draft[1])*1000}/>}
       </svg>
     </div>
-    <label className="review-scrubber">Setup frame: {position.toFixed(1)} s<input aria-label="Seat setup frame time" type="range" min="0" max={Number.isFinite(duration)?Math.max(0,duration-.01):0} step="0.1" value={position} disabled={disabled} onChange={event=>{const time=Number(event.target.value);setPosition(time);if(video.current)video.current.currentTime=time;}}/></label>
-    <p className="review-help" role="status">{drawing?(editing===null?'Drag a box around a missed seat’s head area.':`Draw a new box for ${seats[editing]?.id??'this seat'}.`):'Review the boxes. Use Edit region to redraw a seat, or Add seat for someone missed.'} Seats identify fixed positions, not people.</p>
+    {!image&&<label className="review-scrubber">Setup frame: {position.toFixed(1)} s<input aria-label="Seat setup frame time" type="range" min="0" max={Number.isFinite(duration)?Math.max(0,duration-.01):0} step="0.1" value={position} disabled={disabled} onChange={event=>{const time=Number(event.target.value);setPosition(time);if(video.current)video.current.currentTime=time;}}/></label>}
+    <p className="review-help" role="status">{drawing?(editing===null?'Drag a box around a missed seat’s head area.':`Draw a new box for ${seats[editing]?name(seats[editing].id):'this seat'}.`):'Review the boxes. Use Edit region to redraw a seat, or Add seat for someone missed.'} Seats identify fixed positions, not people.</p>
     <Button variant="outline" type="button" disabled={disabled||seats.length>=20} onClick={()=>{setEditing(null);setDrawing(true);setError('');}}><Plus size={15}/>Add seat</Button>
     <fieldset disabled={disabled} className="seat-fields"><legend>{seats.length?`${seats.length} seat${seats.length===1?'':'s'} to review`:'No seats added yet'}</legend>
       {seats.map((seat,index)=><div className="simple-seat-row" key={index}>
-        <label>Seat name {index+1}<input value={seat.id} maxLength={40} onChange={event=>onChange(seats.map((s,i)=>i===index?{...s,id:event.target.value}:s))}/></label>
-        <button type="button" aria-label={`Edit region for ${seat.id}`} onClick={()=>{setEditing(index);setDrawing(true);setError('');}}>Edit region</button>
-        <button type="button" aria-label={`Remove ${seat.id}`} onClick={()=>{onChange(seats.filter((_,i)=>i!==index));setEditing(null);setDrawing(false);}}><Trash2 size={16}/></button>
+        {image?<strong className="seat-row-name">{name(seat.id)}</strong>:<label>Seat name {index+1}<input value={seat.id} maxLength={40} onChange={event=>onChange(seats.map((s,i)=>i===index?{...s,id:event.target.value}:s))}/></label>}
+        <button type="button" aria-label={`Edit region for ${name(seat.id)}`} onClick={()=>{setEditing(index);setDrawing(true);setError('');}}>Edit region</button>
+        <button type="button" aria-label={`Remove ${name(seat.id)}`} onClick={()=>{onChange(seats.filter((_,i)=>i!==index));setEditing(null);setDrawing(false);}}><Trash2 size={16}/></button>
       </div>)}
     </fieldset>
     <details className="review-details advanced-seat-editing"><summary>Advanced seat editing</summary>
-    <p className="review-help">Optional exact coordinates, in percentages of the video frame. Visual boxes above are enough for normal setup.</p>
+    <p className="review-help">Optional exact coordinates, in percentages of the {image?'camera frame':'video frame'}. Visual boxes above are enough for normal setup.</p>
     <Button variant="outline" type="button" disabled={disabled||seats.length>=20} onClick={()=>{
       for(let row=0;row<5;row++)for(let col=0;col<4;col++){
         const roi:ReviewSeat['roi']=[col*.25+.01,row*.2+.01,col*.25+.2,row*.2+.18];
@@ -62,8 +69,8 @@ export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:s
     }}><Plus size={15}/>Add seat with numeric controls</Button>
     <fieldset disabled={disabled} className="seat-fields"><legend>Exact seat coordinates</legend>
       {seats.map((seat,index)=><div className="seat-field-row" key={index}>
-        <strong>{seat.id}</strong>
-        <div className="seat-coordinates">{['Left','Top','Right','Bottom'].map((label,coordinate)=><label key={label}>{label} %<input aria-label={`${seat.id} ${label.toLowerCase()} percent`} type="number" min="0" max="100" step="0.1" value={Number((seat.roi[coordinate]*100).toFixed(2))} onChange={event=>onChange(seats.map((s,i)=>i===index?{...s,roi:s.roi.map((v,c)=>c===coordinate?Number(event.target.value)/100:v) as ReviewSeat['roi']}:s))}/></label>)}</div>
+        <strong>{name(seat.id)}</strong>
+        <div className="seat-coordinates">{['Left','Top','Right','Bottom'].map((label,coordinate)=><label key={label}>{label} %<input aria-label={`${name(seat.id)} ${label.toLowerCase()} percent`} type="number" min="0" max="100" step="0.1" value={Number((seat.roi[coordinate]*100).toFixed(2))} onChange={event=>onChange(seats.map((s,i)=>i===index?{...s,roi:s.roi.map((v,c)=>c===coordinate?Number(event.target.value)/100:v) as ReviewSeat['roi']}:s))}/></label>)}</div>
       </div>)}
     </fieldset>
     </details>

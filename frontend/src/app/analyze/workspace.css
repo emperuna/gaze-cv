@@ -279,3 +279,33 @@
 .report-export-bar .pdf-report-download button:disabled { opacity:1; color:#4d5b47; background:#dce4d5; border-color:#becbb3; box-shadow:none; cursor:not-allowed; }
 .report-export-bar .analysis-error { max-width:42ch; }
 @media(max-width:600px){.report-export-bar{padding:16px;gap:12px;}.report-export-copy{flex-basis:100%;}.report-export-bar .pdf-report-download,.report-export-bar .pdf-report-download button{width:100%;}}
+/* Camera setup flow: step indicator, one primary action per step, plain status text. */
+.setup-steps { display:flex; flex-wrap:wrap; gap:6px 18px; list-style:none; padding:0 0 18px; margin:0 0 20px; border-bottom:1px solid #f1f3f6; font-size:12px; color:#6a7786; }
+.setup-steps li { display:flex; align-items:center; gap:8px; }
+.setup-steps li + li::before { content:'·'; margin-right:10px; color:#a3adba; }
+.setup-steps li > span:first-child { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; border:1px solid #d5dde8; font-size:11px; color:#5b6879; background:#fff; }
+.setup-steps li[aria-current="step"] { color:#1f2c3b; font-weight:600; }
+.setup-steps li[aria-current="step"] > span:first-child { background:#263b2e; border-color:#263b2e; color:#fff; }
+.setup-steps .setup-step-done > span:first-child { background:#edf3e7; border-color:#ccd8bf; color:#354e3e; }
+.setup-panel { margin-top:4px; }
+.setup-title { font-size:20px; font-weight:600; letter-spacing:-.3px; color:#1f2c3b; }
+.setup-lead { margin-top:10px; font-size:13px; line-height:1.8; color:#4a596c; }
+.setup-warning { margin-top:14px; padding:12px 14px; border:1px solid #e7d5a9; background:#fff8e8; border-radius:10px; font-size:12px; line-height:1.7; color:#5c4a1e; }
+.camera-actions .camera-primary { min-height:52px; font-size:15px; }
+.setup-secondary { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+.setup-secondary button { flex:1 1 140px; }
+.setup-link { margin-top:16px; padding:6px 2px; border:0; background:transparent; color:#4e6b89; font-size:12px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.setup-link:disabled { opacity:.5; cursor:default; }
+.camera-setup button:focus-visible, .camera-output button:focus-visible, .camera-advanced summary:focus-visible, .setup-link:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
+.camera-source { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.camera-output .results-body { position:relative; }
+.camera-advanced fieldset { border:0; padding:0; margin:16px 0 0; min-width:0; }
+.camera-advanced legend { font-size:12px; font-weight:600; color:#334254; margin-bottom:4px; }
+.camera-advanced .review-setting-grid label { display:flex; flex-direction:column; gap:6px; font-size:11px; color:#4a596c; }
+.camera-advanced .review-setting-grid input { padding:8px; border:1px solid #d5dde8; border-radius:6px; font-size:12px; }
+.camera-advanced small { font-size:10px; line-height:1.5; color:#6a7786; }
+.seat-adjuster { margin-bottom:18px; }
+.seat-adjuster h3 { font-size:16px; font-weight:600; margin-bottom:4px; }
+.seat-adjuster .review-video-stage img { display:block; width:100%; height:auto; }
+.seat-row-name { font-size:13px; align-self:center; }
+.setup-secondary button, .seat-adjuster .camera-actions button:not(.camera-primary), .camera-setup .camera-actions button:not(.camera-primary) { font-size:13px; }
