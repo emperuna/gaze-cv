@@ -10,14 +10,37 @@ import sys
 import cv2
 import numpy as np
 
+from gaze.live_session import LiveSeatMonitor
+from gaze.review_setup import suggest_seats
+from gaze.session_review import validate_settings
+
 MAX_JPEG_BYTES = 1_000_000
 MAX_MESSAGE_CHARS = 1_400_000
+MAX_SETUP_SAMPLES = 5
 
 
 class CameraProcessor:
     def __init__(self, pipeline):
         self.pipeline = pipeline
         self.last_timestamp = -1.
+        self.live = None
+        self.setup_samples = []
+
+    def configure(self, settings):
+        if self.live is not None:
+            raise ValueError('Seat monitoring is already configured')
+        if not isinstance(settings, dict):
+            raise ValueError('Expected seat settings')
+        config = validate_settings({**settings, 'method': 'baseline'})
+        if bool(self.pipeline.metadata.get('mirrored_input', False)) != config['mirrored']:
+            raise ValueError('Pipeline mirroring must match seat settings')
+        self.live = LiveSeatMonitor(config, config['mirrored'])
+        return {'configured': True, 'seats': config['seats']}
+
+    def suggest(self):
+        if not self.setup_samples:
+            raise ValueError('Send setup frames before suggesting seats')
+        return {'suggested': True, **suggest_seats(self.setup_samples, self.pipeline)}
 
     def process(self, message):
         if not isinstance(message, dict):
@@ -49,14 +72,30 @@ class CameraProcessor:
         height, width = image.shape[:2]
         if max(width, height) > 1280 or width * height > 1280 * 720:
             raise ValueError('Camera frames must fit within 1280 x 720 pixels')
+        open_alerts = self._open_alerts(message.get('open_alerts'))
         result = self.pipeline.process(image)
+        response = {'id': identifier, 'timestamp_seconds': timestamp, 'result': result.to_dict(),
+                    'counts': dict(Counter(d.direction for d in result.detections))}
+        if self.live is not None:
+            response.update(self.live.update(timestamp, result, image, open_alerts))
         self.last_timestamp = timestamp
-        return {'id': identifier, 'timestamp_seconds': timestamp, 'result': result.to_dict(),
-                'counts': dict(Counter(d.direction for d in result.detections))}
+        if message.get('setup') is True:
+            self.setup_samples = (self.setup_samples + [image])[-MAX_SETUP_SAMPLES:]
+        return response
+
+    @staticmethod
+    def _open_alerts(value):
+        if value is None:
+            return set()
+        if not isinstance(value, list) or len(value) > 100 or any(
+                not isinstance(pair, list) or len(pair) != 2 or not all(isinstance(v, str) for v in pair)
+                for pair in value):
+            raise ValueError('Open alerts must be a list of [seat, direction] pairs')
+        return {tuple(pair) for pair in value}
 
 
 def serve(pipeline, incoming, outgoing):
-    """JSONL transport; EOF shuts down. Never persist camera pixels or records."""
+    """JSONL transport; EOF shuts down. Never persist camera pixels; seat crops are returned to the caller."""
     processor = CameraProcessor(pipeline)
 
     def emit(value):
@@ -74,8 +113,14 @@ def serve(pipeline, incoming, outgoing):
         message = None
         try:
             message = json.loads(line)
+            kind = message.get('type') if isinstance(message, dict) else None
             with redirect_stdout(sys.stderr):
-                result = processor.process(message)
+                if kind == 'configure':
+                    result = processor.configure(message.get('settings'))
+                elif kind == 'suggest_seats':
+                    result = processor.suggest()
+                else:
+                    result = processor.process(message)
             emit(result)
         except (ValueError, RuntimeError, OSError, cv2.error) as error:
             emit({'id': message.get('id') if isinstance(message, dict) else None,
