@@ -4,41 +4,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Camera, LoaderCircle, Play, RefreshCw, Square } from 'lucide-react';
 import { Button } from './ui/button';
 import type { BackendStatus } from '@/lib/analysis-contract';
-import type { CameraFrame, CameraResult } from '@/lib/camera-contract';
-import { cameraFrameSize, runCameraFrames } from '@/lib/camera-client';
-import { HEALTH_WARNING_MS, cameraWarnings, lowDetailImage } from '@/lib/camera-health';
+import { cameraWarnings, lowDetailImage } from '@/lib/camera-health';
 import type { CameraHealth } from '@/lib/camera-health';
 import { chooseMaxGap } from '@/lib/live-alerts';
 import { DEFAULT_MOVEMENT, validateReviewSettings } from '@/lib/review-contract';
 import type { ReviewSeat } from '@/lib/review-contract';
-import {
-  cameraMovement, markSetupFrame, newSetupProgress, numberSeats, pickDevice, readSavedDevice, recordSetupResult,
-  seatsForMonitor, setupComplete, shouldMarkSetup, writeSavedDevice,
-} from '@/lib/camera-setup';
-import type { SetupProgress } from '@/lib/camera-setup';
-import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
+import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice, seatsForMonitor, writeSavedDevice } from '@/lib/camera-setup';
+import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, preparingText } from './camera-setup';
+import { newRun, runCaptureLoop, stopSession } from './camera-run';
+import type { Run } from './camera-run';
 import type { CameraPhase, MeasuredSpeed, MovementRules } from './camera-setup';
-
-/**
- * One camera run. Worker commands (find seats, start monitoring) go through `commands`, which the frame
- * loop runs between frames, because the worker accepts one request at a time.
- */
-type Run = {
-  active: boolean; controller: AbortController; stream?: MediaStream; sessionId?: string; recordId?: string;
-  commands: (() => Promise<void>)[]; progress: SetupProgress; setupQueued: boolean; still: HTMLCanvasElement;
-};
-type MonitorFrame = CameraResult & { state?: 'monitoring' | 'interrupted' | 'ended'; notice?: string | null; saveError?: string | null };
-
-async function stopSession(id: string): Promise<{ ok: true } | { ok: false; message: string }> {
-  try {
-    const response = await fetch(`/api/camera/${id}`, { method: 'DELETE', keepalive: true, signal: AbortSignal.timeout(10_000) });
-    if (response.ok || response.status === 404) return { ok: true };
-    const data = await response.json().catch(() => ({}));
-    return { ok: false, message: data.error || 'The session could not be saved. Press Stop again.' };
-  } catch {
-    return { ok: false, message: 'Ocular could not be reached to save the session. Press Stop again.' };
-  }
-}
 
 function cameraError(error: unknown) {
   if (error instanceof DOMException) {
@@ -239,7 +214,7 @@ export function CameraWorkspace() {
     setError(''); setNotice(''); setSaveError(''); setWarnings([]); setSeats([]); setSeatsEdited(false); setSetupError('');
     setEditing(null); setMeasured(null); setHasFrame(false); setReceived(0); setStopRetry(null);
     go('permission');
-    const current: Run = { active: true, controller: new AbortController(), commands: [], progress: newSetupProgress(), setupQueued: false, still: document.createElement('canvas') };
+    const current = newRun();
     run.current = current;
     const valid = () => isCurrent(current);
     try {
@@ -269,73 +244,15 @@ export function CameraWorkspace() {
       current.sessionId = data.sessionId;
       if (!valid()) { await stopSession(data.sessionId); return; }
       go('preparing');
-      const capture = document.createElement('canvas');
-      const context = capture.getContext('2d');
-      const draw = output.current?.getContext('2d');
-      const stillContext = current.still.getContext('2d');
-      if (!context || !draw || !stillContext || !output.current) throw new Error('Camera drawing is unavailable in this browser. Use Chrome, Edge or Firefox.');
-      const target = output.current;
-      const started = performance.now(); let count = 0;
-      health.current = { startedAt: started, lastResultCaptureAt: null, previewAdvancedAt: started,
-        muted: stream.getVideoTracks().some(track => track.muted), lowCoverageSince: null, lowDetailSince: null };
-      let capturedAt = started;
-      await runCameraFrames<CameraFrame, MonitorFrame>({ signal: current.controller.signal,
-        capture: () => {
-          const source = video.current!;
-          const size = cameraFrameSize(source.videoWidth, source.videoHeight);
-          capture.width = size.width; capture.height = size.height;
-          context.drawImage(source, 0, 0, size.width, size.height);
-          capturedAt = performance.now();
-          const timestamp = (capturedAt - started) / 1000;
-          const setup = phaseRef.current === 'preparing' && shouldMarkSetup(current.progress, timestamp);
-          if (setup) markSetupFrame(current.progress, timestamp);
-          const frame: CameraFrame = { id: ++count, timestamp_seconds: timestamp, image: capture.toDataURL('image/jpeg', .8).split(',')[1] };
-          return setup ? { ...frame, setup: true } : frame;
-        },
-        process: async frame => {
-          // Commands run here so the worker never receives one while a frame is in flight.
-          while (current.commands.length && valid()) await current.commands.shift()!();
-          const response = await fetch(`/api/camera/${current.sessionId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(frame), signal: current.controller.signal });
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.error || 'The camera picture could not be processed. Press Start again.');
-          return result as MonitorFrame;
-        },
-        display: (frame, result) => {
-          if (!valid()) return;
-          if (result.id !== frame.id || result.timestamp_seconds !== frame.timestamp_seconds || result.result.width !== capture.width || result.result.height !== capture.height) throw new Error('The processed picture did not match the camera. Press Start again.');
-          current.still.width = capture.width; current.still.height = capture.height; stillContext.drawImage(capture, 0, 0);
-          target.width = capture.width; target.height = capture.height; draw.drawImage(capture, 0, 0);
-          draw.font = '14px Arial'; draw.lineWidth = 2;
-          for (const detection of result.result.detections) {
-            const [x, y, w, h] = detection.bbox;
-            draw.strokeStyle = detection.direction === 'unknown' ? '#e8c76a' : '#8fe3a1';
-            draw.strokeRect(x, y, w, h);
-            const labelY = Math.max(20, y);
-            draw.fillStyle = '#17291f'; draw.fillRect(x + w - draw.measureText(detection.direction).width - 12, labelY - 20, draw.measureText(detection.direction).width + 12, 21);
-            draw.fillStyle = '#ffffff'; draw.fillText(detection.direction, x + w - draw.measureText(detection.direction).width - 6, labelY - 5);
-          }
-          const showSeats = phaseRef.current === 'found' || phaseRef.current === 'monitoring';
-          if (showSeats) drawSeatBoxes(draw, seatsRef.current, capture.width, capture.height);
-          setHasFrame(true);
-          if (phaseRef.current === 'preparing') {
-            recordSetupResult(current.progress, result.timestamp_seconds, frame.setup === true);
-            setReceived(current.progress.received);
-            if (setupComplete(current.progress) && !current.setupQueued) {
-              current.setupQueued = true;
-              current.commands.push(() => findSeats(current));
-            }
-          }
-          if (health.current) {
-            if (health.current.lastResultCaptureAt === null || capturedAt - health.current.lastResultCaptureAt >= HEALTH_WARNING_MS) health.current.lowCoverageSince = null;
-            health.current.lastResultCaptureAt = capturedAt;
-            const expected = showSeats ? seatsRef.current.length : 0;
-            const usable = result.result.detections.filter(detection => detection.direction !== 'unknown' && !detection.unavailable_reason).length;
-            health.current.lowCoverageSince = expected && usable < expected ? (health.current.lowCoverageSince ?? capturedAt) : null;
-          }
-          if (phaseRef.current === 'monitoring') {
-            setSaveError(result.saveError ?? '');
-            if (result.state && result.state !== 'monitoring') { setNotice(result.notice ?? 'Monitoring has ended.'); void stop(); }
-          }
+      if (!output.current) throw new Error('Camera drawing is unavailable in this browser. Use Chrome, Edge or Firefox.');
+      await runCaptureLoop({ run: current, video: video.current, target: output.current, stream, health, valid,
+        phase: () => phaseRef.current, seats: () => seatsRef.current,
+        onDrawn: () => setHasFrame(true),
+        onSetupReceived: setReceived,
+        onSetupComplete: () => { current.commands.push(() => findSeats(current)); },
+        onMonitorFrame: result => {
+          setSaveError(result.saveError ?? '');
+          if (result.state && result.state !== 'monitoring') { setNotice(result.notice ?? 'Monitoring has ended.'); void stop(); }
         },
       });
     } catch (problem) {
