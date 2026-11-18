@@ -474,3 +474,41 @@ test('worker crash during a brief lock still saves the record as interrupted', a
   await live.exited;
   assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).state, 'interrupted');
 }));
+
+test('a frame cancelled right before Stop leaves the record ended, not interrupted', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start(m => m.id === 1 ? null : {}, { cancelGraceMs: 5_000 });
+  const { recordId } = await live.monitor(MONITOR);
+  const pending = live.frame(frame(1, 2));
+  await new Promise(resolve => setImmediate(resolve));
+  live.cancelFrame();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.deepEqual(await stopCamera(sessionId), { recordId, saveError: null });
+  await pending.catch(() => {});
+  await live.exited;
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).state, 'ended');
+}));
+
+test('a cancelled frame without Stop interrupts after the grace, and End then saves it as ended', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start(m => m.id === 1 ? null : {}, { cancelGraceMs: 10 });
+  const { recordId } = await live.monitor(MONITOR);
+  const pending = live.frame(frame(1, 2));
+  await new Promise(resolve => setImmediate(resolve));
+  live.cancelFrame();
+  await pending.catch(() => {});
+  // End arrives while the exiting worker may still be saving the interruption; it must win.
+  const ended = await endCameraRecord(recordId, { root });
+  assert.equal(ended.state, 'ended');
+  assert.throws(() => getCamera(sessionId), error => error.status === 404);
+  await live.exited;
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).state, 'ended');
+}));
+
+test('a cancelled preview frame closes the worker at once', async () => withLive(async ({ start }) => {
+  const { live } = await start(m => m.id === 1 ? null : {}, { cancelGraceMs: 60_000 });
+  const pending = live.frame(frame(1, 2));
+  await new Promise(resolve => setImmediate(resolve));
+  live.cancelFrame();
+  await assert.rejects(pending);
+  await live.exited;
+  assert.equal(live.workerExited, true);
+}));

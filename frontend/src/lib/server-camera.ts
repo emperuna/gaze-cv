@@ -21,7 +21,8 @@ export interface CameraOptions extends LiveOptions {
 }
 
 /** `gazeCameraUnsaved` keeps a stopped live object whose final save failed, so Stop/End can retry it. */
-const shared = globalThis as typeof globalThis & { gazeCameraSession?: LiveCamera; gazeCameraUnsaved?: LiveCamera };
+/** `gazeCameraLast` is the most recent live object, so End can wait for an exiting worker's interruption save. */
+const shared = globalThis as typeof globalThis & { gazeCameraSession?: LiveCamera; gazeCameraUnsaved?: LiveCamera; gazeCameraLast?: LiveCamera };
 
 function remember(live: LiveCamera) {
   if (live.unsaved) shared.gazeCameraUnsaved=live;
@@ -74,7 +75,7 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal,
     const child=await (options.launch ?? launchWorker)(settings);
     session=new CameraSession(child,release,options.session);
     const live=new LiveCamera(randomUUID(),session,settings,options);
-    shared.gazeCameraSession=live;
+    shared.gazeCameraSession=live; shared.gazeCameraLast=live;
     session.onExit(() => {if (shared.gazeCameraSession===live) shared.gazeCameraSession=undefined;});
     void live.exited.then(() => remember(live));
     const current=session;
@@ -140,6 +141,9 @@ export async function deleteCameraRecord(recordId:string,options:LiveOptions={})
 
 /** End session: stops the live worker when the record is active, otherwise ends the saved record. */
 export async function endCameraRecord(recordId:string,options:LiveOptions={}): Promise<LiveSessionRecord> {
+  // A worker that just exited may still be saving the record as interrupted; end it only after that save.
+  const last=shared.gazeCameraLast;
+  if (last?.workerExited && last.record?.id===recordId) await last.exited;
   const live=ownerFor(recordId);
   if (live) {
     try {await live.stop();} finally {remember(live);}

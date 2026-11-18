@@ -88,3 +88,32 @@ export function formatSessionDate(iso: string): string {
   if (Number.isNaN(date.getTime())) return 'Unknown date';
   return `${date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}, ${formatClock(date)}`;
 }
+
+/** The server waits for an in-flight frame and retries the final save, so Stop waits at least this long. */
+export const STOP_TIMEOUT_MS = 20_000;
+
+export type StopOutcome = { ok: true } | { ok: false; message: string; detail: string };
+
+/**
+ * Stop answers `{recordId, saveError}`. A non-null `saveError` or any error status (for example 503)
+ * means the session is not saved yet, so Stop stays available to retry. A 404 means the worker is gone:
+ * for a monitored session (`recordId`) the saved record is then ended through End session, and Stop only
+ * succeeds once that has worked, so the record never stays interrupted after Stop.
+ */
+export async function stopSession(id: string, recordId?: string, request: typeof fetch = fetch): Promise<StopOutcome> {
+  const notSaved = (reason: unknown): StopOutcome => ({ ok: false, message: 'The session is not saved yet. Press Stop again.', detail: typeof reason === 'string' ? reason : '' });
+  try {
+    const response = await request(`/api/camera/${id}`, { method: 'DELETE', keepalive: true, signal: AbortSignal.timeout(STOP_TIMEOUT_MS) });
+    if (response.status === 404) {
+      if (!recordId) return { ok: true };
+      const ended = await request(`/api/camera/sessions/${encodeURIComponent(recordId)}/end`, { method: 'POST', keepalive: true, signal: AbortSignal.timeout(STOP_TIMEOUT_MS) });
+      if (ended.ok) return { ok: true };
+      return notSaved((await ended.json().catch(() => ({}))).error);
+    }
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && !data.saveError) return { ok: true };
+    return notSaved(response.ok ? data.saveError : data.error);
+  } catch {
+    return { ok: false, message: 'Ocular could not be reached to save the session. Press Stop again.', detail: '' };
+  }
+}
