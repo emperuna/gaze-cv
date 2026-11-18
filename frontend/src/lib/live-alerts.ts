@@ -119,7 +119,7 @@ export function chooseMaxGap(intervalsSeconds: number[]): { maxGap: number; tooS
 
 export function rateWarning(intervalsSeconds: number[], maxGap: number): string | null {
   const m = median(intervalsSeconds);
-  if (m <= maxGap / 2) return null;
+  if (m <= maxGap) return null;
   return `Processing is too slow for movement alerts (${(1 / m).toFixed(1)} FPS). Use fewer detector tiles.`;
 }
 
