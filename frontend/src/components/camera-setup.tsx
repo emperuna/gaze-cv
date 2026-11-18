@@ -54,7 +54,7 @@ export function drawSeatBoxes(draw: CanvasRenderingContext2D, seats: ReviewSeat[
     draw.strokeRect(x, y, (r - l) * width, (b - t) * height);
     const number = seatLabel(seat.id).replace(/^Seat /, '');
     const direction = overlay.directions ? overlay.directions[seat.id]?.direction ?? 'unknown' : null;
-    const label = direction ? `${number} ${direction}` : number;
+    const label = direction ? `Seat ${number} · ${direction}` : number;
     const badge = Math.max(30, draw.measureText(label).width + 14);
     draw.fillStyle = alert ? '#ff9f1c' : '#1d3557';
     draw.fillRect(x, y, badge, 28);

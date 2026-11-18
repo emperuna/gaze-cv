@@ -108,7 +108,7 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
               </div>
               {open ? <>
                 <label className="alert-note" htmlFor={noteId}>Note (optional)
-                  <textarea id={noteId} rows={2} maxLength={MAX_ALERT_NOTE} value={notes[alert.id] ?? alert.note ?? ''} disabled={busy}
+                  <textarea id={noteId} rows={1} maxLength={MAX_ALERT_NOTE} value={notes[alert.id] ?? alert.note ?? ''} disabled={busy}
                     onChange={event => setNotes(current => ({ ...current, [alert.id]: event.target.value }))} />
                 </label>
                 <div className="alert-actions">

@@ -309,12 +309,29 @@
 .seat-adjuster .review-video-stage img { display:block; width:100%; height:auto; }
 .seat-row-name { font-size:13px; align-self:center; }
 .setup-secondary button, .seat-adjuster .camera-actions button:not(.camera-primary), .camera-setup .camera-actions button:not(.camera-primary) { font-size:13px; }
-/* Monitoring dashboard: Stop and the live view on the left, alerts on the right; alerts stack under the view below 900 px. */
-.analysis-grid.camera-dashboard { grid-template-columns:minmax(0, 1.5fr) minmax(0, 1fr); grid-template-areas:"controls alerts" "view alerts"; }
+/* Monitoring dashboard: a compact header with Stop, then the live view beside the alerts; details collapsed below. Alerts stack under the view below 900 px. */
+.analysis-grid.camera-dashboard { grid-template-columns:minmax(0, 1.5fr) minmax(0, 1fr); grid-template-areas:"controls controls" "view alerts" "details details"; gap:18px 22px; }
 .camera-dashboard .camera-setup { grid-area:controls; }
 .camera-dashboard .camera-output { grid-area:view; }
 .camera-dashboard .camera-alerts { grid-area:alerts; align-self:stretch; }
-@media (max-width: 899px) { .analysis-grid.camera-dashboard { grid-template-columns:minmax(0, 1fr); grid-template-areas:"controls" "view" "alerts"; } }
+.camera-dashboard .monitor-details { grid-area:details; }
+.camera-dashboard .camera-setup > .workspace-card-header { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; padding:0; border:0; }
+.camera-dashboard .camera-setup { position:relative; }
+.camera-dashboard .camera-setup .input-card-body { padding:14px 22px; }
+.camera-dashboard .setup-steps { padding-bottom:10px; margin-bottom:10px; }
+.camera-dashboard .camera-output .results-body { padding:16px 18px; }
+.monitor-bar { display:grid; grid-template-columns:minmax(0, 1fr) minmax(180px, 260px); gap:6px 24px; align-items:center; margin-top:0; }
+.monitor-bar .setup-title { font-size:18px; }
+.monitor-bar .seat-grid-status { margin-top:4px; }
+.monitor-bar .setup-lead { margin-top:4px; font-size:12px; line-height:1.6; }
+.monitor-bar .camera-actions { margin-top:0; }
+.monitor-banners { grid-column:1 / -1; }
+.monitor-banners .setup-warning, .monitor-banners .save-warning { margin-top:8px; }
+.monitor-details > summary { padding:14px 22px; cursor:pointer; font-size:13px; color:#4e6b89; }
+.monitor-details > summary:focus-visible { outline:3px solid #5b6879; outline-offset:-3px; }
+.monitor-details .input-card-body { padding-top:0; }
+@media (max-width: 899px) { .analysis-grid.camera-dashboard { grid-template-columns:minmax(0, 1fr); grid-template-areas:"controls" "view" "alerts" "details"; } }
+@media (max-width: 600px) { .monitor-bar { grid-template-columns:minmax(0, 1fr); } }
 .save-warning { margin-top:12px; font-size:12px; line-height:1.6; color:#6b5520; }
 .seat-grid { margin-top:18px; }
 .seat-grid h3 { font-size:14px; font-weight:600; color:#1f2c3b; margin-bottom:10px; }
@@ -347,12 +364,12 @@
 .alert-main h3 { font-size:18px; line-height:1.35; font-weight:600; color:#1f2c3b; overflow-wrap:anywhere; }
 .alert-time { margin-top:4px; font-size:12px; color:#4a596c; }
 .alert-still { margin-top:10px; border-radius:8px; overflow:hidden; background:#242d39; }
-.alert-still img { display:block; width:100%; height:auto; max-height:240px; object-fit:contain; }
+.alert-still img { display:block; width:100%; height:auto; max-height:min(240px, 25vh); object-fit:contain; }
 .alert-still p { padding:14px; font-size:12px; color:#e1e7f0; }
-.alert-note { display:flex; flex-direction:column; gap:6px; margin-top:12px; font-size:12px; color:#334254; }
+.alert-note { display:flex; flex-direction:column; gap:4px; margin-top:8px; font-size:12px; color:#334254; }
 .alert-note textarea { width:100%; resize:vertical; padding:8px 10px; border:1px solid #d5dde8; border-radius:8px; font:13px/1.5 Arial, sans-serif; color:#1f2c3b; background:#fff; }
 .alert-note textarea:focus-visible { outline:3px solid #5b6879; outline-offset:2px; }
-.alert-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+.alert-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
 .alert-actions button { flex:1 1 130px; min-height:52px; font-size:15px; }
 .alert-note-text { margin-top:8px; font-size:12px; line-height:1.6; color:#334254; overflow-wrap:anywhere; white-space:pre-wrap; }
 .camera-alerts button:focus-visible, .seat-grid-details summary:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
