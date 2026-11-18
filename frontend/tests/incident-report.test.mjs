@@ -4,7 +4,6 @@ import { PassThrough } from 'node:stream';
 import { EventEmitter } from 'node:events';
 import { CameraSession } from '../src/lib/camera-session.ts';
 import { CameraReportLog, MAX_CAMERA_SAMPLES, cameraIncidentReport, imageIncidentReport, observationItems, savedIncidentReport } from '../src/lib/incident-report.ts';
-import { CameraReportCache, CAMERA_REPORT_TTL } from '../src/lib/camera-report-store.ts';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { emptyWorkflow } from '../src/lib/review-workflow.ts';
 
@@ -56,26 +55,6 @@ test('camera summaries remain bounded while totals and omission counts remain tr
   assert.equal(log.snapshot.samples.length, MAX_CAMERA_SAMPLES);
   assert.equal(log.snapshot.omittedSamples, 2); assert.equal(log.snapshot.totals.down, MAX_CAMERA_SAMPLES + 2);
   assert.ok(cameraIncidentReport(log.snapshot).coverage.some(value => value.includes('item list is incomplete')));
-});
-
-test('camera report cache expires closed sessions, enforces capacity, and preserves active sessions until eviction', () => {
-  const cache = new CameraReportCache(2), first = new CameraReportLog('one', settings), active = new CameraReportLog('two', settings);
-  first.snapshot.endedAt = new Date(1000).toISOString();
-  cache.add(first, 1000); cache.add(active, 1000);
-  assert.equal(cache.get('one', 1000 + CAMERA_REPORT_TTL), undefined);
-  assert.equal(cache.get('two', 1000 + CAMERA_REPORT_TTL), active);
-  cache.add(new CameraReportLog('three', settings)); cache.add(new CameraReportLog('four', settings));
-  assert.equal(cache.get('two'), undefined);
-});
-
-test('Stop schedules camera report expiry even without further cache activity', context => {
-  context.mock.timers.enable({ apis: ['setTimeout'] });
-  const cache = new CameraReportCache(), log = new CameraReportLog('id', settings);
-  cache.add(log); cache.finish('id'); assert.ok(log.snapshot.endedAt);
-  // Clock supplied to get stays before expiry; removal must come from the timer.
-  const stopped = Date.parse(log.snapshot.endedAt);
-  context.mock.timers.tick(CAMERA_REPORT_TTL + 1);
-  assert.equal(cache.get('id', stopped), undefined);
 });
 
 test('saved-seat PDFs preserve human decisions, source timestamps, gaps and sign-off', () => {

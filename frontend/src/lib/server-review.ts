@@ -31,9 +31,10 @@ function videoExtension(file:File) {
 
 export async function prepareReview(file:File,value:unknown,signal:AbortSignal):Promise<ReviewPreparation> {
   const extension=videoExtension(file);
+  const input=validateInputSettings(value);
   const {method}=value as {method?:AnalysisMethod};
   if(method!=='head'&&method!=='baseline')throw new Error('Choose the head model or geometric baseline.');
-  const settings={...validateInputSettings(value),method};
+  const settings={...input,method};
   const suggest=(value as {suggest?:unknown}).suggest;
   if(typeof suggest!=='boolean')throw new Error('Choose whether to suggest seats.');
   let release;

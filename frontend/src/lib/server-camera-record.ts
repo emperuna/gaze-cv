@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { lstat, mkdir, open, readFile, readdir, rename, rm, unlink } from 'node:fs/promises';
+import { lstat, mkdir, open, readFile, readdir, rename, rm, stat, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { validRunId } from './analysis-contract.ts';
 import { AnalysisError, projectRoot } from './server-analysis.ts';
@@ -162,4 +162,28 @@ export async function deleteRecord(recordId: string, { root = cameraRecordRoot, 
   const dir = folder(recordId, root);
   if (isActive(recordId)) throw new AnalysisError('Stop monitoring before deleting this session.', 409);
   await rm(dir, { recursive: true, force: true });
+}
+
+/** Removes a `session.lock` left by a crashed save when it is older than `maxAgeMs`; a fresh lock is left alone. */
+export async function removeStaleLock(recordId: string, { root = cameraRecordRoot }: RecordOptions = {}, maxAgeMs = 30_000): Promise<void> {
+  const lockPath = join(folder(recordId, root), 'session.lock');
+  try {
+    if (Date.now() - (await stat(lockPath)).mtimeMs > maxAgeMs) await unlink(lockPath);
+  } catch (error) { if (!missing(error)) throw error; }
+}
+
+/** End session for a record the live worker does not own (interrupted after a crash or Stop failure). Idempotent. */
+export async function endSavedRecord(recordId: string, { root = cameraRecordRoot, isActive = () => false, lockTimeoutMs = 1000 }: RecordOptions = {}): Promise<LiveSessionRecord> {
+  const dir = folder(recordId, root);
+  if (isActive(recordId)) throw new AnalysisError('This session is live. Stop it from the live dashboard.', 409);
+  return withRecordLock(dir, lockTimeoutMs, async () => {
+    const record = await readRecord(recordId, root);
+    if (record.state === 'ended') return record;
+    record.state = 'ended';
+    record.endedAt = new Date().toISOString();
+    const segment = record.segments.at(-1);
+    if (segment && segment.endSeconds === null) segment.endSeconds = record.lastTime;
+    await writeRecordFile(record, dir);
+    return record;
+  });
 }

@@ -165,3 +165,232 @@ test('onExit reports failed on a crash and stopped on close', async () => {
   await assert.rejects(c.frame({id:1,timestamp_seconds:0,image:'/9j/'}), /timed out/);
   await c.close(); assert.deepEqual(failed, ['failed']);
 });
+
+// ---- Live monitored sessions (Task 5) ----
+import { promises as fs } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
+import { newRecord } from '../src/lib/live-alerts.ts';
+import { saveRecord, loadRecord } from '../src/lib/server-camera-record.ts';
+import { startCamera, getCamera, stopCamera, isActive, markCameraAlert, getCameraRecord, endCameraRecord } from '../src/lib/server-camera.ts';
+
+const JPEG64 = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]).toString('base64');
+const PNG64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).toString('base64');
+const SEATS = [{ id: 'seat-A', roi: [0, 0, .5, 1] }];
+const MONITOR = { seats: SEATS, movement: DEFAULT_MOVEMENT, maxGapAuto: true };
+const INPUT = { mirrored: false, tileGrid: 1 };
+const signal = () => new AbortController().signal;
+const turn = (direction, start, end, extra = {}) => ({ seat_id: 'seat-A', event_type: 'sustained_movement', direction, start_time: start,
+  end_time: end, duration: end - start, observed_at: end, review_required: true, review_label: 'For review', ...extra });
+
+/** A fake worker that answers commands and lets each test decide frame replies (`null` = do not reply). */
+function liveWorker(onFrame = () => ({})) {
+  const child = worker(); const sent = []; let buffer = '';
+  child.stdin.on('data', chunk => {
+    buffer += chunk; let i;
+    while ((i = buffer.indexOf('\n')) >= 0) {
+      const message = JSON.parse(buffer.slice(0, i)); buffer = buffer.slice(i + 1); sent.push(message);
+      if (message.type === 'configure') child.stdout.write(JSON.stringify({ configured: true, seats: message.settings.seats }) + '\n');
+      else if (message.type === 'suggest_seats') child.stdout.write(JSON.stringify({ suggested: true, seats: SEATS, sampled_frames: 4, note: 'Check the boxes.' }) + '\n');
+      else {
+        const reply = onFrame(message);
+        if (reply) child.stdout.write(JSON.stringify({ id: message.id, timestamp_seconds: message.timestamp_seconds, counts: {},
+          result: { width: 1, height: 1, detections: [], processing_ms: 1 }, seats: { 'seat-A': { direction: 'left', reason: null } }, events: [], ...reply }) + '\n');
+      }
+    }
+  });
+  child.stdout.write('{"ready":true}\n');
+  return { child, sent };
+}
+
+async function withLive(fn) {
+  const base = resolve(process.cwd(), '..', '.work', 'tmp');
+  await fs.mkdir(base, { recursive: true });
+  const root = await fs.mkdtemp(join(base, 'camera-live-'));
+  const started = [];
+  const start = async (onFrame, extra = {}, resume) => {
+    const fake = liveWorker(onFrame);
+    const out = await startCamera(INPUT, signal(), resume, { root, launch: async () => fake.child, ...extra });
+    started.push(out.sessionId);
+    return { ...fake, ...out, live: getCamera(out.sessionId) };
+  };
+  try { await fn({ root, start }); }
+  finally {
+    for (const id of started) { try { await stopCamera(id); } catch {} }
+    await fs.rm(root, { recursive: true, force: true });
+  }
+}
+const frame = (id, t) => ({ id, timestamp_seconds: t, image: '/9j/' });
+
+test('frame validation forwards a boolean setup flag and drops browser open_alerts', () => {
+  assert.deepEqual(validateCameraFrame({ id: 1, timestamp_seconds: 0, image: '/9j/', setup: true, open_alerts: [['x', 'left']] }),
+    { id: 1, timestamp_seconds: 0, image: '/9j/', setup: true });
+  assert.equal('setup' in validateCameraFrame(frame(1, 0)), false);
+  assert.throws(() => validateCameraFrame({ ...frame(1, 0), setup: 'yes' }), /setup/);
+});
+
+test('monitor creates a record and frames open one alert with a stored still', async () => withLive(async ({ root, start }) => {
+  const { live, sent, sessionId } = await start(m => m.id === 2
+    ? { events: [turn('left', 1.5, 3, { still: JPEG64 }), turn('left', 1.5, 3.2)] } : {});
+  await live.frame(frame(1, 1));
+  const setup = await live.suggestSeats();
+  assert.deepEqual(setup, { seats: SEATS, sampledFrames: 4, note: 'Check the boxes.' });
+  const { recordId, record } = await live.monitor(MONITOR);
+  assert.equal(record.state, 'monitoring');
+  assert.ok(isActive(recordId));
+  assert.deepEqual(sent.find(m => m.type === 'configure').settings, { mirrored: false, tileGrid: 1, seats: SEATS, movement: DEFAULT_MOVEMENT });
+  await assert.rejects(live.monitor(MONITOR), error => error.status === 409);
+  await assert.rejects(live.suggestSeats(), error => error.status === 409);
+  const out = await live.frame(frame(2, 3));
+  assert.deepEqual(sent.at(-1).open_alerts, []);
+  assert.equal(out.sessionTime, 2);
+  assert.equal(out.alerts.length, 1, 'an alert opened and joined by one frame is listed once');
+  assert.equal(out.alerts[0].still, 'stills/alert-1.jpg');
+  assert.equal(out.alerts[0].openedAt, .5);
+  assert.ok(out.events.every(e => !('still' in e)), 'no still bytes reach the browser');
+  assert.equal(out.saveError, null);
+  assert.equal(out.state, 'monitoring');
+  assert.deepEqual(await fs.readFile(join(root, recordId, 'stills', 'alert-1.jpg')), Buffer.from(JPEG64, 'base64'));
+  await live.frame(frame(3, 3.5));
+  assert.deepEqual(sent.at(-1).open_alerts, [['seat-A', 'left']]);
+  const disk = JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8'));
+  assert.equal(disk.alerts[0].still, 'stills/alert-1.jpg');
+  assert.equal(disk.stillsSaved, 1);
+  await stopCamera(sessionId);
+  const ended = await loadRecord(recordId, { root });
+  assert.equal(ended.state, 'ended'); assert.ok(ended.endedAt);
+  assert.equal(isActive(recordId), false);
+}));
+
+test('resume continues session time', async () => withLive(async ({ root, start }) => {
+  const stoppedAt = Date.parse('2026-11-18T10:00:00Z');
+  const old = newRecord('11111111-1111-4111-8111-111111111111', { ...INPUT, seats: SEATS, movement: DEFAULT_MOVEMENT, maxGapAuto: true }, new Date(stoppedAt - 30_000));
+  Object.assign(old, { state: 'interrupted', lastTime: 30, interruptedAt: new Date(stoppedAt).toISOString() });
+  old.segments[0].endSeconds = 30;
+  old.events.push({ ...turn('left', 20, 30), segment: 0 });
+  old.alerts.push({ id: 'alert-1', seatId: 'seat-A', direction: 'left', openedAt: 20, lastAt: 30, eventIndexes: [0], still: null, stillError: null, mark: 'Checked', note: '', markedAt: null });
+  await saveRecord(old, { root });
+  await fs.writeFile(join(root, old.id, 'session.lock'), '');
+  const past = new Date(Date.now() - 60_000); await fs.utimes(join(root, old.id, 'session.lock'), past, past);
+  const { live, sent, recordId, record } = await start(m => ({ events: [turn('left', .2, m.timestamp_seconds, { still: JPEG64 })] }),
+    { now: () => new Date(stoppedAt + 10_000) }, old.id);
+  assert.equal(recordId, old.id);
+  assert.equal(record.state, 'monitoring');
+  assert.deepEqual(record.segments.map(s => [s.offsetSeconds, s.endSeconds]), [[0, 30], [40, null]]);
+  assert.deepEqual(sent[0].settings.seats, SEATS);
+  assert.ok(isActive(old.id));
+  const out = await live.frame(frame(1, 1));
+  assert.equal(out.sessionTime, 41);
+  const alert = out.alerts[0];
+  assert.equal(alert.id, 'alert-2');
+  assert.ok(alert.openedAt > 30 && alert.openedAt > Math.max(...old.events.map(e => e.end_time)));
+  assert.equal(live.record.events.at(-1).segment, 1);
+  await assert.rejects(fs.access(join(root, old.id, 'session.lock')), 'a stale lock is removed on resume');
+}));
+
+test('only an interrupted record can be resumed', async () => withLive(async ({ root, start }) => {
+  const done = newRecord('22222222-2222-4222-8222-222222222222', { ...INPUT, seats: SEATS, movement: DEFAULT_MOVEMENT, maxGapAuto: true }, new Date());
+  done.state = 'ended'; await saveRecord(done, { root });
+  await assert.rejects(start(undefined, {}, done.id), error => error.status === 409);
+  acquireProcessingSlot()();
+}));
+
+test('still write failure keeps the alert', async () => withLive(async ({ start }) => {
+  const { live } = await start(m => m.id === 1 ? { events: [turn('right', 0, 2, { still: PNG64 })] } : {});
+  await live.monitor(MONITOR);
+  const out = await live.frame(frame(1, 2));
+  assert.equal(out.alerts.length, 1);
+  assert.equal(out.alerts[0].still, null);
+  assert.equal(out.alerts[0].stillError, 'Still could not be saved');
+  assert.equal(live.record.stillsSaved, 0);
+  const next = await live.frame(frame(2, 2.5));
+  assert.equal(next.sessionTime, 2.5);
+  assert.equal(live.record.framesProcessed, 2);
+}));
+
+test('late result after Stop is ignored', async () => withLive(async ({ root, start }) => {
+  const { live, child, sessionId } = await start(m => m.id === 1 ? null : {});
+  const { recordId } = await live.monitor(MONITOR);
+  const pending = live.frame(frame(1, 2));
+  await new Promise(r => setImmediate(r));
+  child.stdout.write(JSON.stringify({ id: 1, timestamp_seconds: 2, counts: {}, result: { width: 1, height: 1, detections: [], processing_ms: 1 },
+    seats: {}, events: [turn('left', 0, 2, { still: JPEG64 })] }) + '\n');
+  const stopping = stopCamera(sessionId);
+  await assert.rejects(pending);
+  await stopping;
+  const record = await loadRecord(recordId, { root });
+  assert.equal(record.state, 'ended');
+  assert.equal(record.alerts.length, 0);
+  assert.equal(record.framesProcessed, 0);
+  await assert.rejects(fs.access(join(root, recordId, 'stills')));
+}));
+
+test('worker crash marks the record interrupted', async () => withLive(async ({ root, start }) => {
+  const { live, child, sessionId } = await start();
+  const { recordId } = await live.monitor(MONITOR);
+  await live.frame(frame(1, 4));
+  child.emit('close', 1);
+  await live.exited;
+  assert.equal(isActive(recordId), false);
+  assert.throws(() => getCamera(sessionId), error => error.status === 404);
+  const record = JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8'));
+  assert.equal(record.state, 'interrupted');
+  assert.ok(record.interruptedAt);
+  assert.equal(record.segments[0].endSeconds, 4);
+}));
+
+test('3-hour limit ends the record', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start();
+  await live.frame(frame(1, 1));
+  const { recordId } = await live.monitor(MONITOR);
+  const early = await live.frame(frame(2, 9_901));
+  assert.equal(early.sessionTime, 9_900); assert.equal(early.notice, null);
+  const out = await live.frame(frame(3, 10_801));
+  assert.equal(out.sessionTime, 10_800);
+  assert.equal(out.state, 'ended');
+  assert.equal(out.notice, 'Monitoring stopped at the 3-hour limit.');
+  await live.exited;
+  assert.throws(() => getCamera(sessionId));
+  assert.equal((await loadRecord(recordId, { root })).state, 'ended');
+}));
+
+test('a failed live save keeps monitoring and retries on the next frame', async () => withLive(async ({ root, start }) => {
+  const { live } = await start(m => m.id === 1 ? { events: [turn('left', 0, 2, { still: JPEG64 })] } : {}, { lockTimeoutMs: 30 });
+  const { recordId } = await live.monitor(MONITOR);
+  const lock = join(root, recordId, 'session.lock');
+  await fs.writeFile(lock, '');
+  const failed = await live.frame(frame(1, 2));
+  assert.match(failed.saveError, /save/);
+  assert.equal(failed.state, 'monitoring');
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).alerts.length, 0);
+  await fs.unlink(lock);
+  const next = await live.frame(frame(2, 2.2));
+  assert.equal(next.saveError, null);
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).alerts.length, 1);
+}));
+
+test('marking through the route returns 409 on stale revision', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start(m => m.id === 1 ? { events: [turn('left', 0, 2)] } : {});
+  const { recordId } = await live.monitor(MONITOR);
+  await live.frame(frame(1, 2));
+  const marked = await markCameraAlert(recordId, 'alert-1', { mark: 'Checked', note: 'Looked at seat', revision: 0 }, { root });
+  assert.equal(marked.revision, 1); assert.equal(marked.alert.mark, 'Checked');
+  assert.equal(live.record.alerts[0].mark, 'Checked', 'the live in-memory record is marked');
+  await assert.rejects(markCameraAlert(recordId, 'alert-1', { mark: 'Dismissed', note: '', revision: 0 }, { root }), error => error.status === 409);
+  await assert.rejects(markCameraAlert(recordId, 'alert-1', { mark: 'Maybe', note: '', revision: 1 }, { root }), error => error.status === 400);
+  await assert.rejects(markCameraAlert(recordId, 'alert-9', { mark: 'Checked', note: '', revision: 1 }, { root }), error => error.status === 404);
+  assert.equal((await getCameraRecord(recordId, { root })).revision, 1);
+  await stopCamera(sessionId);
+  await assert.rejects(markCameraAlert(recordId, 'alert-1', { mark: 'Dismissed', note: '', revision: 0 }, { root }), error => error.status === 409);
+  const saved = await markCameraAlert(recordId, 'alert-1', { mark: 'Dismissed', note: '', revision: 1 }, { root });
+  assert.equal(saved.revision, 2); assert.equal(saved.alert.mark, 'Dismissed');
+}));
+
+test('ending a saved interrupted record marks it ended', async () => withLive(async ({ root, start }) => {
+  const { live, child } = await start();
+  const { recordId } = await live.monitor(MONITOR);
+  child.emit('close', 1); await live.exited;
+  const ended = await endCameraRecord(recordId, { root });
+  assert.equal(ended.state, 'ended'); assert.ok(ended.endedAt);
+  assert.equal((await loadRecord(recordId, { root })).state, 'ended');
+}));

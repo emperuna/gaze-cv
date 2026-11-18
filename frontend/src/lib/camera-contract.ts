@@ -36,7 +36,21 @@ export function validateCameraFrame(value: unknown): CameraFrame {
   const { id, timestamp_seconds, image } = value as CameraFrame;
   if (!Number.isSafeInteger(id) || id < 0 || !Number.isFinite(timestamp_seconds) || timestamp_seconds < 0) throw new Error('Invalid frame number or capture time.');
   if (typeof image !== 'string' || !image.length || image.length > 1_333_336 || !/^[A-Za-z0-9+/]+={0,2}$/.test(image)) throw new Error('Send a JPEG frame of at most 1 MB.');
-  return { id, timestamp_seconds, image };
+  const { setup } = value as CameraFrame;
+  if (setup !== undefined && typeof setup !== 'boolean') throw new Error('Frame setup flag must be true or false.');
+  // open_alerts is deliberately dropped: the server sends the open alerts it owns.
+  return setup === undefined ? { id, timestamp_seconds, image } : { id, timestamp_seconds, image, setup };
+}
+
+export const MAX_ALERT_NOTE = 500;
+/** Body of PUT …/alerts/[alertId]. */
+export function validateAlertMark(value: unknown): { mark: 'Checked' | 'Dismissed'; note: string; revision: number } {
+  if (!value || typeof value !== 'object') throw new Error('Send a mark, note and revision.');
+  const { mark, note = '', revision } = value as { mark?: unknown; note?: unknown; revision?: unknown };
+  if (mark !== 'Checked' && mark !== 'Dismissed') throw new Error('Mark the alert Checked or Dismissed.');
+  if (typeof note !== 'string' || note.length > MAX_ALERT_NOTE) throw new Error(`Notes are limited to ${MAX_ALERT_NOTE} characters.`);
+  if (!Number.isSafeInteger(revision) || (revision as number) < 0) throw new Error('Send the session revision you last loaded.');
+  return { mark, note, revision: revision as number };
 }
 
 export async function readCameraJson(request: Request, limit: number): Promise<unknown> {
