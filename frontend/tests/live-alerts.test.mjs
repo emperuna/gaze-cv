@@ -118,6 +118,7 @@ test('chooseMaxGap rounds 2.5x the median up to 0.25 s and clamps', () => {
 
 test('rateWarning', () => {
   assert.equal(rateWarning([0.3, 0.3], 0.75), null);
+  assert.equal(rateWarning([0.5, 0.5], 0.75), null);
   assert.equal(rateWarning([0.9, 0.9], 0.75), 'Processing is too slow for movement alerts (1.1 FPS). Use fewer detector tiles.');
 });
 
