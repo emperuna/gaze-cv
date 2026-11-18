@@ -52,6 +52,31 @@ export function cameraMovement(maxGap: number): typeof DEFAULT_MOVEMENT {
   return { ...DEFAULT_MOVEMENT, max_gap: maxGap };
 }
 
+type MovementKey = keyof typeof DEFAULT_MOVEMENT;
+/** The movement-rule names the instructor sees in Advanced settings (without the "(s)" unit). */
+export const MOVEMENT_LABELS: Record<MovementKey, string> = {
+  min_duration: 'Sustained duration', repetition_count: 'Repetition count', repetition_window: 'Repetition window',
+  repeat_min_duration: 'Minimum dwell', max_gap: 'Maximum gap',
+};
+const MOVEMENT_ORDER: MovementKey[] = ['min_duration', 'repetition_count', 'repetition_window', 'repeat_min_duration', 'max_gap'];
+const MOVEMENT_MAX: Record<Exclude<MovementKey, 'repetition_count'>, number> = { min_duration: 300, repetition_window: 300, repeat_min_duration: 300, max_gap: 5 };
+
+/**
+ * The first problem with the movement rules, in the words of the Advanced settings fields, or '' when they
+ * are valid. It checks the same limits as `validateReviewSettings`; an emptied field asks for a number.
+ */
+export function movementProblem(movement: Record<MovementKey, number>): string {
+  for (const key of MOVEMENT_ORDER) {
+    const value = movement[key], label = MOVEMENT_LABELS[key];
+    if (typeof value !== 'number' || !Number.isFinite(value)) return `Enter a number for ${label}.`;
+    if (key === 'repetition_count') {
+      if (!Number.isInteger(value) || value < 2 || value > 100) return `${label} must be a whole number from 2 to 100.`;
+    } else if (value <= 0 || value > MOVEMENT_MAX[key]) return `${label} must be more than 0 and at most ${MOVEMENT_MAX[key]} seconds.`;
+  }
+  if (movement.repeat_min_duration > movement.repetition_window) return `${MOVEMENT_LABELS.repeat_min_duration} must not be longer than the ${MOVEMENT_LABELS.repetition_window.toLowerCase()}.`;
+  return '';
+}
+
 /**
  * Seats are kept in the coordinates of the captured camera pixels, which is what the live view draws
  * and what seat finding returns. The worker matches heads in unmirrored coordinates, so mirrored

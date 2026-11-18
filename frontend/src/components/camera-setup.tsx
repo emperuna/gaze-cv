@@ -5,7 +5,7 @@ import type { ComponentProps } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { SeatEditor } from './seat-editor';
-import { SETUP_FRAMES, seatLabel, setupStep } from '@/lib/camera-setup';
+import { MOVEMENT_LABELS, SETUP_FRAMES, seatLabel, setupStep } from '@/lib/camera-setup';
 import type { ReviewSeat } from '@/lib/review-contract';
 import type { LiveSeatState } from '@/lib/camera-contract';
 import type { DEFAULT_MOVEMENT } from '@/lib/review-contract';
@@ -104,10 +104,10 @@ function NumberField({ value, onValue, ...props }: Omit<ComponentProps<'input'>,
 }
 
 const RULE_FIELDS = [
-  { key: 'min_duration', label: 'Sustained duration (s)', max: 300, step: .25, help: 'How long a head must stay turned.' },
-  { key: 'repetition_count', label: 'Repetition count', max: 100, step: 1, help: 'Turns that count as repeated.' },
-  { key: 'repetition_window', label: 'Repetition window (s)', max: 300, step: .25, help: 'Time in which the turns must happen.' },
-  { key: 'repeat_min_duration', label: 'Minimum dwell (s)', max: 300, step: .05, help: 'How long each turn must last.' },
+  { key: 'min_duration', label: `${MOVEMENT_LABELS.min_duration} (s)`, max: 300, step: .25, help: 'How long a head must stay turned.' },
+  { key: 'repetition_count', label: MOVEMENT_LABELS.repetition_count, max: 100, step: 1, help: 'Turns that count as repeated.' },
+  { key: 'repetition_window', label: `${MOVEMENT_LABELS.repetition_window} (s)`, max: 300, step: .25, help: 'Time in which the turns must happen.' },
+  { key: 'repeat_min_duration', label: `${MOVEMENT_LABELS.repeat_min_duration} (s)`, max: 300, step: .05, help: 'How long each turn must last.' },
 ] as const;
 
 export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onMirrored, tileGrid, onTileGrid, rules, onRules, gapOverride, onGapOverride, measured }: {
@@ -132,7 +132,7 @@ export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onM
           <NumberField min={key === 'repetition_count' ? 2 : step} max={max} step={step} value={rules[key]} aria-describedby={`camera-rule-${key}`}
             onValue={next => onRules({ ...rules, [key]: next ?? Number.NaN })} />
           <small id={`camera-rule-${key}`}>{help}</small></label>)}
-        <label>Maximum gap (s)
+        <label>{MOVEMENT_LABELS.max_gap} (s)
           <NumberField min={.05} max={5} step={.05} value={gapOverride ?? measured?.maxGap ?? null} placeholder="Automatic" aria-describedby="camera-rule-max-gap camera-max-gap-help"
             onValue={onGapOverride} />
           <small id="camera-rule-max-gap">{gapOverride === null ? 'Set automatically.' : 'Set by you.'}</small></label>
