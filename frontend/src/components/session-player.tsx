@@ -2,25 +2,31 @@
 
 import { useEffect,useRef,useState } from 'react';
 import { frameAtTime,mirrorSeats,timeLabel } from '@/lib/review-contract';
-import type { ReviewRecord,SavedReview,ReviewFrame } from '@/lib/review-contract';
+import type { ReviewRecord,SavedReview } from '@/lib/review-contract';
+import type { ReviewItem } from '@/lib/review-workflow';
+import { ReviewWorkflowPanel } from './review-workflow-panel';
 
 const ASSETS=['settings.json','events.json','seat_history.json','summary.json','observations.jsonl','review.json','annotated.avi'];
 
-export function SessionPlayer({meta,record}:{meta:SavedReview;record:ReviewRecord}) {
+export function SessionPlayer({meta,record,onPendingChange}:{meta:SavedReview;record:ReviewRecord;onPendingChange:(pending:boolean)=>void}) {
   const video=useRef<HTMLVideoElement>(null);
   const canvas=useRef<HTMLCanvasElement>(null);
   const [time,setTime]=useState(0);
   const [error,setError]=useState('');
-  const [seatFilter,setSeatFilter]=useState('all');
-  const [eventFilter,setEventFilter]=useState('all');
-  const [page,setPage]=useState(0);
+  const contextEnd=useRef<number|null>(null);
+  const [contextLabel,setContextLabel]=useState('');
   const [historySeat,setHistorySeat]=useState(record.settings.seats[0].id);
   const [historyPage,setHistoryPage]=useState(0);
   const base=`/api/review/${meta.id}`;
   const frame=frameAtTime(record.frames,record.source.fps,time,record.source.processed_duration_seconds);
-  const visibleEvents=record.events.filter(e=>(seatFilter==='all'||e.seat_id===seatFilter)&&(eventFilter==='all'||e.event_type===eventFilter));
   const histories=record.histories[historySeat]??[];
-  function seek(seconds:number){if(video.current){video.current.pause();video.current.currentTime=seconds;setTime(seconds);}}
+  function seek(seconds:number){contextEnd.current=null;setContextLabel('');if(video.current){video.current.pause();video.current.currentTime=seconds;setTime(seconds);}}
+  function playContext(item:ReviewItem){
+    const source=video.current;if(!source)return;
+    source.pause();source.currentTime=item.contextStart;setTime(item.contextStart);
+    contextEnd.current=item.contextEnd;setContextLabel(`${item.seatId}: ${timeLabel(item.contextStart)}–${timeLabel(item.contextEnd)}`);
+    void source.play().catch(()=>{contextEnd.current=null;setContextLabel('');setError('Context playback could not start. Use the video controls or download the original session records.');});
+  }
 
   useEffect(()=>{
     const source=video.current;const target=canvas.current;if(!source||!target)return;
@@ -28,6 +34,7 @@ export function SessionPlayer({meta,record}:{meta:SavedReview;record:ReviewRecor
     const seats=record.settings.mirrored?mirrorSeats(record.settings.seats):record.settings.seats;
     function draw(at:number,force=false) {
       if(!source||!target)return;
+      if(contextEnd.current!==null&&at>=contextEnd.current){source.pause();contextEnd.current=null;setContextLabel('');}
       const context=target.getContext('2d');if(!context)return;
       target.width=record.source.width;target.height=record.source.height;
       context.clearRect(0,0,target.width,target.height);
@@ -64,12 +71,10 @@ export function SessionPlayer({meta,record}:{meta:SavedReview;record:ReviewRecor
     <div className="review-heading"><div><h2>Review this session</h2><p>{meta.filename}</p></div><span className="review-saved">Saved on this computer</span></div>
     <div className="review-video-stage"><video ref={video} src={`${base}/source`} controls playsInline preload="metadata" onError={()=>setError('This browser cannot play the saved source. Download the records/AVI, or convert a copy to constant-frame-rate H.264 MP4 or WebM for a new session.')} aria-label="Saved session video"/><canvas ref={canvas} aria-label="Synchronized seat and direction annotations"/></div>
     {error&&<p role="alert" className="analysis-error">{error}</p>}
+    {contextLabel&&<p className="review-help" role="status">Playing context {contextLabel}. Playback pauses at the end of this interval.</p>}
     <p className="review-help">Source time {timeLabel(time)} · {frame?`Frame ${frame.frame_index}`:'Outside processed coverage — no annotations'} · {record.frames.length} processed frames · {record.timing.processing_fps===null?'Speed not measured':`${record.timing.processing_fps.toFixed(1)} processing FPS`}</p>
     <div className="review-seat-status" aria-label="Seat observations at the current time">{record.settings.seats.map(seat=><div key={seat.id}><strong>{seat.id}</strong><span>{frame?.seats[seat.id]?.direction??'unavailable'}</span><small>{frame?.seats[seat.id]?.reason?.replaceAll('_',' ')}</small></div>)}</div>
-    <div className="review-section-heading"><h3>Movement events</h3><span>{visibleEvents.length} matching events</span></div>
-    <div className="review-filters"><label>Filter events by seat<select value={seatFilter} onChange={event=>{setSeatFilter(event.target.value);setPage(0);}}><option value="all">All seats</option>{record.settings.seats.map(seat=><option key={seat.id}>{seat.id}</option>)}</select></label><label>Event type<select value={eventFilter} onChange={event=>{setEventFilter(event.target.value);setPage(0);}}><option value="all">All movement events</option><option value="sustained_movement">Sustained</option><option value="repeated_movement">Repeated</option></select></label></div>
-    {!visibleEvents.length?<p className="review-empty">No movement events match these settings and observations. This does not establish that no relevant movements occurred.</p>:<div className="review-table-wrap"><table className="review-table"><caption>Select a time to pause and seek to the event start. Observed at is when the movement rule first triggered.</caption><thead><tr><th>Start–end</th><th>Seat</th><th>Movement</th><th>Observed at</th><th>Review</th></tr></thead><tbody>{visibleEvents.slice(page*50,page*50+50).map((event,index)=><tr key={index}><td><button type="button" onClick={()=>seek(event.start_time)} aria-label={`Seek ${event.seat_id} ${event.direction} event at ${timeLabel(event.start_time)}`}>{timeLabel(event.start_time)}–{timeLabel(event.end_time)}</button></td><td>{event.seat_id}</td><td>{event.event_type==='sustained_movement'?'Sustained':'Repeated'} {event.direction}{event.repetition_count?` (${event.repetition_count} entries)`:''}</td><td>{timeLabel(event.observed_at)}</td><td>{event.review_required?'For instructor review':'Movement record'}</td></tr>)}</tbody></table></div>}
-    {visibleEvents.length>50&&<div className="review-pagination"><button disabled={page===0} onClick={()=>setPage(page-1)}>Previous events</button><span>Page {page+1} of {Math.ceil(visibleEvents.length/50)}</span><button disabled={(page+1)*50>=visibleEvents.length} onClick={()=>setPage(page+1)}>Next events</button></div>}
+    <ReviewWorkflowPanel meta={meta} record={record} onContext={playContext} onSeek={seek} onPendingChange={onPendingChange}/>
     <details className="review-details"><summary>Per-seat direction history</summary><label>History seat<select value={historySeat} onChange={event=>{setHistorySeat(event.target.value);setHistoryPage(0);}}>{record.settings.seats.map(seat=><option key={seat.id}>{seat.id}</option>)}</select></label><div className="review-table-wrap"><table className="review-table"><caption>Observed intervals only. Missing/ambiguous observations reset continuity.</caption><thead><tr><th>Start–end</th><th>Direction</th><th>Observation</th></tr></thead><tbody>{histories.slice(historyPage*50,historyPage*50+50).map((segment,index)=><tr key={index}><td><button onClick={()=>seek(segment.start)}>{timeLabel(segment.start)}–{timeLabel(segment.end)}</button></td><td>{segment.direction}</td><td>{segment.valid?'Observed':segment.reason?.replaceAll('_',' ')||'Unknown'}</td></tr>)}</tbody></table></div>{histories.length>50&&<div className="review-pagination"><button disabled={historyPage===0} onClick={()=>setHistoryPage(historyPage-1)}>Previous intervals</button><span>Page {historyPage+1}</span><button disabled={(historyPage+1)*50>=histories.length} onClick={()=>setHistoryPage(historyPage+1)}>Next intervals</button></div>}</details>
     <details className="review-details"><summary>Session settings and provenance</summary><dl><dt>Method</dt><dd>{record.settings.method==='head'?'Automatic head model — camera-relative':'Geometric baseline'}</dd><dt>Source SHA256</dt><dd className="review-hash">{record.source_sha256}</dd><dt>Timebase</dt><dd>{record.source.timebase}</dd><dt>Duration threshold</dt><dd>{record.settings.movement.min_duration} seconds</dd><dt>Repetition rule</dt><dd>{record.settings.movement.repetition_count} entries in {record.settings.movement.repetition_window} seconds; minimum dwell {record.settings.movement.repeat_min_duration} seconds</dd><dt>Maximum observation gap</dt><dd>{record.settings.movement.max_gap} seconds</dd><dt>Mirrored source pixels</dt><dd>{record.settings.mirrored?'Yes':'No'}</dd><dt>Timing scope</dt><dd>{record.timing.scope}</dd></dl></details>
     <details className="review-details"><summary>Download session records</summary><p>The saved source and records remain local. Reopen this session from the saved-session list without running inference again.</p><div className="review-downloads">{ASSETS.map(asset=><a key={asset} href={`${base}/${asset}?download=1`} download>{asset}</a>)}</div></details>

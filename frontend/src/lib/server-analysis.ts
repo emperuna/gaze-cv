@@ -111,7 +111,7 @@ export async function analyzeFile(file: File, methodValue: unknown, mirrored: bo
     for (const [name, definition] of Object.entries(OUTPUT_FILES)) {
       if (await exists(join(output, definition.relative))) files.push({ name, label: definition.label, href: `/api/analyze/${runId}/${name}` });
     }
-    return {
+    const result: AnalysisResult = {
       runId, filename: file.name, kind: upload.kind, method: upload.method,
       counts: details.direction_counts || {}, observations: details.detected_observations || 0,
       processingMs: upload.kind === "image" ? details.result.processing_ms : null,
@@ -122,5 +122,7 @@ export async function analyzeFile(file: File, methodValue: unknown, mirrored: bo
       height: upload.kind === "image" ? details.result.height : details.source.height,
       files,
     };
+    await writeFile(join(runDir, 'analysis-result.json'), JSON.stringify({ ...result, filename: file.name.slice(0, 180), processedAt: new Date().toISOString() }), { flag: 'wx' });
+    return result;
   } finally { release(); }
 }

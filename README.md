@@ -24,6 +24,20 @@ recordings. See [website setup and camera use](frontend/README.md#live-camera).
 
 ## Current state
 
+The local website also includes a grouped movement-review queue, saved review
+statuses/notes, editable session reports with local sign-off, and camera/seat
+coverage warnings. See [review workload tools](docs/review-workload.md).
+These additions support human review and do not establish examination-scale
+readiness or change the existing validation results.
+
+**Download PDF report** is available after Image analysis, either Saved video
+workflow, and Camera Stop. PDFs list potential incident observations for human
+review, with timestamps where available, source/method details and coverage
+limitations. Saved-seat PDFs include saved statuses, notes and local sign-off.
+Camera PDFs use bounded numeric summaries without saving pixels or recordings.
+Install the updated pinned `requirements.txt` for PDF generation. See
+[PDF reporting](docs/review-workload.md#pdf-reports-for-all-three-options).
+
 Working CPU prototype merged into `main` through [PR #44](https://github.com/emperuna/gaze-cv/pull/44), with data acquisition, an image baseline, an approximate head-pose comparison, annotated video, fixed-seat association, histories, and source-time movement rules. The technical CP2 hand-in files are linked below; instructor acceptance and personal class checks remain unverified. The unchanged 120-image held-out selection was frozen and scored for CP4; see the current package above. Earlier checkpoint measurements used a desktop; the new CP3 package records a separate laptop workload. Another human member's reproduction remains unverified.
 
 This branch adds automatic learned-head estimation and a [CP3 technical package](docs/checkpoints/cp3-hand-in/README.md), including a [four-page results PDF](docs/checkpoints/cp3-hand-in/results.pdf), fixed-set evaluator and failure gallery. The main method scores 20.63% versus baseline 46.03% on the initial 63-image stress set; it does not establish overall improvement. Human label review and the teacher's live three-input check remain pending.
