@@ -23,7 +23,7 @@ export async function renderReportPdf(report: IncidentReport, signal: AbortSigna
       signal.addEventListener('abort', abort, { once: true });
       if (signal.aborted) abort();
       const cleanup = () => { clearTimeout(timer); clearTimeout(killer); signal.removeEventListener('abort', abort); };
-      child.stdout.on('data', (chunk: Buffer) => { size += chunk.length; if (size > 8 * 1024 * 1024) { failure = 'PDF exceeds the 8 MB limit.'; stop(); } else chunks.push(chunk); });
+      child.stdout.on('data', (chunk: Buffer) => { size += chunk.length; if (size > 48 * 1024 * 1024) { failure = 'PDF exceeds the 48 MB limit.'; stop(); } else chunks.push(chunk); });
       child.stderr.on('data', chunk => { errorText = (errorText + chunk.toString()).slice(-2000); });
       child.stdin.on('error', () => { failure ||= 'PDF renderer input failed.'; stop(); });
       child.once('error', () => { cleanup(); reject(new AnalysisError('PDF renderer could not start. Verify the project Python environment and requirements.txt.', 503)); });

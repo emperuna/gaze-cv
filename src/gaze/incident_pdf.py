@@ -11,7 +11,32 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Paragraph, KeepTogether, LongTable, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, KeepTogether, LongTable, TableStyle, Image, Spacer
+
+MAX_IMAGES = 200
+MAX_IMAGE_BYTES = 200_000
+IMAGE_WIDTH = 160
+CONFIDENTIAL_FOOTER = 'Confidential: contains images of students. Keep only as long as your institution allows.'
+
+
+def resolve_image(root, relative):
+    """Return the checked JPEG path for an item still; it must stay inside the image root."""
+    if not isinstance(root, str) or not root or not Path(root).is_absolute():
+        raise ValueError('Report images need an absolute imageRoot')
+    if not isinstance(relative, str) or not relative or len(relative) > 300 or Path(relative).is_absolute():
+        raise ValueError('Invalid report image path')
+    base = Path(root).resolve()
+    path = (base / relative).resolve()
+    if base != path and base not in path.parents:
+        raise ValueError('Report image is outside the image root')
+    if path.suffix != '.jpg' or not path.is_file():
+        raise ValueError('Report images must be existing .jpg files')
+    if path.stat().st_size > MAX_IMAGE_BYTES:
+        raise ValueError('Report image is larger than 200000 bytes')
+    with path.open('rb') as handle:
+        if handle.read(3) != b'\xff\xd8\xff':
+            raise ValueError('Report image is not a JPEG')
+    return path
 
 
 def validate_report(value):
@@ -35,6 +60,13 @@ def validate_report(value):
         if not isinstance(item, dict) or any(not isinstance(item.get(key), str) or len(item[key]) > limit
             for key, limit in [('label', 200), ('time', 300), ('detail', 20000), ('status', 100), ('notes', 2000)]):
             raise ValueError('Invalid review item')
+    if 'confidential' in value and type(value['confidential']) is not bool:
+        raise ValueError('Invalid confidential flag')
+    images = [item['image'] for item in value['items'] if item.get('image') is not None]
+    if len(images) > MAX_IMAGES:
+        raise ValueError('Too many report images')
+    for image in images:
+        resolve_image(value.get('imageRoot'), image)
     for text in value['coverage'] + value['limitations']:
         if not isinstance(text, str) or len(text) > 10000:
             raise ValueError('Invalid report text')
@@ -98,6 +130,13 @@ def render_incident_pdf(value):
         story.append(para('No review observations are listed in the retained results. This does not establish that no relevant incident occurred or that all heads were observed.'))
     for index, item in enumerate(data['items'], 1):
         story += [para(f"{index}. {item['label']}", 'item'), para(f"{item['time']} | {item['status']}", 'itemmeta'), para(item['detail'])]
+        if item.get('image') is not None:
+            path = resolve_image(data.get('imageRoot'), item['image'])
+            picture = Image(str(path))
+            scale = min(1, IMAGE_WIDTH / picture.imageWidth)
+            picture.drawWidth, picture.drawHeight = picture.imageWidth * scale, picture.imageHeight * scale
+            picture.hAlign = 'LEFT'
+            story += [picture, Spacer(1, 7)]
         if item['notes']:
             story += [para('Reviewer notes', 'small'), para(item['notes'])]
     if data['omittedItems']:
@@ -123,6 +162,8 @@ def render_incident_pdf(value):
         canvas.setStrokeColor(colors.HexColor('#d6dfe5')); canvas.line(44, 40, A4[0] - 44, 40)
         canvas.drawString(44, 27, 'For human review. Head movement alone does not establish cheating.')
         canvas.drawRightString(A4[0] - 44, 27, f'Page {document.page}')
+        if data.get('confidential'):
+            canvas.drawString(44, 16, CONFIDENTIAL_FOOTER)
         canvas.restoreState()
 
     doc.build(story, onFirstPage=page_footer, onLaterPages=page_footer)
