@@ -24,7 +24,7 @@ import { useSessionRecovery } from './camera-recovery';
 import { PdfReportDownload } from './pdf-report-download';
 import {
   DELETE_CONFIRM_TEXT, END_CONFIRM_TEXT, SEATS_QUESTION, countText, formatSessionDate, interruptionText,
-  reportFilename, reportUrl, unmarkedText,
+  leaveAction, reportFilename, reportUrl, unmarkedText,
 } from '@/lib/camera-sessions';
 import type { MonitorFrame, Run } from './camera-run';
 import { CameraAlertsPanel, Chime } from './camera-alerts-panel';
@@ -297,17 +297,21 @@ export function CameraWorkspace() {
   /** Leaving the resume check (No, hidden tab, camera error): back to the interrupted view; the record stays interrupted. */
   function cancelResume(reason = '') {
     const current = run.current;
-    if (current) release(current);
+    if (current) {
+      release(current);
+      // A worker started for this resume is paused again, so the record stays interrupted.
+      if (current.sessionId) void interruptSession(current.sessionId);
+    }
     setResumeStep(''); setHasFrame(false); setPauseReason(reason);
     if (recordIdRef.current && recordStateRef.current === 'interrupted') go('interrupted'); else { if (reason) setError(reason); go('idle'); }
   }
 
   /** Hidden tab, page closed, camera unplugged or unmount: pause a monitored session, otherwise stop as before. */
   function leave(reason?: string) {
-    if (!run.current) return;
-    if (phaseRef.current === 'monitoring' && run.current.recordId) void pause(reason ?? HIDDEN_REASON);
-    else if (phaseRef.current === 'confirming') cancelResume(reason ?? HIDDEN_REASON);
-    else { if (reason && mounted.current) setError(reason); void stop(); }
+    const next = leaveAction(run.current);
+    if (next === 'pause') void pause(reason ?? HIDDEN_REASON);
+    else if (next === 'cancel-resume') cancelResume(reason ?? HIDDEN_REASON);
+    else if (next === 'stop') { if (reason && mounted.current) setError(reason); void stop(); }
   }
   leaveRef.current = leave;
 
@@ -441,7 +445,7 @@ export function CameraWorkspace() {
     current.stream = stream;
     stream.getVideoTracks().forEach(track => track.addEventListener('ended', () => {
       if (!valid()) return;
-      const again = phaseRef.current === 'monitoring' || phaseRef.current === 'confirming' ? 'Resume' : 'Start';
+      const again = leaveAction(current) === 'stop' ? 'Start' : 'Resume';
       leaveRef.current(`The camera disconnected. Reconnect it, then press ${again}${again === 'Start' ? ' again' : ''}.`);
     }, { once: true }));
     stream.getVideoTracks().forEach(track => {
@@ -473,7 +477,7 @@ export function CameraWorkspace() {
   /** A frame-loop failure: a monitored session is paused (resumable); before monitoring the camera stops as before. */
   async function captureFailed(current: Run, problem: unknown) {
     if (!isCurrent(current)) return;
-    if (phaseRef.current === 'monitoring' && current.recordId) await pause(LOST_REASON);
+    if (leaveAction(current) === 'pause') await pause(LOST_REASON);
     else { setError(cameraError(problem)); await stop(); }
   }
 

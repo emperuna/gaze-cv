@@ -114,7 +114,8 @@ export const PAUSE_MESSAGE = 'Monitoring paused: the camera page was hidden or c
 
 /**
  * Pause (hidden tab, page closed): closes the worker without ending the record, so a monitored record is
- * saved as `interrupted` and can be resumed. A preview-only worker just closes. Idempotent.
+ * saved as `interrupted` and can be resumed. A preview-only worker just closes. A repeat call, after the
+ * worker has closed, answers 404 (the session has ended).
  */
 export async function interruptCamera(id:string): Promise<{ recordId: string | null; state: LiveSessionRecord['state'] | null }> {
   const live=getCamera(id);

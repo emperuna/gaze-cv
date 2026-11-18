@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DELETE_CONFIRM_TEXT, countText, displaySeats, formatClock, formatDuration, formatSessionDate, interruptedAt, interruptionText,
+  DELETE_CONFIRM_TEXT, countText, displaySeats, leaveAction, formatClock, formatDuration, formatSessionDate, interruptedAt, interruptionText,
   reportFilename, reportUrl, stateLabel, unmarkedText,
 } from '../src/lib/camera-sessions.ts';
 
@@ -55,6 +55,25 @@ test('saved seats are flipped back for a mirrored live view and copied otherwise
   const plain = displaySeats({ seats, mirrored: false });
   assert.deepEqual(plain, seats);
   assert.notEqual(plain[0].roi, seats[0].roi);
+});
+
+test('mirroring the saved seats twice gives back the live-view seats', () => {
+  const seats = [{ id: 'seat-1', roi: [0.1, 0.2, 0.3, 0.4] }, { id: 'seat-2', roi: [0.55, 0.1, 0.8, 0.5] }];
+  const twice = displaySeats({ seats: displaySeats({ seats, mirrored: true }), mirrored: true });
+  twice.forEach((seat, index) => seat.roi.forEach((value, i) => assert.ok(Math.abs(value - seats[index].roi[i]) < 1e-9)));
+});
+
+test('leaving decides on whether a record exists, not on the screen phase', () => {
+  assert.equal(leaveAction(null), 'none');
+  assert.equal(leaveAction(undefined), 'none');
+  // A preview (Getting ready, Found seats) has nothing to keep.
+  assert.equal(leaveAction({}), 'stop');
+  // Start monitoring answered but the screen still shows Found seats: the record is paused, not ended.
+  assert.equal(leaveAction({ recordId: 'r1' }), 'pause');
+  // The seat check of a resume, before the new worker has the record: back to the interrupted view.
+  assert.equal(leaveAction({ resumeOf: 'r1' }), 'cancel-resume');
+  // Yes, resume answered but the screen still shows the seat check: the record is paused again.
+  assert.equal(leaveAction({ resumeOf: 'r1', recordId: 'r1' }), 'pause');
 });
 
 test('report links, file names and dates', () => {
