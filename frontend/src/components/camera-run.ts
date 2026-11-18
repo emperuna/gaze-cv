@@ -2,6 +2,7 @@ import type { CameraFrame, CameraResult } from '@/lib/camera-contract';
 import { cameraFrameSize, runCameraFrames } from '@/lib/camera-client';
 import { HEALTH_WARNING_MS } from '@/lib/camera-health';
 import { PlainError } from '@/lib/camera-messages';
+import { STOP_TIMEOUT_MS } from '@/lib/camera-sessions';
 import type { CameraHealth } from '@/lib/camera-health';
 import { markSetupFrame, newSetupProgress, recordSetupResult, setupComplete, shouldMarkSetup } from '@/lib/camera-setup';
 import type { SetupProgress } from '@/lib/camera-setup';
@@ -32,25 +33,7 @@ export function newRun(): Run {
   return { active: true, controller: new AbortController(), commands: [], progress: newSetupProgress(), setupQueued: false, still: document.createElement('canvas') };
 }
 
-/** The server waits for an in-flight frame and retries the final save, so Stop waits at least this long. */
-export const STOP_TIMEOUT_MS = 20_000;
-
-/**
- * Stop answers `{recordId, saveError}`. A non-null `saveError` or any error status (for example 503)
- * means the session is not saved yet, so Stop stays available to retry.
- */
-export async function stopSession(id: string): Promise<{ ok: true } | { ok: false; message: string; detail: string }> {
-  try {
-    const response = await fetch(`/api/camera/${id}`, { method: 'DELETE', keepalive: true, signal: AbortSignal.timeout(STOP_TIMEOUT_MS) });
-    if (response.status === 404) return { ok: true };
-    const data = await response.json().catch(() => ({}));
-    if (response.ok && !data.saveError) return { ok: true };
-    const reason = response.ok ? data.saveError : data.error;
-    return { ok: false, message: 'The session is not saved yet. Press Stop again.', detail: typeof reason === 'string' ? reason : '' };
-  } catch {
-    return { ok: false, message: 'Ocular could not be reached to save the session. Press Stop again.', detail: '' };
-  }
-}
+export { stopSession } from '@/lib/camera-sessions';
 
 /**
  * Pause: the worker closes without ending the record, which the server saves as `interrupted`.

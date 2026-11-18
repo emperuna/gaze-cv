@@ -84,3 +84,32 @@ test('report links, file names and dates', () => {
   assert.equal(formatSessionDate('nope'), 'Unknown date');
   assert.equal(DELETE_CONFIRM_TEXT, 'Delete this session and its alert images? This cannot be undone.');
 });
+
+import { stopSession } from '../src/lib/camera-sessions.ts';
+
+const reply = (status, body = {}) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+function fakeFetch(answers) {
+  const calls = [];
+  const request = async (url, init) => { calls.push([init.method, url]); return answers.shift()(); };
+  return { calls, request };
+}
+
+test('Stop on a monitored session whose worker is gone ends the saved record', async () => {
+  const { calls, request } = fakeFetch([() => reply(404, { error: 'Camera session ended. Start again.' }), () => reply(200, { record: { state: 'ended' } })]);
+  assert.deepEqual(await stopSession('s-1', 'r-1', request), { ok: true });
+  assert.deepEqual(calls, [['DELETE', '/api/camera/s-1'], ['POST', '/api/camera/sessions/r-1/end']]);
+});
+
+test('Stop reports not saved when ending the saved record fails', async () => {
+  const { request } = fakeFetch([() => reply(404), () => reply(409, { error: 'busy' })]);
+  assert.deepEqual(await stopSession('s-1', 'r-1', request), { ok: false, message: 'The session is not saved yet. Press Stop again.', detail: 'busy' });
+});
+
+test('Stop on a preview session treats 404 as stopped, and a saved Stop needs no End', async () => {
+  const preview = fakeFetch([() => reply(404)]);
+  assert.deepEqual(await stopSession('s-1', undefined, preview.request), { ok: true });
+  assert.equal(preview.calls.length, 1);
+  const saved = fakeFetch([() => reply(200, { recordId: 'r-1', saveError: null })]);
+  assert.deepEqual(await stopSession('s-1', 'r-1', saved.request), { ok: true });
+  assert.equal(saved.calls.length, 1);
+});

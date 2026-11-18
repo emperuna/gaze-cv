@@ -16,9 +16,11 @@ export const FINAL_SAVE_FAILED = 'The session stopped, but it could not be saved
 const SAVE_INTERVAL_MS = 5_000;
 const FINAL_SAVE_ATTEMPTS = 3;
 const FINAL_SAVE_BACKOFF_MS = 250;
+/** How long a monitored worker stays open after the browser drops a frame request, so a Stop sent with it wins. */
+const CANCEL_GRACE_MS = 3_000;
 
-/** `root` and `lockTimeoutMs` reach every record function; `now` is the wall clock (tests). */
-export interface LiveOptions { root?: string; lockTimeoutMs?: number; now?: () => Date }
+/** `root` and `lockTimeoutMs` reach every record function; `now` is the wall clock and `cancelGraceMs` the frame-cancel grace (tests). */
+export interface LiveOptions { root?: string; lockTimeoutMs?: number; now?: () => Date; cancelGraceMs?: number }
 export type LiveFrameResult = CameraResult & {
   alerts: LiveAlert[]; sessionTime: number; revision: number; state: LiveSessionRecord['state'];
   saveError: string | null; notice: string | null;
@@ -50,6 +52,9 @@ export class LiveCamera {
   private lastTimestamp = -1;
   /** The post-worker part of a monitored frame (applyFrame, stills, save); final saves wait for it. */
   private processing?: Promise<unknown>;
+  private cancelTimer?: ReturnType<typeof setTimeout>;
+  /** True once the worker process has exited (the interruption save may still be running until `exited`). */
+  workerExited = false;
 
   readonly id: string;
   readonly session: CameraSession;
@@ -58,7 +63,10 @@ export class LiveCamera {
 
   constructor(id: string, session: CameraSession, settings: CameraSettings, options: LiveOptions = {}) {
     this.id = id; this.session = session; this.settings = settings; this.options = options;
-    this.exited = new Promise(resolve => session.onExit(() => {void this.interrupt().finally(resolve);}));
+    this.exited = new Promise(resolve => session.onExit(() => {
+      this.workerExited = true; clearTimeout(this.cancelTimer);
+      void this.interrupt().finally(resolve);
+    }));
   }
 
   get monitoring(): boolean { return this.record?.state === 'monitoring'; }
@@ -142,6 +150,18 @@ export class LiveCamera {
     try { return await work; } finally { if (this.processing === work) this.processing = undefined; }
   }
 
+  /**
+   * The browser dropped a frame request. A preview worker closes at once. While monitoring, the worker stays
+   * open for a short grace so a Stop sent with the cancel ends the record instead of leaving it interrupted;
+   * without a Stop it then closes and the record is saved as interrupted.
+   */
+  cancelFrame(message = 'Camera request cancelled.') {
+    if (!this.monitoring) { void this.session.close(message); return; }
+    if (this.cancelTimer) return;
+    this.cancelTimer = setTimeout(() => { void this.session.close(message); }, this.options.cancelGraceMs ?? CANCEL_GRACE_MS);
+    this.cancelTimer.unref?.();
+  }
+
   private async process(record: LiveSessionRecord, result: CameraResult): Promise<LiveFrameResult> {
     const offset = record.segments.at(-1)!.offsetSeconds;
     const time = offset + result.timestamp_seconds;
@@ -210,6 +230,7 @@ export class LiveCamera {
    */
   async stop(): Promise<{ recordId: string | null; saveError: string | null }> {
     const record = this.record;
+    clearTimeout(this.cancelTimer);
     if (record && record.state !== 'ended') this.end(record);
     try { await this.flush(); }
     finally { await this.session.close(); }

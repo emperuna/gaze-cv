@@ -231,10 +231,13 @@ export function CameraWorkspace() {
     finally { if (mounted.current) setChecking(false); }
   }, []);
 
-  /** Ends this run in the browser: stops capture and releases the camera. The server is not told. */
-  const release = useCallback((current: Run) => {
+  /**
+   * Ends this run in the browser: stops capture and releases the camera. The server is not told. With
+   * `abort` false the in-flight request is left to finish (the caller aborts it later).
+   */
+  const release = useCallback((current: Run, abort = true) => {
     if (run.current === current) run.current = null;
-    current.active = false; current.controller.abort(); current.commands.length = 0;
+    current.active = false; if (abort) current.controller.abort(); current.commands.length = 0;
     current.stream?.getTracks().forEach(track => track.stop());
     if (video.current) video.current.srcObject = null;
     health.current = null;
@@ -249,16 +252,21 @@ export function CameraWorkspace() {
   const stop = useCallback(async () => {
     const current = run.current;
     if (!current) return;
-    release(current);
+    // While monitoring, the in-flight frame request is aborted only after the server has the Stop: aborting it
+    // first could close the worker and leave the record interrupted instead of ended.
+    const keepFrame = !!current.recordId || !!current.monitorPending;
+    release(current, !keepFrame);
     if (mounted.current) { setStoppedFrom(setupStep(phaseRef.current)); go('stopping'); setWarnings([]); setEditing(null); setRequesting(''); }
-    // A Start monitoring request already with the server may still create the record; wait, then stop that record.
-    if (current.monitorPending) await current.monitorPending;
+    try {
+      // A Start monitoring request already with the server may still create the record; wait, then stop that record.
+      if (current.monitorPending) await current.monitorPending;
+      if (current.sessionId) {
+        const outcome = await stopSession(current.sessionId, current.recordId);
+        // A preview has nothing to save; a monitored session keeps Stop available until it is saved.
+        if (!outcome.ok && current.recordId) { if (mounted.current) { setStopRetry(current.sessionId); setError(outcome.message, outcome.detail); } return; }
+      }
+    } finally { current.controller.abort(); }
     const monitored = !!current.recordId;
-    if (current.sessionId) {
-      const outcome = await stopSession(current.sessionId);
-      // A preview has nothing to save; a monitored session keeps Stop available until it is saved.
-      if (!outcome.ok && monitored) { if (mounted.current) { setStopRetry(current.sessionId); setError(outcome.message, outcome.detail); } return; }
-    }
     if (mounted.current && !run.current) {
       if (!monitored) { setHasFrame(false); go('idle'); return; }
       go('ended'); void loadEnded(current.recordId!);
@@ -268,7 +276,7 @@ export function CameraWorkspace() {
   async function retryStop() {
     if (!stopRetry || retrying) return;
     setError(''); setRetrying(true);
-    const outcome = await stopSession(stopRetry);
+    const outcome = await stopSession(stopRetry, recordIdRef.current ?? undefined);
     if (!mounted.current) return;
     setRetrying(false);
     if (outcome.ok) { setStopRetry(null); go('ended'); if (recordIdRef.current) void loadEnded(recordIdRef.current); } else setError(outcome.message, outcome.detail);

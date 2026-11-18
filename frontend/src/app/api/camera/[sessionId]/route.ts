@@ -25,7 +25,7 @@ export async function POST(request:Request,context:Context) {
   try {
     const live=getCamera(await sessionId(request,context));
     const frame=validateCameraFrame(await readCameraJson(request,MAX_FRAME_BODY));
-    const abort=() => {void live.session.close('Camera request cancelled.');};
+    const abort=() => {live.cancelFrame();};
     request.signal.addEventListener('abort',abort,{once:true});
     try {
       if (request.signal.aborted) throw new Error('Camera request cancelled.');
