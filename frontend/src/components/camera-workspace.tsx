@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Camera, Check, LoaderCircle, Play, RefreshCw, Square, Trash2, X } from 'lucide-react';
+import { AlertCircle, Camera, Check, CircleHelp, LoaderCircle, Play, RefreshCw, Square, Trash2, X } from 'lucide-react';
 import { Button } from './ui/button';
 import type { BackendStatus } from '@/lib/analysis-contract';
 import { cameraWarnings, lowDetailImage } from '@/lib/camera-health';
@@ -16,7 +16,7 @@ import {
 import type { AlertMap, RunningStatus } from '@/lib/camera-dashboard';
 import { DEFAULT_MOVEMENT, validateReviewSettings } from '@/lib/review-contract';
 import type { MovementEvent, ReviewSeat } from '@/lib/review-contract';
-import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice, seatsForMonitor, setupStep, writeSavedDevice } from '@/lib/camera-setup';
+import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice, seatsForMonitor, setupStep, writeGuideSeen, writeSavedDevice } from '@/lib/camera-setup';
 import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
 import { interruptSession, newRun, runCaptureLoop, stopSession } from './camera-run';
 import { CameraPastSessions, InlineConfirm } from './camera-past-sessions';
@@ -28,6 +28,7 @@ import {
 } from '@/lib/camera-sessions';
 import type { MonitorFrame, Run } from './camera-run';
 import { CameraAlertsPanel, Chime } from './camera-alerts-panel';
+import { CameraGuide } from './camera-guide';
 import { CameraSeatGrid, SeatStatusLine } from './camera-seat-grid';
 import type { CameraPhase, MeasuredSpeed, MovementRules } from './camera-setup';
 import { PlainError, cameraProblem, describeProblem } from '@/lib/camera-messages';
@@ -79,6 +80,8 @@ export function CameraWorkspace() {
   const [muted, setMutedState] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [pastKey, setPastKey] = useState(0);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const guideButton = useRef<HTMLButtonElement>(null);
   const recordIdRef = useRef<string | null>(null);
   const recordStateRef = useRef<LiveSessionRecord['state'] | null>(null);
   const leaveRef = useRef<(reason?: string) => void>(() => {});
@@ -319,6 +322,8 @@ export function CameraWorkspace() {
 
   useEffect(() => {
     mounted.current = true; void check();
+    // How to use Ocular opens by itself the first time this browser shows the camera screen.
+    if (!readGuideSeen()) { writeGuideSeen(); setGuideOpen(true); }
     mutedRef.current = readMuted(); setMutedState(mutedRef.current);
     const saved = readSavedDevice();
     const updateDevices = () => {
@@ -354,7 +359,11 @@ export function CameraWorkspace() {
     if (primaryShown.current === primaryKey) return;
     primaryShown.current = primaryKey;
     if (editing) return; // the seat adjuster focuses its own heading
-    setupBody.current?.querySelector<HTMLElement>('.camera-primary:not(:disabled)')?.focus({ preventScroll: phase === 'monitoring' });
+    if (document.activeElement?.closest('.camera-guide')) return; // someone is reading the guide
+    // During a wait there is no primary button; the status line (what is happening) holds focus instead of the page.
+    const target = setupBody.current?.querySelector<HTMLElement>('.camera-primary:not(:disabled)')
+      ?? (setupBody.current?.contains(document.activeElement) || document.activeElement === document.body ? setupBody.current?.querySelector<HTMLElement>('.camera-status:not([hidden])') : null);
+    target?.focus({ preventScroll: phase === 'monitoring' });
   }, [primaryKey, editing, phase]);
   // After an in-page confirmation closes without acting, focus returns to the button that opened it.
   useEffect(() => {
@@ -577,6 +586,12 @@ export function CameraWorkspace() {
   const notReadyText = checking ? 'Checking the local processor…' : !ready ? 'Not available until the local processor is ready. Finish the setup shown at the top, then press Recheck.' : '';
 
   return <>
+    <div className="camera-screen-bar">
+      <p>Live camera: one fixed camera, alerts on this laptop.</p>
+      <Button ref={guideButton} variant="outline" className="camera-guide-button" aria-expanded={guideOpen} aria-controls="camera-guide" onClick={() => setGuideOpen(open => !open)}>
+        <CircleHelp size={16} aria-hidden="true" />How to use</Button>
+    </div>
+    <div id="camera-guide"><CameraGuide open={guideOpen} onClose={() => setGuideOpen(false)} returnFocus={guideButton} /></div>
     <div className={`backend-banner${ready ? ' backend-ready' : ''}`} role="status"><Camera size={20} /><div><strong>{checking ? 'Checking the local processor' : ready ? 'Ocular is ready on this computer' : 'Python setup needed'}</strong><p>{ready ? 'Live alerts can run on this computer.' : status?.methods.baseline.message || 'Use the project README to prepare Python and the models.'}</p></div><button type="button" onClick={check} disabled={busy || checking} aria-label="Recheck local processor"><RefreshCw size={15} /><span>Recheck</span></button></div>
     <div ref={grid} className={`analysis-grid camera-grid${monitoring ? ' camera-dashboard' : ''}`}>
       <section className="workspace-card camera-setup" aria-labelledby="camera-setup-title"><div className="workspace-card-header"><h2 id="camera-setup-title">Live camera</h2><span>LOCAL CAMERA</span></div><div className="input-card-body" ref={setupBody}>
@@ -673,10 +688,11 @@ export function CameraWorkspace() {
               {recordId && recordMeta?.state !== 'monitoring' && <Button variant="outline" data-focus="delete-session" onClick={() => setConfirm('delete')} disabled={!!action}><Trash2 size={15} />Delete session</Button>}</div>}
         </div>}
 
-        <p className="camera-status" role="status" hidden={monitoring && !statusText}>{waiting ? <LoaderCircle size={14} className="spin" /> : null}{statusText}</p>
+        <p className="camera-status" role="status" tabIndex={-1} hidden={monitoring && !statusText}>{waiting ? <LoaderCircle size={14} className="spin" /> : null}{statusText}</p>
         {error.text && <div className="analysis-error" role="alert"><AlertCircle size={17} /><div className="analysis-error-text"><span>{error.text}</span>
           {error.detail && <details className="error-detail"><summary>More information</summary><p>{error.detail}</p></details>}</div></div>}
         {!monitoring && phase !== 'interrupted' && phase !== 'confirming' && phase !== 'ended' && details}
+        {(phase === 'idle' || phase === 'ended') && <a className="setup-link recording-link" href="/analyze?mode=video">Review a recording instead</a>}
       </div></section>
 
       <section className="workspace-card camera-output" aria-labelledby="camera-view-title" hidden={saved}><div className="workspace-card-header"><h2 id="camera-view-title">Live view</h2><span>{phase === 'monitoring' ? 'MONITORING' : live || phase === 'confirming' ? 'LIVE' : 'NOT LIVE'}</span></div><div className="results-body">

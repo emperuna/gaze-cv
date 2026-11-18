@@ -426,3 +426,23 @@
 .error-detail p { margin-top:4px; color:#5c4a3e; }
 .alerts-mute[aria-pressed="true"] { background:#1f2c3b; border-color:#1f2c3b; color:#fff; }
 .seat-adjuster h3:focus-visible, .camera-past h2:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
+.camera-screen-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; margin-bottom:14px; }
+.camera-screen-bar p { font-size:13px; color:#4a596c; }
+.camera-guide-button { min-height:44px; height:auto; font-size:14px; }
+.camera-guide-button:focus-visible, .camera-guide button:focus-visible, .recording-link:focus-visible, .recording-bar a:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
+.camera-guide { margin-bottom:22px; border-color:#ccd8bf; }
+.camera-guide h2:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
+.camera-guide-close { min-height:40px; height:auto; font-size:13px; }
+.camera-guide-body { padding:20px 23px; font-size:14px; line-height:1.7; color:#334254; max-width:80ch; }
+.camera-guide-steps { list-style:decimal; padding-left:22px; display:flex; flex-direction:column; gap:8px; }
+.camera-guide-body h3 { margin-top:20px; font-size:15px; font-weight:600; color:#1f2c3b; }
+.camera-guide-help { margin-top:8px; }
+.camera-guide-help dt { margin-top:10px; font-weight:600; color:#1f2c3b; }
+.camera-guide-help dd { margin:2px 0 0; }
+.camera-guide-body > p { margin-top:8px; }
+.recording-link { display:inline-block; }
+.recording-bar { display:flex; align-items:center; flex-wrap:wrap; gap:6px 16px; margin-bottom:16px; }
+.recording-bar a { display:inline-flex; align-items:center; gap:6px; margin-top:0; font-size:13px; }
+.recording-bar p { font-size:13px; color:#4a596c; }
+.camera-status:focus { outline:none; }
+.camera-status:focus-visible { outline:2px solid #5b6879; outline-offset:2px; }

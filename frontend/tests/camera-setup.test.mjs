@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import {
-  DEVICE_KEY, SETUP_FRAMES, cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice,
-  recordSetupResult, seatLabel, seatsForMonitor, setupComplete, setupStep, shouldMarkSetup, markSetupFrame, writeSavedDevice,
+  DEVICE_KEY, GUIDE_KEY, SETUP_FRAMES, cameraMovement, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice,
+  recordSetupResult, seatLabel, seatsForMonitor, setupComplete, setupStep, shouldMarkSetup, markSetupFrame, writeGuideSeen, writeSavedDevice,
 } from '../src/lib/camera-setup.ts';
 
 test('setup marks one frame per second until five are sent and collects result intervals', () => {
@@ -86,4 +86,18 @@ test('the step indicator keeps the step Stop was pressed from while stopping', (
   assert.equal(setupStep('stopping', 1), 1);
   assert.equal(setupStep('stopping', 2), 2);
   assert.equal(setupStep('stopping'), 2);
+});
+
+test('the how-to guide is remembered per browser, and blocked storage never throws', () => {
+  const values = new Map();
+  const storage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => { values.set(key, value); } };
+  assert.equal(GUIDE_KEY, 'ocular.camera.guideSeen');
+  assert.equal(readGuideSeen(storage), false);
+  writeGuideSeen(storage);
+  assert.equal(values.get(GUIDE_KEY), 'true');
+  assert.equal(readGuideSeen(storage), true);
+  const broken = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } };
+  assert.equal(readGuideSeen(broken), false);
+  assert.doesNotThrow(() => writeGuideSeen(broken));
+  assert.equal(readGuideSeen(null), false);
 });

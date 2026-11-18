@@ -35,5 +35,5 @@ export function PdfReportDownload({ url, filename, disabled = false, description
 
 export function PdfReportBar({ url, filename, disabled, description }: { url: string | null; filename: string; disabled: boolean; description: string }) {
   const descriptionId = useId();
-  return <section className="report-export-bar" aria-label="PDF report download"><div className="report-export-copy"><strong>PDF incident report</strong><p id={descriptionId} role="status">{description}</p></div><PdfReportDownload url={url} filename={filename} disabled={disabled} descriptionId={descriptionId}/></section>;
+  return <section className="report-export-bar" aria-label="PDF report download"><div className="report-export-copy"><strong>PDF session report</strong><p id={descriptionId} role="status">{description}</p></div><PdfReportDownload url={url} filename={filename} disabled={disabled} descriptionId={descriptionId}/></section>;
 }
