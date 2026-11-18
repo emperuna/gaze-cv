@@ -62,7 +62,7 @@ test('slow recent frames give the plain warning and keep the exact text for deta
   const status = runningStatus(times, 5, 0.75);
   assert.equal(status.slow, true);
   assert.equal(status.text, 'Running slowly: alerts may be missed');
-  assert.equal(status.detail, 'Processing is too slow for movement alerts (1.0 FPS). Use fewer detector tiles.');
+  assert.equal(status.detail, 'Processing is too slow for movement alerts (1.0 frames per second). Use fewer detector tiles.');
   assert.equal(runningStatus([], 0, 0.75).text, 'Running smoothly');
   assert.equal(runningStatus([], 0, 0.75).fps, null);
 });

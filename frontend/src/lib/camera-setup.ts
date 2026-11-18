@@ -1,6 +1,17 @@
 import { DEFAULT_MOVEMENT, mirrorSeats } from './review-contract.ts';
 import type { ReviewSeat } from './review-contract.ts';
 
+/**
+ * The highlighted step of "1 Connect camera · 2 Find seats · 3 Monitor" (0-based). While stopping, the step
+ * stopped from stays highlighted (`stoppedFrom`), so stopping from Find seats does not flash Monitor.
+ */
+export function setupStep(phase: string, stoppedFrom: number | null = null): number {
+  if (phase === 'idle' || phase === 'permission' || phase === 'loading') return 0;
+  if (phase === 'preparing' || phase === 'found') return 1;
+  if (phase === 'stopping') return stoppedFrom ?? 2;
+  return 2;
+}
+
 /** Frames kept by the worker for seat finding, and their spacing in capture time. */
 export const SETUP_FRAMES = 5;
 export const SETUP_SPACING_SECONDS = 1;

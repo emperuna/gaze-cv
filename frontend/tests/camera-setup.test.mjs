@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import {
   DEVICE_KEY, SETUP_FRAMES, cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice,
-  recordSetupResult, seatLabel, seatsForMonitor, setupComplete, shouldMarkSetup, markSetupFrame, writeSavedDevice,
+  recordSetupResult, seatLabel, seatsForMonitor, setupComplete, setupStep, shouldMarkSetup, markSetupFrame, writeSavedDevice,
 } from '../src/lib/camera-setup.ts';
 
 test('setup marks one frame per second until five are sent and collects result intervals', () => {
@@ -73,4 +73,17 @@ test('camera storage failures are ignored', () => {
   assert.equal(readSavedDevice(broken), '');
   assert.doesNotThrow(() => writeSavedDevice('cam-1', broken));
   assert.equal(DEVICE_KEY, 'ocular.camera.device');
+});
+
+test('the step indicator keeps the step Stop was pressed from while stopping', () => {
+  assert.equal(setupStep('idle'), 0);
+  assert.equal(setupStep('loading'), 0);
+  assert.equal(setupStep('preparing'), 1);
+  assert.equal(setupStep('found'), 1);
+  assert.equal(setupStep('monitoring'), 2);
+  assert.equal(setupStep('interrupted'), 2);
+  // Stop from Find seats must not flash Monitor.
+  assert.equal(setupStep('stopping', 1), 1);
+  assert.equal(setupStep('stopping', 2), 2);
+  assert.equal(setupStep('stopping'), 2);
 });
