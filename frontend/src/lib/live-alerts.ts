@@ -20,6 +20,8 @@ export interface LiveSessionRecord {
   events: (MovementEvent & { segment: number })[]; alerts: LiveAlert[];
   coverage: Record<string, SeatCoverage>; minutes: { minute: number; counts: Record<string, number> }[];
   framesProcessed: number; stillsSaved: number; lastTime: number;
+  /** Wall time the live worker stopped without Stop; the resume offset is measured from it. */
+  interruptedAt?: string | null;
 }
 
 export class RevisionError extends Error {}
