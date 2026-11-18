@@ -1,19 +1,34 @@
-import type { AnalysisMethod, Detection } from './analysis-contract.ts';
+import type { Detection, Direction } from './analysis-contract.ts';
+import type { MovementEvent } from './review-contract.ts';
 
 export const MAX_FRAME_BODY = 1_400_000;
-export interface CameraSettings { method: AnalysisMethod; mirrored: boolean; tileGrid: number }
-export interface CameraFrame { id: number; timestamp_seconds: number; image: string }
+export interface CameraSettings { mirrored: boolean; tileGrid: number }
+export interface CameraFrame {
+  id: number; timestamp_seconds: number; image: string;
+  setup?: boolean; open_alerts?: [string, 'left' | 'right'][];
+}
+export interface LiveSeatState { direction: Direction; reason: string | null }
+export interface LiveEvent extends MovementEvent { still?: string }
 export interface CameraResult {
   id: number; timestamp_seconds: number; counts: Record<string, number>;
   result: { width: number; height: number; detections: Detection[]; processing_ms: number };
+  seats?: Record<string, LiveSeatState>; events?: LiveEvent[];
 }
 
-export function validateCameraSettings(value: unknown): CameraSettings {
+/** Mirroring and tiling only; shared by live camera and video setup. */
+export function validateInputSettings(value: unknown): CameraSettings {
   if (!value || typeof value !== 'object') throw new Error('Choose camera analysis settings.');
-  const { method, mirrored = false, tileGrid = 1 } = value as CameraSettings;
-  if (method !== 'head' && method !== 'baseline') throw new Error('Choose the head model or geometric baseline.');
+  const { mirrored = false, tileGrid = 1 } = value as CameraSettings;
   if (typeof mirrored !== 'boolean' || !Number.isInteger(tileGrid) || tileGrid < 1 || tileGrid > 4) throw new Error('Invalid camera settings.');
-  return { method, mirrored, tileGrid };
+  return { mirrored, tileGrid };
+}
+
+/** The live camera always uses the geometric baseline, so any other method is rejected. */
+export function validateCameraSettings(value: unknown): CameraSettings {
+  const settings = validateInputSettings(value);
+  const { method } = value as { method?: unknown };
+  if (method !== undefined && method !== 'baseline') throw new Error('The live camera uses the geometric baseline only.');
+  return settings;
 }
 
 export function validateCameraFrame(value: unknown): CameraFrame {

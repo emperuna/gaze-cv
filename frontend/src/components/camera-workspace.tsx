@@ -29,7 +29,7 @@ function cameraError(error:unknown) {
 }
 
 export function CameraWorkspace() {
-  const [method,setMethod]=useState<AnalysisMethod>('head');
+  const method: AnalysisMethod = 'baseline';
   const [mirrored,setMirrored]=useState(false);
   const [tileGrid,setTileGrid]=useState(1);
   const [devices,setDevices]=useState<MediaDeviceInfo[]>([]);
@@ -138,7 +138,7 @@ export function CameraWorkspace() {
       void navigator.mediaDevices.enumerateDevices().then(list => {if (valid()) setDevices(list.filter(item => item.kind==='videoinput'));}).catch(() => {});
       setPhase('loading');
       const response=await fetch('/api/camera',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({method,mirrored,tileGrid}),signal:AbortSignal.any([current.controller.signal,AbortSignal.timeout(65_000)])});
+        body:JSON.stringify({mirrored,tileGrid}),signal:AbortSignal.any([current.controller.signal,AbortSignal.timeout(65_000)])});
       const data=await response.json();
       if (!response.ok) throw new Error(data.error || 'Camera processor could not start.');
       current.sessionId=data.sessionId;
@@ -206,7 +206,7 @@ export function CameraWorkspace() {
         <div className="camera-preview"><video ref={video} muted playsInline aria-label="Live camera preview"/>{phase==='idle' && <div className="camera-placeholder"><Camera size={32}/><p>Start to open your camera.</p></div>}</div>
         <div className="analysis-settings"><label htmlFor="camera-device">Camera</label><div className="select-wrap"><select id="camera-device" value={device} disabled={busy} onChange={event => setDevice(event.target.value)}><option value="">Default camera</option>{devices.filter(item => item.deviceId).map((item,index) => <option key={item.deviceId} value={item.deviceId}>{item.label || `Camera ${index+1}`}</option>)}</select></div></div>
         <div className="analysis-settings"><label htmlFor="camera-expected">Expected visible heads</label><input id="camera-expected" type="number" min={1} max={20} step={1} value={expectedHeads} disabled={busy} onChange={event=>setExpectedHeads(Math.max(1,Math.min(20,Math.floor(Number(event.target.value)||1))))}/><p>A warning appears after 5 seconds with fewer usable heads. This is a visibility check, not attendance or seat tracking.</p></div>
-        <div className="analysis-settings"><label htmlFor="camera-method">Analysis method</label><div className="select-wrap"><select id="camera-method" value={method} disabled={busy} onChange={event => {setMethod(event.target.value as AnalysisMethod);setLatest(null);}}><option value="head">Automatic head model</option><option value="baseline">Geometric baseline</option></select></div><p>Left and right describe the subject. The preview uses the camera’s original orientation.</p></div>
+        <div className="analysis-settings"><p>Left and right describe the subject. The preview uses the camera’s original orientation.</p></div>
         <details className="advanced-settings"><summary>Input settings</summary><label className="checkbox-label"><input type="checkbox" checked={mirrored} disabled={busy} onChange={event => setMirrored(event.target.checked)}/>The camera pixels are already mirrored</label>{method==='baseline' && <label className="tiling-label" htmlFor="camera-tiling">Detector tiling<select id="camera-tiling" value={tileGrid} disabled={busy} onChange={event => setTileGrid(Number(event.target.value))}>{[1,2,3,4].map(value => <option key={value} value={value}>{value===1 ? '1 — full frame' : `${value} — more tiles, slower processing`}</option>)}</select></label>}</details>
         <div className="camera-actions"><Button onClick={start} disabled={busy || !ready}><Play size={16}/>Start camera</Button><Button variant="outline" onClick={() => void stop()} disabled={!busy || phase==='stopping'}><Square size={15}/>Stop</Button></div>
         <p className="camera-status" role="status">{phase==='permission' || phase==='loading' || phase==='stopping' ? <LoaderCircle size={14} className="spin"/> : null}{phaseLabel}</p>
