@@ -34,7 +34,7 @@ export async function POST(request:Request,context:Context) {
   } catch (error) {return failure(error);}
 }
 
-/** Stop → `{recordId, saveError}`; a monitored record is saved as ended before the worker closes. */
+/** Stop → `{recordId, saveError: null}`; a monitored record is saved as ended before the worker closes (503 if it could not be saved; Stop again retries). */
 export async function DELETE(request:Request,context:Context) {
   try {return Response.json(await stopCamera(await sessionId(request,context)),{headers});}
   catch (error) {return failure(error);}
