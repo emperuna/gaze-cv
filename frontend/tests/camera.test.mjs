@@ -179,8 +179,8 @@ import { promises as fs } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { newRecord } from '../src/lib/live-alerts.ts';
-import { saveRecord, loadRecord } from '../src/lib/server-camera-record.ts';
-import { startCamera, getCamera, stopCamera, isActive, markCameraAlert, getCameraRecord, endCameraRecord, interruptCamera } from '../src/lib/server-camera.ts';
+import { saveNewRecord, loadRecord } from '../src/lib/server-camera-record.ts';
+import { startCamera, getCamera, stopCamera, isActive, markCameraAlert, getCameraRecord, endCameraRecord, interruptCamera, deleteCameraRecord } from '../src/lib/server-camera.ts';
 
 const JPEG64 = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]).toString('base64');
 const PNG64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).toString('base64');
@@ -191,14 +191,17 @@ const signal = () => new AbortController().signal;
 const turn = (direction, start, end, extra = {}) => ({ seat_id: 'seat-A', event_type: 'sustained_movement', direction, start_time: start,
   end_time: end, duration: end - start, observed_at: end, review_required: true, review_label: 'For review', ...extra });
 
-/** A fake worker that answers commands and lets each test decide frame replies (`null` = do not reply). */
-function liveWorker(onFrame = () => ({})) {
+/**
+ * A fake worker that answers commands and lets each test decide frame replies (`null` = do not reply).
+ * `beforeConfigured` runs (and is awaited) before the configure reply is sent.
+ */
+function liveWorker(onFrame = () => ({}), beforeConfigured = async () => {}) {
   const child = worker(); const sent = []; let buffer = '';
   child.stdin.on('data', chunk => {
     buffer += chunk; let i;
     while ((i = buffer.indexOf('\n')) >= 0) {
       const message = JSON.parse(buffer.slice(0, i)); buffer = buffer.slice(i + 1); sent.push(message);
-      if (message.type === 'configure') child.stdout.write(JSON.stringify({ configured: true, seats: message.settings.seats }) + '\n');
+      if (message.type === 'configure') void beforeConfigured().then(() => child.stdout.write(JSON.stringify({ configured: true, seats: message.settings.seats }) + '\n'));
       else if (message.type === 'suggest_seats') child.stdout.write(JSON.stringify({ suggested: true, seats: SEATS, sampled_frames: 4, note: 'Check the boxes.' }) + '\n');
       else {
         const reply = onFrame(message);
@@ -216,8 +219,8 @@ async function withLive(fn) {
   await fs.mkdir(base, { recursive: true });
   const root = await fs.mkdtemp(join(base, 'camera-live-'));
   const started = [];
-  const start = async (onFrame, extra = {}, resume) => {
-    const fake = liveWorker(onFrame);
+  const start = async (onFrame, extra = {}, resume, beforeConfigured) => {
+    const fake = liveWorker(onFrame, beforeConfigured);
     const out = await startCamera(INPUT, signal(), resume, { root, launch: async () => fake.child, ...extra });
     started.push(out.sessionId);
     return { ...fake, ...out, live: getCamera(out.sessionId) };
@@ -277,7 +280,7 @@ test('resume continues session time', async () => withLive(async ({ root, start 
   old.segments[0].endSeconds = 30;
   old.events.push({ ...turn('left', 20, 30), segment: 0 });
   old.alerts.push({ id: 'alert-1', seatId: 'seat-A', direction: 'left', openedAt: 20, lastAt: 30, eventIndexes: [0], still: null, stillError: null, mark: 'Checked', note: '', markedAt: null });
-  await saveRecord(old, { root });
+  await saveNewRecord(old, { root });
   await fs.writeFile(join(root, old.id, 'session.lock'), '');
   const past = new Date(Date.now() - 60_000); await fs.utimes(join(root, old.id, 'session.lock'), past, past);
   const { live, sent, recordId, record } = await start(m => ({ events: [turn('left', .2, m.timestamp_seconds, { still: JPEG64 })] }),
@@ -298,7 +301,7 @@ test('resume continues session time', async () => withLive(async ({ root, start 
 
 test('only an interrupted record can be resumed', async () => withLive(async ({ root, start }) => {
   const done = newRecord('22222222-2222-4222-8222-222222222222', { ...INPUT, seats: SEATS, movement: DEFAULT_MOVEMENT, maxGapAuto: true }, new Date());
-  done.state = 'ended'; await saveRecord(done, { root });
+  done.state = 'ended'; await saveNewRecord(done, { root });
   await assert.rejects(start(undefined, {}, done.id), error => error.status === 409);
   acquireProcessingSlot()();
 }));
@@ -511,4 +514,45 @@ test('a cancelled preview frame closes the worker at once', async () => withLive
   await assert.rejects(pending);
   await live.exited;
   assert.equal(live.workerExited, true);
+}));
+
+async function interruptedRecord(root, id) {
+  const old = newRecord(id, { ...INPUT, seats: SEATS, movement: DEFAULT_MOVEMENT, maxGapAuto: true }, new Date(Date.now() - 60_000));
+  Object.assign(old, { state: 'interrupted', lastTime: 30, interruptedAt: new Date(Date.now() - 30_000).toISOString() });
+  old.segments[0].endSeconds = 30;
+  old.events.push({ ...turn('left', 20, 30), segment: 0 });
+  old.alerts.push({ id: 'alert-1', seatId: 'seat-A', direction: 'left', openedAt: 20, lastAt: 30, eventIndexes: [0], still: null, stillError: null, mark: null, note: '', markedAt: null });
+  await saveNewRecord(old, { root });
+  return old;
+}
+
+test('a mark saved while a resume configures the worker is kept', async () => withLive(async ({ root, start }) => {
+  const old = await interruptedRecord(root, '33333333-3333-4333-8333-333333333333');
+  const { live, sessionId, record } = await start(undefined, {}, old.id,
+    () => markCameraAlert(old.id, 'alert-1', { mark: 'Checked', note: 'Seen', revision: 0 }, { root }));
+  assert.equal(record.alerts[0].mark, 'Checked');
+  assert.equal(live.record.revision, 1);
+  await stopCamera(sessionId);
+  const disk = JSON.parse(await fs.readFile(join(root, old.id, 'session.json'), 'utf8'));
+  assert.equal(disk.state, 'ended');
+  assert.equal(disk.alerts[0].mark, 'Checked');
+  assert.equal(disk.alerts[0].note, 'Seen');
+}));
+
+test('a session deleted while a resume configures the worker is not resumed or recreated', async () => withLive(async ({ root, start }) => {
+  const old = await interruptedRecord(root, '44444444-4444-4444-8444-444444444444');
+  await assert.rejects(start(undefined, {}, old.id, () => deleteCameraRecord(old.id, { root })),
+    error => error.status === 409 && error.message === 'This session was ended or deleted in another tab.');
+  await assert.rejects(fs.access(join(root, old.id)), 'the deleted folder stays deleted');
+  assert.equal(isActive(old.id), false);
+  const next = await start();
+  assert.ok(next.sessionId, 'the worker was closed and the processing slot released');
+}));
+
+test('a session ended while a resume configures the worker is not resumed', async () => withLive(async ({ root, start }) => {
+  const old = await interruptedRecord(root, '55555555-5555-4555-8555-555555555555');
+  await assert.rejects(start(undefined, {}, old.id, () => endCameraRecord(old.id, { root })),
+    error => error.status === 409 && error.message === 'This session was ended or deleted in another tab.');
+  assert.equal(JSON.parse(await fs.readFile(join(root, old.id, 'session.json'), 'utf8')).state, 'ended');
+  assert.equal(isActive(old.id), false);
 }));

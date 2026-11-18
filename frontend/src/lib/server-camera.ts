@@ -59,15 +59,12 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal,
   try {release=acquireProcessingSlot();}
   catch (error) {throw new AnalysisError((error as Error).message,409);}
   let session: CameraSession | undefined;
+  let saved: LiveSessionRecord | undefined;
   try {
-    const interrupted=async () => {
-      const record=await loadRecord(resume!,recordOptions(options));
-      if (record.state!=='interrupted') throw new AnalysisError('Only an interrupted session can be resumed.',409);
-      return record;
-    };
     if (resume) {
       await ownerFor(resume)?.flush();
-      const saved=await interrupted();
+      saved=await loadRecord(resume,recordOptions(options));
+      if (saved.state!=='interrupted') throw new AnalysisError('Only an interrupted session can be resumed.',409);
       settings={mirrored:saved.settings.mirrored,tileGrid:saved.settings.tileGrid};
       await removeStaleLock(resume,{root:options.root});
     }
@@ -85,9 +82,8 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal,
       await session.ready;
       if (signal.aborted) throw new Error('Camera startup cancelled.');
       if (resume) {
-        // Re-read just before taking ownership so a mark saved during startup is kept.
-        const record=await interrupted();
-        await live.resume(record);
+        // resume() re-reads the record after configuring the worker, so a mark saved during startup is kept.
+        const record=await live.resume(resume,saved!.settings);
         return {sessionId:live.id,recordId:record.id,record};
       }
     } finally {signal.removeEventListener('abort',abort);}

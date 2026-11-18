@@ -120,3 +120,11 @@ test('listRecords skips malformed records and loadRecord reports 422', async () 
   assert.deepEqual((await listRecords({ root })).map(r => r.id), [good.id]);
   await assert.rejects(loadRecord(bad.id, { root }), { status: 422 });
 }));
+
+test('saving or writing a still never recreates a deleted session folder', async () => withRoot(async (root) => {
+  const record = await createRecord(settings, { root });
+  await deleteRecord(record.id, { root });
+  await assert.rejects(saveRecord(record, { root }), { status: 404 });
+  await assert.rejects(writeStill(record.id, 'alert-1', JPEG, { root }), { status: 404 });
+  await assert.rejects(fs.access(join(root, record.id)));
+}));
