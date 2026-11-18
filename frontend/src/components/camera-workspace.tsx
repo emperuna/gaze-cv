@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Camera, LoaderCircle, Play, RefreshCw, Square } from 'lucide-react';
+import { AlertCircle, Camera, Check, LoaderCircle, Play, RefreshCw, Square, Trash2, X } from 'lucide-react';
 import { Button } from './ui/button';
 import type { BackendStatus } from '@/lib/analysis-contract';
 import { cameraWarnings, lowDetailImage } from '@/lib/camera-health';
@@ -17,22 +17,33 @@ import type { AlertMap, RunningStatus } from '@/lib/camera-dashboard';
 import { DEFAULT_MOVEMENT, validateReviewSettings } from '@/lib/review-contract';
 import type { MovementEvent, ReviewSeat } from '@/lib/review-contract';
 import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readSavedDevice, seatsForMonitor, writeSavedDevice } from '@/lib/camera-setup';
-import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, preparingText } from './camera-setup';
-import { newRun, runCaptureLoop, stopSession } from './camera-run';
+import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
+import { interruptSession, newRun, runCaptureLoop, stopSession } from './camera-run';
+import { CameraPastSessions, InlineConfirm, deleteSession } from './camera-past-sessions';
+import { PdfReportDownload } from './pdf-report-download';
+import {
+  DELETE_CONFIRM_TEXT, END_CONFIRM_TEXT, SEATS_QUESTION, countText, displaySeats, formatSessionDate, interruptedAt, interruptionText,
+  reportFilename, reportUrl, unmarkedText,
+} from '@/lib/camera-sessions';
 import type { MonitorFrame, Run } from './camera-run';
 import { CameraAlertsPanel, Chime } from './camera-alerts-panel';
 import { CameraSeatGrid, SeatStatusLine } from './camera-seat-grid';
 import type { CameraPhase, MeasuredSpeed, MovementRules } from './camera-setup';
 
-function cameraError(error: unknown) {
+/** `action` is the button that tries again: Start for a new session, Resume for an interrupted one. */
+function cameraError(error: unknown, action = 'Start') {
   if (error instanceof DOMException) {
-    if (error.name === 'NotAllowedError') return 'Camera access was denied. Allow the camera in your browser and system settings, then press Start again.';
-    if (error.name === 'NotFoundError') return 'No camera was found. Connect the camera, then press Start again.';
-    if (error.name === 'NotReadableError') return 'The camera could not open. Close other apps using it, then press Start again.';
-    if (error.name === 'OverconstrainedError') return 'The selected camera is unavailable. Choose another camera, then press Start again.';
+    if (error.name === 'NotAllowedError') return `Camera access was denied. Allow the camera in your browser and system settings, then press ${action} again.`;
+    if (error.name === 'NotFoundError') return `No camera was found. Connect the camera, then press ${action} again.`;
+    if (error.name === 'NotReadableError') return `The camera could not open. Close other apps using it, then press ${action} again.`;
+    if (error.name === 'OverconstrainedError') return `The selected camera is unavailable. Choose another camera, then press ${action} again.`;
   }
-  return error instanceof Error ? error.message : 'The camera stopped unexpectedly. Press Start again.';
+  return error instanceof Error ? error.message : `The camera stopped unexpectedly. Press ${action} again.`;
 }
+
+const HIDDEN_REASON = 'This tab was hidden or closed, so Ocular released the camera. Press Resume to continue.';
+const LOST_REASON = 'Live processing stopped unexpectedly. Press Resume to continue.';
+type RecordMeta = { createdAt: string; state: LiveSessionRecord['state']; seats: number };
 
 const initialRules = (): MovementRules => { const { max_gap: _gap, ...rules } = DEFAULT_MOVEMENT; return rules; };
 
@@ -70,6 +81,19 @@ export function CameraWorkspace() {
   const [markMessage, setMarkMessage] = useState('');
   const [muted, setMutedState] = useState(false);
   const [announcement, setAnnouncement] = useState('');
+  // Interruptions, resume and saved sessions.
+  const [recordMeta, setRecordMeta] = useState<RecordMeta | null>(null);
+  const [stoppedAt, setStoppedAt] = useState<Date | null>(null);
+  const [pauseReason, setPauseReason] = useState('');
+  const [resumeStep, setResumeStep] = useState<'' | 'loading' | 'camera' | 'ask' | 'starting'>('');
+  const [confirm, setConfirm] = useState<'' | 'end' | 'delete'>('');
+  const [action, setAction] = useState<'' | 'end' | 'delete' | 'open'>('');
+  const [pastKey, setPastKey] = useState(0);
+  const recordIdRef = useRef<string | null>(null);
+  const recordStateRef = useRef<LiveSessionRecord['state'] | null>(null);
+  /** The worker paused from this tab; paused again before a resume in case it is still closing. */
+  const pausedSession = useRef<string | null>(null);
+  const leaveRef = useRef<(reason?: string) => void>(() => {});
   const alertsRef = useRef<AlertMap>({});
   const eventsRef = useRef<MovementEvent[]>([]);
   const revision = useRef(0);
@@ -86,7 +110,7 @@ export function CameraWorkspace() {
   const mounted = useRef(true);
   const phaseRef = useRef<CameraPhase>('idle');
   const seatsRef = useRef<ReviewSeat[]>([]);
-  const busy = phase !== 'idle' && phase !== 'ended';
+  const busy = phase !== 'idle' && phase !== 'ended' && phase !== 'interrupted';
   const ready = !!status?.methods.baseline.ready && !checking;
   useEffect(() => { seatsRef.current = seats; }, [seats]);
 
@@ -96,6 +120,8 @@ export function CameraWorkspace() {
   const setAlerts = (next: AlertMap) => { alertsRef.current = next; setAlertState(next); };
   /** A loaded record replaces the dashboard's alerts and events; its event indexes match the record's. */
   function applyRecord(record: LiveSessionRecord) {
+    recordStateRef.current = record.state;
+    setRecordMeta({ createdAt: record.createdAt, state: record.state, seats: record.settings.seats.length });
     setAlerts(alertsFromRecord(record.alerts));
     eventsRef.current = record.events; setEventState(record.events);
     revision.current = Math.max(revision.current, record.revision);
@@ -107,6 +133,9 @@ export function CameraWorkspace() {
     if (!response.ok) throw new Error(data.error || 'The session could not be loaded.');
     return data.record as LiveSessionRecord;
   }
+  function showRecord(id: string, record: LiveSessionRecord) {
+    recordIdRef.current = id; setRecordId(id); applyRecord(record);
+  }
   /**
    * Reloads the full record. While the frame loop runs, it is queued as a command so no frame is in
    * flight and the record's event list lines up with the events appended from later frames.
@@ -114,7 +143,15 @@ export function CameraWorkspace() {
   function reloadRecord() {
     const current = run.current;
     const id = current?.recordId;
-    if (!current || !id || reloadQueued.current) return;
+    if (!current || !id) {
+      // A stopped, interrupted or reopened session: no frames are in flight, so load it directly.
+      const saved = recordIdRef.current;
+      if (!saved) return;
+      void fetchRecord(saved).then(record => { if (mounted.current && recordIdRef.current === saved) applyRecord(record); })
+        .catch(problem => { if (mounted.current) setMarkMessage(`The alerts could not be reloaded (${(problem as Error).message}). Open the session again.`); });
+      return;
+    }
+    if (reloadQueued.current) return;
     reloadQueued.current = true;
     current.commands.push(async () => {
       reloadQueued.current = false;
@@ -125,6 +162,7 @@ export function CameraWorkspace() {
   function announce(text: string) { setAnnouncement(previous => previous === text ? `${text}\u00a0` : text); }
   function setMuted(next: boolean) { mutedRef.current = next; setMutedState(next); writeMuted(next); }
   function resetDashboard() {
+    recordIdRef.current = null; recordStateRef.current = null; setRecordMeta(null); setStoppedAt(null); setPauseReason(''); setConfirm(''); setResumeStep('');
     setRecordId(null); setAlerts({}); eventsRef.current = []; setEventState([]); setSeatStates(undefined); setSessionTime(0);
     revision.current = 0; reloadQueued.current = false; frameTimes.current = []; setRunning(runningStatus([], 0, 1));
     setMarkMessage(''); setAnnouncement('');
@@ -146,7 +184,8 @@ export function CameraWorkspace() {
     // Marks from another tab raise the revision without appearing in this tab's frames.
     if (typeof result.revision === 'number' && result.revision > revision.current) reloadRecord();
     if (result.notice) setNotice(result.notice);
-    if (result.state && result.state !== 'monitoring') { setNotice(result.notice ?? 'Monitoring has ended.'); void stop(); }
+    if (result.state === 'interrupted') leaveRef.current(LOST_REASON);
+    else if (result.state && result.state !== 'monitoring') { setNotice(result.notice ?? 'Monitoring has ended.'); void stop(); }
   }
 
   async function markAlert(alert: LiveAlert, mark: AlertMark, note: string) {
@@ -187,22 +226,39 @@ export function CameraWorkspace() {
     finally { if (mounted.current) setChecking(false); }
   }, []);
 
-  const stop = useCallback(async () => {
-    const current = run.current;
-    if (!current) return;
-    run.current = null; current.active = false; current.controller.abort(); current.commands.length = 0;
+  /** Ends this run in the browser: stops capture and releases the camera. The server is not told. */
+  const release = useCallback((current: Run) => {
+    if (run.current === current) run.current = null;
+    current.active = false; current.controller.abort(); current.commands.length = 0;
     current.stream?.getTracks().forEach(track => track.stop());
     if (video.current) video.current.srcObject = null;
     health.current = null;
-    const monitored = !!current.recordId;
+  }, []);
+
+  /** After Stop or End session: the saved record (alerts, marks and final state) for the ended view. */
+  const loadEnded = useCallback(async (id: string) => {
+    try { const record = await fetchRecord(id); if (mounted.current && phaseRef.current === 'ended') showRecord(id, record); }
+    catch { /* the alerts already shown stay; Open the session from Past sessions to reload it */ }
+  }, []);
+
+  const stop = useCallback(async () => {
+    const current = run.current;
+    if (!current) return;
+    release(current);
     if (mounted.current) { go('stopping'); setWarnings([]); setEditing(null); setRequesting(''); }
+    // A Start monitoring request already with the server may still create the record; wait, then stop that record.
+    if (current.monitorPending) await current.monitorPending;
+    const monitored = !!current.recordId;
     if (current.sessionId) {
       const outcome = await stopSession(current.sessionId);
       // A preview has nothing to save; a monitored session keeps Stop available until it is saved.
       if (!outcome.ok && monitored) { if (mounted.current) { setStopRetry(current.sessionId); setError(outcome.message); } return; }
     }
-    if (mounted.current && !run.current) { if (!monitored) setHasFrame(false); go(monitored ? 'ended' : 'idle'); }
-  }, [go]);
+    if (mounted.current && !run.current) {
+      if (!monitored) { setHasFrame(false); go('idle'); return; }
+      go('ended'); void loadEnded(current.recordId!);
+    }
+  }, [go, release, loadEnded]);
 
   async function retryStop() {
     if (!stopRetry || retrying) return;
@@ -210,8 +266,50 @@ export function CameraWorkspace() {
     const outcome = await stopSession(stopRetry);
     if (!mounted.current) return;
     setRetrying(false);
-    if (outcome.ok) { setStopRetry(null); go('ended'); } else setError(outcome.message);
+    if (outcome.ok) { setStopRetry(null); go('ended'); if (recordIdRef.current) void loadEnded(recordIdRef.current); } else setError(outcome.message);
   }
+
+  /**
+   * Frames stopped without Stop while monitoring (hidden tab, camera disconnected, processing error): the camera
+   * is released and the record is left `interrupted` on the server so it can be resumed.
+   */
+  async function pause(reason: string) {
+    const current = run.current;
+    const id = current?.recordId;
+    if (!current || !id) return;
+    release(current);
+    pausedSession.current = current.sessionId ?? null;
+    if (mounted.current) {
+      setStoppedAt(new Date()); setPauseReason(reason); setWarnings([]); setRequesting(''); setConfirm(''); setHasFrame(false);
+      go('interrupted');
+    }
+    if (current.sessionId) await interruptSession(current.sessionId);
+    if (!mounted.current) return;
+    try {
+      const record = await fetchRecord(id);
+      if (!mounted.current || recordIdRef.current !== id || phaseRef.current !== 'interrupted') return;
+      applyRecord(record);
+      // The server ended it meanwhile (for example the 3-hour limit), so it cannot be resumed.
+      if (record.state === 'ended') { setPauseReason(''); go('ended'); }
+    } catch { /* the alerts already shown stay */ }
+  }
+
+  /** Leaving the resume check (No, hidden tab, camera error): back to the interrupted view; the record stays interrupted. */
+  function cancelResume(reason = '') {
+    const current = run.current;
+    if (current) release(current);
+    setResumeStep(''); setHasFrame(false); setPauseReason(reason);
+    if (recordIdRef.current && recordStateRef.current === 'interrupted') go('interrupted'); else { if (reason) setError(reason); go('idle'); }
+  }
+
+  /** Hidden tab, page closed, camera unplugged or unmount: pause a monitored session, otherwise stop as before. */
+  function leave(reason?: string) {
+    if (!run.current) return;
+    if (phaseRef.current === 'monitoring' && run.current.recordId) void pause(reason ?? HIDDEN_REASON);
+    else if (phaseRef.current === 'confirming') cancelResume(reason ?? HIDDEN_REASON);
+    else { if (reason && mounted.current) setError(reason); void stop(); }
+  }
+  leaveRef.current = leave;
 
   useEffect(() => {
     mounted.current = true; void check();
@@ -226,19 +324,19 @@ export function CameraWorkspace() {
       }).catch(() => {});
     };
     updateDevices();
-    const hide = () => { if (document.hidden) void stop(); };
-    const leave = () => { void stop(); };
+    const hide = () => { if (document.hidden) leaveRef.current(); };
+    const leavePage = () => { leaveRef.current(); };
     document.addEventListener('visibilitychange', hide);
-    window.addEventListener('pagehide', leave);
+    window.addEventListener('pagehide', leavePage);
     navigator.mediaDevices?.addEventListener('devicechange', updateDevices);
     return () => {
-      mounted.current = false; void stop();
+      mounted.current = false; leaveRef.current();
       chime.current?.close(); chime.current = null;
       document.removeEventListener('visibilitychange', hide);
-      window.removeEventListener('pagehide', leave);
+      window.removeEventListener('pagehide', leavePage);
       navigator.mediaDevices?.removeEventListener('devicechange', updateDevices);
     };
-  }, [check, stop]);
+  }, [check]);
 
   // Monitoring starts with the dashboard at the top of the window, so the live view and alerts are in sight.
   useEffect(() => { if (phase === 'monitoring') grid.current?.scrollIntoView({ block: 'start' }); }, [phase]);
@@ -303,13 +401,16 @@ export function CameraWorkspace() {
     // This click is the user gesture browsers require before the alert sound can play.
     chime.current ??= new Chime(); chime.current.unlock();
     current.commands.push(async () => {
+      let settle!: () => void;
+      current.monitorPending = new Promise(resolve => { settle = resolve; });
       try {
-        const response = await fetch(`/api/camera/${current.sessionId}/monitor`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: current.controller.signal });
+        // Not tied to the run's abort signal: if Stop is pressed meanwhile, Stop waits for this answer and ends the record.
+        const response = await fetch(`/api/camera/${current.sessionId}/monitor`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: AbortSignal.timeout(65_000) });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Monitoring could not start.');
-        if (!isCurrent(current)) return;
         current.recordId = data.recordId;
-        resetDashboard(); setRecordId(data.recordId); applyRecord(data.record as LiveSessionRecord);
+        if (!isCurrent(current)) return;
+        resetDashboard(); showRecord(data.recordId, data.record as LiveSessionRecord);
         // The full record, loaded between frames so its events line up with later frames.
         try { const record = await fetchRecord(data.recordId, current.controller.signal); if (isCurrent(current)) applyRecord(record); }
         catch { /* the record returned by Start monitoring is already shown */ }
@@ -317,43 +418,76 @@ export function CameraWorkspace() {
         go('monitoring');
       } catch (problem) {
         if (isCurrent(current)) setError(`Monitoring could not start: ${(problem as Error).message} Check the seats, then press Start monitoring again.`);
-      } finally { if (isCurrent(current)) setRequesting(''); }
+      } finally {
+        current.monitorPending = undefined; settle();
+        if (isCurrent(current)) setRequesting('');
+      }
     });
   }
 
   function newSession() {
     setSeats([]); setSeatsEdited(false); setHasFrame(false); setNotice(''); setError(''); setSaveError(''); setMeasured(null);
-    resetDashboard();
+    resetDashboard(); pausedSession.current = null;
+    setPastKey(key => key + 1);
     go('idle');
+  }
+
+  /** Opens the chosen camera into the hidden video element; a disconnect pauses a monitored session. */
+  async function openCamera(current: Run): Promise<MediaStream> {
+    const valid = () => isCurrent(current);
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access is unavailable here. Open Ocular at http://127.0.0.1:3000 in Chrome, Edge or Firefox.');
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 }, ...(device ? { deviceId: { exact: device } } : {}) } });
+    if (!valid()) { stream.getTracks().forEach(track => track.stop()); throw new DOMException('Camera start cancelled.', 'AbortError'); }
+    current.stream = stream;
+    stream.getVideoTracks().forEach(track => track.addEventListener('ended', () => {
+      if (!valid()) return;
+      const again = phaseRef.current === 'monitoring' || phaseRef.current === 'confirming' ? 'Resume' : 'Start';
+      leaveRef.current(`The camera disconnected. Reconnect it, then press ${again}${again === 'Start' ? ' again' : ''}.`);
+    }, { once: true }));
+    stream.getVideoTracks().forEach(track => {
+      track.addEventListener('mute', () => { if (valid() && health.current) health.current.muted = true; });
+      track.addEventListener('unmute', () => { if (valid() && health.current) health.current.muted = false; });
+    });
+    const used = stream.getVideoTracks()[0]?.getSettings().deviceId;
+    if (used) { writeSavedDevice(used); setDevice(used); }
+    if (!video.current) throw new Error('The camera picture could not open. Press Start again.');
+    video.current.srcObject = stream;
+    await video.current.play();
+    void navigator.mediaDevices.enumerateDevices().then(list => { if (valid()) setDevices(list.filter(item => item.kind === 'videoinput')); }).catch(() => {});
+    return stream;
+  }
+
+  /** The frame loop for a run whose worker is ready; it returns when the run is released. */
+  function capture(current: Run, stream: MediaStream) {
+    if (!output.current || !video.current) throw new Error('Camera drawing is unavailable in this browser. Use Chrome, Edge or Firefox.');
+    return runCaptureLoop({ run: current, video: video.current, target: output.current, stream, health, valid: () => isCurrent(current),
+      phase: () => phaseRef.current, seats: () => seatsRef.current,
+      overlay: () => ({ highlighted: openAlertSeats(alertsRef.current) }),
+      onDrawn: () => setHasFrame(true),
+      onSetupReceived: setReceived,
+      onSetupComplete: () => { current.commands.push(() => findSeats(current)); },
+      onMonitorFrame,
+    });
+  }
+
+  /** A frame-loop failure: a monitored session is paused (resumable); before monitoring the camera stops as before. */
+  async function captureFailed(current: Run, problem: unknown) {
+    if (!isCurrent(current)) return;
+    if (phaseRef.current === 'monitoring' && current.recordId) await pause(LOST_REASON);
+    else { setError(cameraError(problem)); await stop(); }
   }
 
   async function start() {
     if (run.current || !ready) return;
     setError(''); setNotice(''); setSaveError(''); setWarnings([]); setSeats([]); setSeatsEdited(false); setSetupError('');
-    setEditing(null); setMeasured(null); setHasFrame(false); setReceived(0); setStopRetry(null); resetDashboard();
+    setEditing(null); setMeasured(null); setHasFrame(false); setReceived(0); setStopRetry(null); resetDashboard(); pausedSession.current = null;
     go('permission');
     const current = newRun();
     run.current = current;
     const valid = () => isCurrent(current);
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access is unavailable here. Open Ocular at http://127.0.0.1:3000 in Chrome, Edge or Firefox.');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 }, ...(device ? { deviceId: { exact: device } } : {}) } });
-      if (!valid()) { stream.getTracks().forEach(track => track.stop()); return; }
-      current.stream = stream;
-      stream.getVideoTracks().forEach(track => track.addEventListener('ended', () => {
-        if (valid()) { setError('The camera disconnected. Reconnect it, then press Start again.'); void stop(); }
-      }, { once: true }));
-      stream.getVideoTracks().forEach(track => {
-        track.addEventListener('mute', () => { if (valid() && health.current) health.current.muted = true; });
-        track.addEventListener('unmute', () => { if (valid() && health.current) health.current.muted = false; });
-      });
-      const used = stream.getVideoTracks()[0]?.getSettings().deviceId;
-      if (used) { writeSavedDevice(used); setDevice(used); }
-      if (!video.current) throw new Error('The camera picture could not open. Press Start again.');
-      video.current.srcObject = stream;
-      await video.current.play();
+      const stream = await openCamera(current);
       if (!valid()) return;
-      void navigator.mediaDevices.enumerateDevices().then(list => { if (valid()) setDevices(list.filter(item => item.kind === 'videoinput')); }).catch(() => {});
       go('loading');
       const response = await fetch('/api/camera', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mirrored, tileGrid }), signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(65_000)]) });
@@ -362,28 +496,162 @@ export function CameraWorkspace() {
       current.sessionId = data.sessionId;
       if (!valid()) { await stopSession(data.sessionId); return; }
       go('preparing');
-      if (!output.current) throw new Error('Camera drawing is unavailable in this browser. Use Chrome, Edge or Firefox.');
-      await runCaptureLoop({ run: current, video: video.current, target: output.current, stream, health, valid,
-        phase: () => phaseRef.current, seats: () => seatsRef.current,
-        overlay: () => ({ highlighted: openAlertSeats(alertsRef.current) }),
-        onDrawn: () => setHasFrame(true),
-        onSetupReceived: setReceived,
-        onSetupComplete: () => { current.commands.push(() => findSeats(current)); },
-        onMonitorFrame,
-      });
+      await capture(current, stream);
+    } catch (problem) { await captureFailed(current, problem); }
+  }
+
+  /** Resume step 1: load the interrupted record, open the camera and draw the saved seats over it. */
+  async function beginResume(id: string) {
+    if (run.current) return;
+    if (!ready) { setError('The local processor is not ready. Press Recheck, then press Resume again.'); return; }
+    setError(''); setNotice(''); setSaveError(''); setWarnings([]); setConfirm(''); setStopRetry(null); setEditing(null); setHasFrame(false);
+    setResumeStep('loading'); go('confirming');
+    const current = newRun(); current.resumeOf = id;
+    run.current = current;
+    const valid = () => isCurrent(current);
+    try {
+      // A worker paused from this tab may still be closing; pausing again is harmless.
+      if (pausedSession.current) { await interruptSession(pausedSession.current); pausedSession.current = null; }
+      const record = await fetchRecord(id, current.controller.signal);
+      if (!valid()) return;
+      if (record.state !== 'interrupted') {
+        throw new Error(record.state === 'ended' ? 'This session has ended, so it cannot be resumed. Open it from Past sessions to mark alerts or download the PDF.'
+          : 'This session is live in another tab or window. Use that tab to continue.');
+      }
+      resetDashboard(); showRecord(id, record);
+      setStoppedAt(interruptedAt(record)); setSessionTime(record.lastTime); setResumeStep('camera');
+      setSeats(displaySeats(record.settings)); setMirrored(record.settings.mirrored); setTileGrid(record.settings.tileGrid);
+      seatsRef.current = displaySeats(record.settings);
+      await openCamera(current);
+      if (valid()) setResumeStep('ask');
     } catch (problem) {
-      if (valid()) { setError(cameraError(problem)); await stop(); }
+      if (!valid()) return;
+      const message = cameraError(problem, 'Resume');
+      release(current); setResumeStep('');
+      if (recordIdRef.current === id && recordStateRef.current === 'interrupted') { setPauseReason(''); setError(message); go('interrupted'); }
+      else { resetDashboard(); setError(message); setPastKey(key => key + 1); go('idle'); }
     }
   }
+
+  /** Resume step 2 (Yes, resume): a new worker continues the same record with its saved settings. */
+  async function confirmResume() {
+    const current = run.current;
+    const id = current?.resumeOf;
+    if (!current || !id || phaseRef.current !== 'confirming' || resumeStep !== 'ask' || !current.stream) return;
+    const stream = current.stream;
+    const valid = () => isCurrent(current);
+    setError(''); setResumeStep('starting');
+    // This click is the user gesture browsers require before the alert sound can play.
+    chime.current ??= new Chime(); chime.current.unlock();
+    try {
+      const response = await fetch('/api/camera', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mirrored, tileGrid, resume: id }), signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(65_000)]) });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Monitoring could not resume.');
+      current.sessionId = data.sessionId;
+      // Left the check while the worker started: pause it again so the record stays interrupted.
+      if (!valid()) { await interruptSession(data.sessionId); return; }
+      current.recordId = id;
+      applyRecord(data.record as LiveSessionRecord);
+      try { const record = await fetchRecord(id, current.controller.signal); if (valid()) applyRecord(record); }
+      catch { /* the record returned by Resume is already shown */ }
+      if (!valid()) return;
+      setResumeStep(''); setStoppedAt(null); setPauseReason(''); frameTimes.current = [];
+      go('monitoring');
+      await capture(current, stream);
+    } catch (problem) {
+      if (!valid()) return;
+      if (current.recordId) { await captureFailed(current, problem); return; }
+      setResumeStep('ask');
+      setError(`Monitoring could not resume: ${(problem as Error).message} Press Yes, resume to try again, or No, end this session.`);
+    }
+  }
+
+  /** End session (interrupted view, or No at the seat check): the record is ended; marking and the PDF still work. */
+  async function endSession() {
+    const id = recordIdRef.current;
+    if (!id || action) return;
+    if (run.current) release(run.current);
+    setResumeStep(''); setHasFrame(false); setError(''); setAction('end');
+    try {
+      const response = await fetch(`/api/camera/sessions/${encodeURIComponent(id)}/end`, { method: 'POST', signal: AbortSignal.timeout(20_000) });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'The session could not be ended.');
+      if (!mounted.current || recordIdRef.current !== id) return;
+      applyRecord(data.record as LiveSessionRecord);
+      setConfirm(''); setPauseReason(''); setStoppedAt(null); pausedSession.current = null;
+      go('ended');
+    } catch (problem) {
+      if (!mounted.current) return;
+      setError(`The session could not be ended (${(problem as Error).message}). Press End session again.`);
+      if (phaseRef.current === 'confirming') go('interrupted');
+    } finally { if (mounted.current) setAction(''); }
+  }
+
+  async function deleteCurrent() {
+    const id = recordIdRef.current;
+    if (!id || action) return;
+    setError(''); setAction('delete');
+    const problem = await deleteSession(id);
+    if (!mounted.current) return;
+    setAction('');
+    if (problem) { setError(problem); return; }
+    newSession();
+  }
+
+  /** Past sessions → Open: the saved record's alerts (marking allowed) and its PDF, without a live view. */
+  async function openRecord(id: string) {
+    if (run.current || action) return;
+    setError(''); setNotice(''); setSaveError(''); setAction('open');
+    try {
+      const record = await fetchRecord(id);
+      if (!mounted.current || run.current) return;
+      resetDashboard(); showRecord(id, record);
+      setSeats(displaySeats(record.settings)); setHasFrame(false); setSessionTime(record.lastTime);
+      if (record.state === 'interrupted') { setStoppedAt(interruptedAt(record)); go('interrupted'); }
+      else go('ended');
+    } catch (problem) {
+      if (mounted.current) setError(`The session could not be opened (${(problem as Error).message}). Press Open again.`);
+    } finally { if (mounted.current) setAction(''); }
+  }
+
+  // While asking whether the seats still line up, the live camera is drawn with the saved seat boxes (no processing yet).
+  useEffect(() => {
+    if (phase !== 'confirming') return;
+    let handle = 0;
+    const paint = () => {
+      const source = video.current, target = output.current, context = target?.getContext('2d');
+      if (source && target && context && source.readyState >= 2 && source.videoWidth) {
+        if (target.width !== source.videoWidth || target.height !== source.videoHeight) { target.width = source.videoWidth; target.height = source.videoHeight; }
+        context.drawImage(source, 0, 0, target.width, target.height);
+        drawSeatBoxes(context, seatsRef.current, target.width, target.height);
+        setHasFrame(true);
+      }
+      handle = requestAnimationFrame(paint);
+    };
+    handle = requestAnimationFrame(paint);
+    return () => cancelAnimationFrame(handle);
+  }, [phase]);
 
   const statusText = phase === 'permission' ? 'Starting the camera… Allow camera access if the browser asks.'
     : phase === 'loading' ? 'Starting the camera…'
     : phase === 'preparing' ? (requesting === 'setup' ? 'Getting ready: numbering the seats…' : preparingText(received))
     : phase === 'found' && requesting === 'monitor' ? 'Starting monitoring…'
     : phase === 'stopping' ? (stopRetry ? (retrying ? 'Saving the session…' : 'The session is not saved yet.') : 'Stopping and saving the session…')
+    : phase === 'confirming' ? (resumeStep === 'loading' ? 'Loading the session…' : resumeStep === 'camera' ? 'Starting the camera… Allow camera access if the browser asks.'
+      : resumeStep === 'starting' ? 'Resuming… starting live processing.' : action === 'end' ? 'Ending the session…' : '')
+    : action === 'end' ? 'Ending the session…' : action === 'open' ? 'Opening the session…' : action === 'delete' ? 'Deleting the session…'
     : '';
-  const waiting = phase === 'permission' || phase === 'loading' || phase === 'preparing' || (phase === 'stopping' && (!stopRetry || retrying)) || requesting === 'monitor';
+  const waiting = phase === 'permission' || phase === 'loading' || phase === 'preparing' || (phase === 'stopping' && (!stopRetry || retrying)) || requesting === 'monitor'
+    || (phase === 'confirming' && resumeStep !== 'ask') || !!action;
   const monitoring = phase === 'monitoring';
+  /** A saved session shown without a live view: interrupted, ended or reopened from Past sessions. */
+  const saved = (phase === 'interrupted' || phase === 'ended') && !!recordId;
+  const alertList = Object.values(alerts);
+  const unmarked = alertList.filter(alert => alert.mark === null).length;
+  const sessionLine = recordMeta && <p className="session-line">Started {formatSessionDate(recordMeta.createdAt)} · {countText(recordMeta.seats, 'seat')} · {countText(alertList.length, 'alert')} · {unmarkedText(alertList.length, unmarked)}</p>;
+  const pdf = (primary: boolean) => recordId && <PdfReportDownload url={reportUrl(recordId)} filename={reportFilename(recordMeta?.createdAt ?? '')}
+    variant={primary ? 'default' : 'outline'} size={primary ? 'lg' : 'default'} buttonClassName={primary ? 'camera-primary' : undefined} />;
   const sortedAlerts = sortAlerts(alerts);
   const openSeats = openAlertSeats(alerts);
   const longSession = longSessionWarning(sessionTime);
@@ -393,7 +661,7 @@ export function CameraWorkspace() {
         <CameraAdvancedSettings inputLocked={busy} rulesLocked={phase === 'monitoring' || phase === 'stopping' || phase === 'ended' || !!requesting}
           mirrored={mirrored} onMirrored={setMirrored} tileGrid={tileGrid} onTileGrid={setTileGrid}
           rules={rules} onRules={setRules} gapOverride={gapOverride} onGapOverride={setGapOverride} measured={measured} />
-        <p className="camera-note">No video is recorded. While monitoring, the session and a small picture of the seat for each alert are saved on this computer. Hiding this tab stops the camera.</p>
+        <p className="camera-note">No video is recorded. While monitoring, the session and a small picture of the seat for each alert are saved on this computer. Hiding this tab pauses monitoring and releases the camera; press Resume to continue.</p>
   </>;
   const cameraName = (item: MediaDeviceInfo, index: number) => item.label || `Camera ${index + 1}`;
 
@@ -452,35 +720,68 @@ export function CameraWorkspace() {
           <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={() => void retryStop()} disabled={retrying}>{retrying ? <LoaderCircle size={16} className="spin" /> : <Square size={16} />}Stop</Button></div>
         </div>}
 
+        {phase === 'interrupted' && <div className="setup-panel">
+          <h3 className="setup-title">Session interrupted</h3>
+          <p className="setup-lead" role="status">{interruptionText(stoppedAt ?? new Date())}</p>
+          {pauseReason && <p className="setup-warning" role="note">{pauseReason}</p>}
+          {sessionLine}
+          <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={() => recordId && void beginResume(recordId)} disabled={!recordId || !!action || !ready}><Play size={16} />Resume</Button></div>
+          {confirm === 'end'
+            ? <InlineConfirm text={END_CONFIRM_TEXT} confirmLabel="End session" cancelLabel="Keep it" busy={action === 'end'} busyLabel="Ending…"
+                onConfirm={() => void endSession()} onCancel={() => setConfirm('')} />
+            : <div className="setup-secondary"><Button variant="outline" onClick={() => setConfirm('end')} disabled={!!action}><Square size={15} />End session</Button>{pdf(false)}</div>}
+          <button type="button" className="setup-link" onClick={newSession} disabled={!!action}>Back to past sessions</button>
+        </div>}
+
+        {phase === 'confirming' && <div className="setup-panel">
+          <h3 className="setup-title">{resumeStep === 'ask' || resumeStep === 'starting' ? SEATS_QUESTION : 'Resuming the session'}</h3>
+          {(resumeStep === 'ask' || resumeStep === 'starting') && <>
+            <p className="setup-lead">The saved seat boxes are drawn on the live view. If each box still sits on its desk, resume. If the camera moved, end this session and start a new one.</p>
+            <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={() => void confirmResume()} disabled={resumeStep === 'starting' || !!action}>
+              {resumeStep === 'starting' ? <LoaderCircle size={16} className="spin" /> : <Check size={16} />}Yes, resume</Button></div>
+            <div className="setup-secondary"><Button variant="outline" onClick={() => void endSession()} disabled={resumeStep === 'starting' || !!action}><X size={15} />No, end this session</Button></div>
+          </>}
+          <button type="button" className="setup-link" onClick={() => cancelResume()} disabled={resumeStep === 'starting' || !!action}>Not now</button>
+        </div>}
+
         {phase === 'ended' && <div className="setup-panel">
-          <h3 className="setup-title">Monitoring stopped</h3>
-          <p className="setup-lead">{notice ? `${notice} ` : ''}The session is saved on this computer.</p>
-          <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={newSession}><Play size={16} />New session</Button></div>
+          <h3 className="setup-title">{recordMeta?.state === 'monitoring' ? 'This session is live' : 'Monitoring stopped'}</h3>
+          <p className="setup-lead">{recordMeta?.state === 'monitoring'
+            ? 'It is being monitored in another tab or window. You can mark alerts here; stop it from that tab.'
+            : `${notice ? `${notice} ` : ''}The session is saved on this computer. Mark any remaining alerts, then download the PDF report.`}</p>
+          {sessionLine}
+          {recordId && <div className="camera-actions">{pdf(true)}</div>}
+          {confirm === 'delete'
+            ? <InlineConfirm text={DELETE_CONFIRM_TEXT} confirmLabel="Delete" cancelLabel="Keep" busy={action === 'delete'} busyLabel="Deleting…"
+                onConfirm={() => void deleteCurrent()} onCancel={() => setConfirm('')} />
+            : <div className="setup-secondary"><Button variant="outline" onClick={newSession} disabled={!!action}><Play size={15} />New session</Button>
+              {recordId && recordMeta?.state !== 'monitoring' && <Button variant="outline" onClick={() => setConfirm('delete')} disabled={!!action}><Trash2 size={15} />Delete session</Button>}</div>}
         </div>}
 
         <p className="camera-status" role="status" hidden={monitoring && !statusText}>{waiting ? <LoaderCircle size={14} className="spin" /> : null}{statusText}</p>
         {error && <div className="analysis-error" role="alert"><AlertCircle size={17} /><span>{error}</span></div>}
-        {!monitoring && details}
+        {!monitoring && phase !== 'interrupted' && phase !== 'confirming' && phase !== 'ended' && details}
       </div></section>
 
-      <section className="workspace-card camera-output" aria-labelledby="camera-view-title"><div className="workspace-card-header"><h2 id="camera-view-title">Live view</h2><span>{phase === 'monitoring' ? 'MONITORING' : live ? 'LIVE' : 'NOT LIVE'}</span></div><div className="results-body">
+      <section className="workspace-card camera-output" aria-labelledby="camera-view-title" hidden={saved}><div className="workspace-card-header"><h2 id="camera-view-title">Live view</h2><span>{phase === 'monitoring' ? 'MONITORING' : live || phase === 'confirming' ? 'LIVE' : 'NOT LIVE'}</span></div><div className="results-body">
         <video ref={video} className="camera-source" muted playsInline aria-hidden="true" tabIndex={-1} />
         {editing && <SeatAdjuster image={editing.image} initial={seats}
           onSave={next => { setSeats(numberSeats(next)); setSeatsEdited(true); setSetupError(''); setEditing(null); }}
           onCancel={() => setEditing(null)} />}
         <div className="camera-processed" hidden={!!editing}>
-          <canvas ref={output} hidden={!hasFrame} aria-label={seats.length && (phase === 'found' || monitoring) ? `Live camera view with ${seats.length} numbered seat boxes${monitoring ? '; seats with an alert are outlined in orange' : ''}` : 'Live camera view'} />
+          <canvas ref={output} hidden={!hasFrame} aria-label={seats.length && (phase === 'found' || phase === 'confirming' || monitoring) ? `Live camera view with ${seats.length} numbered seat boxes${monitoring ? '; seats with an alert are outlined in orange' : phase === 'confirming' ? ' from the saved session' : ''}` : 'Live camera view'} />
           {!hasFrame && <div className="camera-placeholder"><Camera size={32} /><p>{phase === 'idle' ? 'Press Start to open the camera.' : statusText || 'The camera picture appears here.'}</p></div>}
         </div>
         {monitoring && <CameraSeatGrid seats={seats} states={seatStates} openSeats={openSeats} status={running} />}
         <p className="result-disclaimer">Alerts are prompts to look, not findings. Head direction is not eye gaze or evidence of misconduct.</p>
       </div></section>
-      {monitoring && <CameraAlertsPanel recordId={recordId} alerts={sortedAlerts} events={events} muted={muted} onMuted={setMuted}
-        onMark={markAlert} message={markMessage} announcement={announcement} />}
+      {(monitoring || saved) && <CameraAlertsPanel recordId={recordId} alerts={sortedAlerts} events={events} muted={muted} onMuted={setMuted}
+        onMark={markAlert} message={markMessage} announcement={announcement} live={monitoring} />}
       {monitoring && <details className="workspace-card monitor-details">
         <summary>Details: camera checks, settings and storage</summary>
         <div className="input-card-body">{details}</div>
       </details>}
     </div>
+    {phase === 'idle' && <CameraPastSessions refreshKey={pastKey} onOpen={id => void openRecord(id)} onResume={id => void beginResume(id)} disabled={!!action} />}
   </>;
 }
