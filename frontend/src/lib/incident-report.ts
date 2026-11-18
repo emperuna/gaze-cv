@@ -1,20 +1,22 @@
 import { DIRECTIONS } from './analysis-contract.ts';
 import type { Detection } from './analysis-contract.ts';
-import type { CameraResult, CameraSettings } from './camera-contract.ts';
+import { alertTitle } from './live-alerts.ts';
+import type { LiveSessionRecord } from './live-alerts.ts';
 import { timeLabel } from './review-contract.ts';
 import type { ReviewRecord, SavedReview } from './review-contract.ts';
 import { groupReviewEvents, seatCoverage } from './review-workflow.ts';
 import type { ReviewWorkflow } from './review-workflow.ts';
 
 export const MAX_REPORT_ITEMS = 500;
-export const MAX_CAMERA_SAMPLES = 18000;
 export const REPORT_DISCLAIMER = 'Automated head movements do not establish cheating or intent. Ordinary writing and brief turns can produce these observations. A proctor must review the original context before recording any conclusion.';
 export interface ObservationSample { frame: number; time: number; counts: Record<string, number> }
-export interface ReportItem { label: string; time: string; detail: string; status: string; notes: string }
+export interface ReportItem { label: string; time: string; detail: string; status: string; notes: string; image?: string | null }
 export interface IncidentReport {
   schemaVersion: 1; mode: 'image' | 'video' | 'camera'; id: string; source: string; generatedAt: string;
   metadata: [string, string][]; summary: string; items: ReportItem[]; omittedItems: number;
   coverage: string[]; notes: string; reviewer: string; signedOffAt: string | null; limitations: string[];
+  /** Absolute session folder that item images are relative to; set with `confidential` for stills. */
+  imageRoot?: string; confidential?: boolean;
 }
 
 export function countDirections(detections: Detection[]) {
@@ -56,50 +58,47 @@ export function observationItems(samples: ObservationSample[]) {
     omittedItems: Math.max(0, candidates.length - MAX_REPORT_ITEMS) };
 }
 
-export interface CameraReportSnapshot {
-  id: string; method: string; startedAt: string; endedAt: string | null; settings: CameraSettings;
-  frames: number; lastTimestamp: number; samples: ObservationSample[]; omittedSamples: number;
-  totals: Record<string, number>; gaps: string[]; omittedGaps: number; framesWithoutUsableHeads: number;
-}
+const seatLabel = (id: string) => `Seat ${id.startsWith('seat-') ? id.slice(5) : id}`;
+const clock = (seconds: number) => {
+  const whole = Math.floor(seconds);
+  return `${String(Math.floor(whole / 60)).padStart(2, '0')}:${String(whole % 60).padStart(2, '0')}`;
+};
+const MIN_TAIL_GAP_SECONDS = 2;
 
-/** Bounded numeric summaries only: no JPEGs, boxes, identities or continuous video. */
-export class CameraReportLog {
-  readonly snapshot: CameraReportSnapshot;
-  constructor(id: string, settings: CameraSettings) {
-    this.snapshot = { id, method: 'baseline', startedAt: new Date().toISOString(), endedAt: null, settings: { ...settings },
-      frames: 0, lastTimestamp: -1, samples: [], omittedSamples: 0, totals: countDirections([]), gaps: [], omittedGaps: 0, framesWithoutUsableHeads: 0 };
+/** Alerts, marks, stills and coverage of a live session; `recordRoot` is the session folder that holds `stills/`. */
+export function liveSessionReport(record: LiveSessionRecord, recordRoot: string): IncidentReport {
+  const report = baseReport('camera', record.id, 'Local live camera - saved alerts and stills');
+  const { settings } = record;
+  report.confidential = true; report.imageRoot = recordRoot;
+  const alerts = record.alerts.slice(0, MAX_REPORT_ITEMS);
+  report.items = alerts.map(alert => ({ label: alertTitle(alert, record.events), time: `${clock(alert.openedAt)} \u2013 ${clock(alert.lastAt)}`,
+    detail: `${alert.eventIndexes.map(i => record.events[i]?.event_type).filter(Boolean).join(', ') || 'movement'}; looking ${alert.direction}; ${alert.eventIndexes.length} ${alert.eventIndexes.length === 1 ? 'event' : 'events'}; ${seatLabel(alert.seatId)}.`
+      + (alert.still ? '' : alert.stillError ? ` No still saved: ${alert.stillError}` : ' No still saved.'),
+    status: alert.mark ?? 'Not reviewed', notes: alert.note, image: alert.still }));
+  report.omittedItems = Math.max(0, record.alerts.length - alerts.length);
+  const withoutStill = record.alerts.filter(alert => !alert.still).length;
+  report.metadata = [['Method', 'Baseline'], ['Session started (UTC)', record.createdAt], ['Session ended (UTC)', record.endedAt ?? 'Not ended'],
+    ['Seats', settings.seats.map(seat => seatLabel(seat.id)).join(', ') || 'None'], ['Movement settings', JSON.stringify(settings.movement)],
+    ['Maximum gap', `${settings.movement.max_gap} s (${settings.maxGapAuto ? 'automatic' : 'manual'})`],
+    ['Monitoring segments', record.segments.map(segment => `${clock(segment.offsetSeconds)} to ${segment.endSeconds === null ? 'open' : clock(segment.endSeconds)}`).join('; ') || 'None'],
+    ['Processed frames', String(record.framesProcessed)]];
+  const unmarked = record.alerts.filter(alert => !alert.mark).length;
+  report.summary = `${record.alerts.length} seat checks were raised; ${unmarked} not reviewed. Stills are listed with the alert that produced them. These are head-movement observations for review, not findings.`;
+  record.segments.slice(1).forEach((next, index) => {
+    const end = record.segments[index].endSeconds;
+    if (end !== null && next.offsetSeconds > end) report.coverage.push(`Not monitored from ${clock(end)} to ${clock(next.offsetSeconds)}`);
+  });
+  for (const [seatId, seat] of Object.entries(record.coverage)) {
+    if (seat.frames === 0) { report.coverage.push(`${seatLabel(seatId)}: not observed`); continue; }
+    const unknown = seat.gaps.map(gap => `unknown ${clock(gap.start)}\u2013${clock(gap.end)}`);
+    if (seat.unknownSince !== null && record.lastTime - seat.unknownSince >= MIN_TAIL_GAP_SECONDS)
+      unknown.push(`unknown ${clock(seat.unknownSince)}\u2013${clock(record.lastTime)} (still unknown at the end)`);
+    if (seat.omittedGaps) unknown.push(`${seat.omittedGaps} further unknown intervals not listed`);
+    report.coverage.push([`${seatLabel(seatId)}: observed ${Math.round(100 * seat.observedFrames / seat.frames)}% of processed frames`, ...unknown].join('; '));
   }
-  add(result: CameraResult) {
-    const data = this.snapshot;
-    if (data.endedAt || result.timestamp_seconds <= data.lastTimestamp) return;
-    const counts = countDirections(result.result.detections);
-    const previous = Math.max(0, data.lastTimestamp);
-    if (result.timestamp_seconds - previous >= 5) {
-      const gap = `${timeLabel(previous)} to ${timeLabel(result.timestamp_seconds)}: no intervening processed capture is available.`;
-      if (data.gaps.length < 200) data.gaps.push(gap); else data.omittedGaps++;
-    }
-    data.frames++; data.lastTimestamp = result.timestamp_seconds;
-    if (Object.entries(counts).filter(([key]) => key !== 'unknown').reduce((sum, [, count]) => sum + count, 0) === 0) data.framesWithoutUsableHeads++;
-    for (const direction of DIRECTIONS) data.totals[direction] += counts[direction];
-    if (data.samples.length < MAX_CAMERA_SAMPLES) data.samples.push({ frame: result.id, time: result.timestamp_seconds, counts });
-    else data.omittedSamples++;
-  }
-  end() { this.snapshot.endedAt ??= new Date().toISOString(); }
-}
-
-export function cameraIncidentReport(data: CameraReportSnapshot) {
-  const report = baseReport('camera', data.id, 'Local live camera - no video recording');
-  report.metadata = [['Method', data.method], ['Started at (UTC)', data.startedAt], ['Ended at (UTC)', data.endedAt || 'Still running; report is a snapshot'],
-    ['Processed frames', String(data.frames)], ['Last processed capture', data.lastTimestamp < 0 ? 'None' : timeLabel(data.lastTimestamp)],
-    ['Direction observations (not unique people)', countLabel(data.totals)], ['Input settings', JSON.stringify(data.settings)]];
-  Object.assign(report, observationItems(data.samples));
-  report.summary = `${data.frames} processed camera captures; ${report.items.length + report.omittedItems} retained frames have non-forward observations. These are individual observations, not tracked or confirmed incidents.`;
-  report.coverage = [`${data.framesWithoutUsableHeads} processed frames have no usable head direction. No continuous coverage is inferred between captures.`, ...data.gaps];
-  if (data.omittedGaps) report.coverage.push(`${data.omittedGaps} additional sampling gaps are omitted from this bounded report.`);
-  if (data.omittedSamples) report.coverage.push(`${data.omittedSamples} later frame summaries were not retained after the ${MAX_CAMERA_SAMPLES}-frame limit. Totals include them; the item list is incomplete.`);
-  report.limitations.push('Capture time is elapsed camera-session time. Frames/pixels are not saved; this report cannot replay or independently verify the scene.',
-    'Camera mode does not assign seats, track people, or establish sustained/repeated movements. Slow inference and interrupted capture create unobserved intervals.',
-    'Numeric summaries expire from server memory after 30 minutes following Stop, on server restart, or when the eight-session cache fills. Download and retain the PDF as needed.');
+  if (withoutStill) report.coverage.push(`${withoutStill} ${withoutStill === 1 ? 'alert' : 'alerts'} without a saved still.`);
+  report.limitations.push('Stills show one frame at the moment of the alert and cannot replay the scene. The session folder holds no video.',
+    'Frames where a seat could not be read are shown as unknown time, not as forward-facing time.');
   return report;
 }
 

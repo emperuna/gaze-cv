@@ -10,8 +10,8 @@ def main():
     if len(body) > 4 * 1024 * 1024:
         raise ValueError('Report data exceeds 4 MB')
     pdf = render_incident_pdf(json.loads(body))
-    if len(pdf) > 8 * 1024 * 1024:
-        raise ValueError('Generated PDF exceeds 8 MB')
+    if len(pdf) > 48 * 1024 * 1024:
+        raise ValueError('Generated PDF exceeds 48 MB')
     sys.stdout.buffer.write(pdf)
 
 

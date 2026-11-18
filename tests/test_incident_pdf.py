@@ -1,6 +1,11 @@
 import copy
 import re
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
+
+from reportlab.pdfgen import canvas as rl_canvas
 
 from gaze.incident_pdf import render_incident_pdf, validate_report
 
@@ -53,3 +58,79 @@ class IncidentPdfTests(unittest.TestCase):
                         {'omittedItems': -1}, {'coverage': [None]}, {'signedOffAt': 42}]:
             with self.subTest(changes=str(changes)[:70]), self.assertRaises(ValueError):
                 validate_report({**report(), **changes})
+
+
+def small_jpeg(path):
+    from PIL import Image
+    Image.new('RGB', (320, 240), (200, 60, 40)).save(path, 'JPEG')
+
+
+FOOTER = 'Confidential: contains images of students. Keep only as long as your institution allows.'
+
+
+class AlertStillTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        (self.root / 'stills').mkdir()
+        small_jpeg(self.root / 'stills' / 'a1.jpg')
+        self.addCleanup(self.tmp.cleanup)
+
+    def with_image(self, image='stills/a1.jpg', count=1):
+        value = report('camera')
+        value['imageRoot'] = str(self.root)
+        value['items'] = [{**value['items'][0], 'image': image} for _ in range(count)]
+        return value
+
+    def test_alert_still_renders(self):
+        plain = render_incident_pdf(report('camera'))
+        with_still = render_incident_pdf(self.with_image())
+        self.assertGreater(len(with_still), len(plain))
+        self.assertIn(b'/Subtype /Image', with_still)
+
+    def test_image_outside_root_rejected(self):
+        small_jpeg(self.root.parent / 'x.jpg')
+        self.addCleanup(lambda: (self.root.parent / 'x.jpg').unlink())
+        with self.assertRaises(ValueError):
+            validate_report(self.with_image('../x.jpg'))
+
+    def test_png_rejected(self):
+        from PIL import Image
+        Image.new('RGB', (8, 8)).save(self.root / 'stills' / 'a1.png', 'PNG')
+        with self.assertRaises(ValueError):
+            validate_report(self.with_image('stills/a1.png'))
+        (self.root / 'stills' / 'fake.jpg').write_bytes(b'\x89PNG' + b'0' * 20)
+        with self.assertRaises(ValueError):
+            validate_report(self.with_image('stills/fake.jpg'))
+
+    def test_oversized_and_missing_images_rejected(self):
+        (self.root / 'stills' / 'big.jpg').write_bytes(b'\xff\xd8\xff' + b'0' * 200_000)
+        with self.assertRaises(ValueError):
+            validate_report(self.with_image('stills/big.jpg'))
+        with self.assertRaises(ValueError):
+            validate_report(self.with_image('stills/missing.jpg'))
+
+    def test_image_without_root_rejected(self):
+        value = self.with_image()
+        del value['imageRoot']
+        with self.assertRaises(ValueError):
+            validate_report(value)
+
+    def test_more_than_200_images_rejected(self):
+        validate_report(self.with_image(count=200))
+        with self.assertRaises(ValueError):
+            validate_report(self.with_image(count=201))
+
+    def test_confidential_footer_text(self):
+        drawn = []
+        real = rl_canvas.Canvas.drawString
+        def spy(canvas, x, y, text, *args, **kwargs):
+            drawn.append(text)
+            return real(canvas, x, y, text, *args, **kwargs)
+        for confidential, expected in [(True, True), (False, False)]:
+            drawn.clear()
+            value = report('camera')
+            value['confidential'] = confidential
+            with mock.patch.object(rl_canvas.Canvas, 'drawString', spy):
+                render_incident_pdf(value)
+            self.assertEqual(FOOTER in drawn, expected)

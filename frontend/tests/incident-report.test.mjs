@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PassThrough } from 'node:stream';
 import { EventEmitter } from 'node:events';
 import { CameraSession } from '../src/lib/camera-session.ts';
-import { CameraReportLog, MAX_CAMERA_SAMPLES, cameraIncidentReport, imageIncidentReport, observationItems, savedIncidentReport } from '../src/lib/incident-report.ts';
+import { imageIncidentReport, liveSessionReport, observationItems, savedIncidentReport } from '../src/lib/incident-report.ts';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { emptyWorkflow } from '../src/lib/review-workflow.ts';
 
@@ -34,29 +34,6 @@ test('frame observations remain separate across time and report truncation expli
   assert.equal(report.items[0].time, '00:00.00'); assert.equal(report.items[1].time, '00:00.10');
 });
 
-test('camera logs retain numeric data only, expose missing captures, and survive Stop for reporting', () => {
-  const log = new CameraReportLog('id', settings);
-  log.add(result(1, .1, [detection('left')]));
-  log.add(result(2, .2, [detection('unknown')]));
-  log.add(result(3, 6.5, [detection('right')]));
-  log.end(); log.add(result(4, 7, [detection('left')]));
-  assert.equal(log.snapshot.frames, 3); assert.equal(log.snapshot.framesWithoutUsableHeads, 1);
-  assert.equal(log.snapshot.gaps.length, 1);
-  assert.ok(!JSON.stringify(log.snapshot).includes('bbox'));
-  assert.ok(!JSON.stringify(log.snapshot).includes('image'));
-  const report = cameraIncidentReport(log.snapshot);
-  assert.equal(report.items.length, 2); assert.ok(report.limitations.some(value => value.includes('no video') || value.includes('not saved')));
-  assert.ok(report.coverage.some(value => value.includes('no intervening processed capture')));
-});
-
-test('camera summaries remain bounded while totals and omission counts remain truthful', () => {
-  const log = new CameraReportLog('id', settings);
-  for (let i = 0; i < MAX_CAMERA_SAMPLES + 2; i++) log.add(result(i, i / 10, [detection('down')]));
-  assert.equal(log.snapshot.samples.length, MAX_CAMERA_SAMPLES);
-  assert.equal(log.snapshot.omittedSamples, 2); assert.equal(log.snapshot.totals.down, MAX_CAMERA_SAMPLES + 2);
-  assert.ok(cameraIncidentReport(log.snapshot).coverage.some(value => value.includes('item list is incomplete')));
-});
-
 test('saved-seat PDFs preserve human decisions, source timestamps, gaps and sign-off', () => {
   const record = { source: { fps: 1, processed_duration_seconds: 3 }, source_sha256: 'a'.repeat(64),
     settings: { ...settings, movement: { ...DEFAULT_MOVEMENT }, seats: [{ id: 'A', roi: [0, 0, 1, 1] }] },
@@ -83,4 +60,42 @@ test('camera report collection receives only correlated worker responses', async
   const invalid = session.frame({ id: 2, timestamp_seconds: .2, image: '/9j/' });
   child.stdout.write(JSON.stringify(result(3, .2)) + '\n');
   await assert.rejects(invalid); assert.deepEqual(received, [1]); await session.close();
+});
+
+const liveRecord = () => ({ schemaVersion: 1, id: 'live-1', state: 'ended', revision: 3, createdAt: '2026-11-18T09:00:00Z', endedAt: '2026-11-18T09:30:00Z',
+  settings: { mirrored: false, tileGrid: 1, seats: [{ id: 'seat-3', roi: [0, 0, 1, 1] }], movement: { ...DEFAULT_MOVEMENT }, maxGapAuto: true },
+  segments: [{ startedAt: '2026-11-18T09:00:00Z', offsetSeconds: 0, endSeconds: 600 }, { startedAt: '2026-11-18T09:12:00Z', offsetSeconds: 720, endSeconds: null }],
+  events: [{ seat_id: 'seat-3', event_type: 'sustained_movement', direction: 'left', start_time: 612, end_time: 615, duration: 3, observed_at: 614, review_required: true, review_label: null, segment: 0 }],
+  alerts: [
+    { id: 'a1', seatId: 'seat-3', direction: 'left', openedAt: 612, lastAt: 615, eventIndexes: [0], still: 'stills/a1.jpg', stillError: null, mark: null, note: '', markedAt: null },
+    { id: 'a2', seatId: 'seat-3', direction: 'right', openedAt: 700, lastAt: 705, eventIndexes: [0], still: null, stillError: 'disk full', mark: 'Checked', note: 'Fine', markedAt: '2026-11-18T09:20:00Z' }],
+  coverage: { 'seat-3': { frames: 200, observedFrames: 188, gaps: [{ start: 612, end: 615 }], omittedGaps: 0, unknownSince: 1000 },
+    'seat-4': { frames: 0, observedFrames: 0, gaps: [], omittedGaps: 0, unknownSince: null } },
+  minutes: [], framesProcessed: 200, stillsSaved: 1, lastTime: 1010 });
+
+test('live session reports list unmarked alerts, resume gaps, stills and the confidential flag', () => {
+  const report = liveSessionReport(liveRecord(), '/records/live-1');
+  assert.equal(report.mode, 'camera'); assert.equal(report.confidential, true); assert.equal(report.imageRoot, '/records/live-1');
+  assert.equal(report.items.length, 2);
+  assert.equal(report.items[0].status, 'Not reviewed'); assert.equal(report.items[0].image, 'stills/a1.jpg');
+  assert.equal(report.items[0].time, '10:12 – 10:15');
+  assert.equal(report.items[1].status, 'Checked'); assert.equal(report.items[1].notes, 'Fine'); assert.equal(report.items[1].image, null);
+  assert.ok(report.coverage.includes('Not monitored from 10:00 to 12:00'));
+  assert.ok(report.coverage.includes('Seat 3: observed 94% of processed frames; unknown 10:12–10:15; unknown 16:40–16:50 (still unknown at the end)'));
+  assert.ok(report.coverage.includes('Seat 4: not observed'));
+  assert.ok(report.coverage.some(line => line.includes('1 alert without a saved still')));
+  assert.ok(report.metadata.some(([key, value]) => key === 'Method' && value === 'Baseline'));
+  assert.ok(report.metadata.some(([key, value]) => key === 'Maximum gap' && value.includes('automatic')));
+  assert.ok(report.limitations.some(line => line.includes('do not establish cheating')));
+  assert.ok(!/cheating|suspicious|violation|catch/i.test([report.summary, ...report.items.map(i => i.detail + i.label)].join(' ')));
+});
+
+test('live session reports skip an unknown tail shorter than two seconds and cap item lists', () => {
+  const record = liveRecord();
+  record.coverage['seat-3'].unknownSince = 1009; record.coverage['seat-3'].gaps = [];
+  const short = liveSessionReport(record, '/r');
+  assert.ok(short.coverage.some(line => line.startsWith('Seat 3: observed 94%') && !line.includes('unknown')));
+  record.alerts = Array.from({ length: 510 }, (_, i) => ({ ...record.alerts[1], id: `x${i}` }));
+  const capped = liveSessionReport(record, '/r');
+  assert.equal(capped.items.length, 500); assert.equal(capped.omittedItems, 10);
 });
