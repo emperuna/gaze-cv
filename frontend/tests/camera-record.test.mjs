@@ -4,7 +4,7 @@ import { promises as fs } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { applyFrame } from '../src/lib/live-alerts.ts';
-import { createRecord, loadRecord, saveRecord, writeStill, stillFile, listRecords, updateAlertMark, deleteRecord } from '../src/lib/server-camera-record.ts';
+import { createRecord, endSavedRecord, loadRecord, saveRecord, writeStill, stillFile, listRecords, updateAlertMark, deleteRecord } from '../src/lib/server-camera-record.ts';
 
 const settings = { mirrored: false, tileGrid: 2, seats: [{ id: 'seat-A' }], movement: DEFAULT_MOVEMENT, maxGapAuto: true };
 const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
@@ -127,4 +127,18 @@ test('saving or writing a still never recreates a deleted session folder', async
   await assert.rejects(saveRecord(record, { root }), { status: 404 });
   await assert.rejects(writeStill(record.id, 'alert-1', JPEG, { root }), { status: 404 });
   await assert.rejects(fs.access(join(root, record.id)));
+}));
+
+test('a stale lock left by a crashed save is cleared before a mark or End; a fresh one gives a plain 409', async () => withRoot(async (root) => {
+  const record = await withAlert(root);
+  const lock = join(root, record.id, 'session.lock');
+  await fs.writeFile(lock, '');
+  await assert.rejects(updateAlertMark(record.id, 'alert-1', 'Checked', '', 0, { root, lockTimeoutMs: 50 }),
+    { status: 409, message: 'This session is busy saving. Try again in a moment.' });
+  const past = new Date(Date.now() - 60_000);
+  await fs.utimes(lock, past, past);
+  assert.equal((await updateAlertMark(record.id, 'alert-1', 'Checked', '', 0, { root, lockTimeoutMs: 50 })).mark, 'Checked');
+  await fs.writeFile(lock, ''); await fs.utimes(lock, past, past);
+  assert.equal((await endSavedRecord(record.id, { root, lockTimeoutMs: 50 })).state, 'ended');
+  await assert.rejects(fs.access(lock));
 }));
