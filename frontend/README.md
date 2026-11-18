@@ -11,12 +11,11 @@ or model output. Its timestamp buttons change the observation example, not the p
 The interface follows the centered typography, soft surfaces, pastel cards, and
 dark pill buttons of the user-selected Samfund reference. Brand and image prompts
 are recorded in [the asset notes](public/ASSETS.md).
-The separate `/analyze` page accepts one image or saved video and invokes the
-existing Python runner on the same computer. It returns actual annotated media,
-direction counts, and downloadable records. It does not make misconduct decisions.
-
-The **Camera** source adds live direction observations with the same models.
-See [Live camera](#live-camera).
+The separate `/analyze` page is the live camera: it finds the seats in one
+fixed camera view and alerts the instructor to the seat to check, using the
+existing Python pipeline on the same computer. A saved recording can be
+reviewed with the same seat rules. It does not make misconduct decisions. See
+[Live camera](#live-camera) and [Using the live camera](#using-the-live-camera).
 
 ## Run locally
 
@@ -73,63 +72,85 @@ source frames without inventing identities or movement histories. Empty/unknown
 results explicitly preserve uncertainty. PDF generation requires the updated
 Python `requirements.txt`, including ReportLab; it does not require new models.
 
-Open `/analyze` or use **Analyze** in the navigation. Select **Image** or
-**Saved video**, browse/drop one supported file (maximum 64 MB), select the
-automatic head model or geometric baseline, and optionally specify mirrored
-pixels or baseline detector tiling. Input previews use local browser object URLs.
-Only clicking **Analyze** sends the file to this loopback Next.js server.
+The Image and directions-only video workspaces are no longer reachable from
+the website (their code and API routes remain, unused); this section describes
+their outputs for the record. `/analyze` opens the live camera, and the only
+saved-file workflow offered is the seat review below.
 
 ## Live camera
 
-**Camera and coverage checks** warn about interrupted tracks, a frozen preview,
-stale processed frames, fewer usable heads than the manually configured
-expectation, and very dark/low-detail views. These are experimental technical
-warnings; they cannot establish the cause of poor visibility or classroom
-accuracy. See [check thresholds and limitations](../docs/review-workload.md#camera-checks).
+`/analyze` opens the live camera; it is the only main screen. There is no
+source switcher: **Review a recording instead** (below the setup panel) opens
+`/analyze?mode=video`, the Saved video seat review, which has a **Back to live
+camera** link. `?session=<uuid>` still reopens a saved video review. Every other
+`mode` value, including the removed `?mode=image`, opens the camera. The Image
+workspace and its API route stay in the code but no tab, button or link leads
+to them.
 
-Open `/analyze`, select **Camera**, choose a camera and method, then click
-**Start camera** and allow browser camera access. The continuous preview is
-shown beside the latest processed frame with direction boxes and per-frame
-counts. Annotations belong to that exact captured frame; they may trail the
-continuous preview when inference is slower. The interface does not mirror
-camera pixels. Left/right remain subject-relative.
+The camera screen finds the seats automatically, numbers them left to right,
+and monitors them with the Baseline method. Sustained or repeated left/right
+turns open a "Check seat N" alert with a chime, a cropped still and **Checked**
+/ **Dismiss** (keys `C` / `D` on the newest open alert). Down (writing) never
+alerts. The session, its alerts and stills are saved on this computer;
+interrupted sessions can be resumed, ended ones reopened from **Past
+sessions**, and each session downloads as a PDF. Movement rules, mirroring and
+detector tiling sit under **Advanced settings**. See the
+[camera alerts design](../docs/superpowers/specs/2026-11-18-camera-alerts-design.md)
+for the routes, storage and limits. Alert accuracy in real classrooms has not
+been measured; an alert is a prompt to look, not a finding.
 
-Click **Stop** to release the camera and Python worker. Switching sources,
-navigating away, hiding the tab, or processing failure also stops capture.
-Denied permissions, unavailable devices, missing models, and processing failures
-show recovery messages. An abandoned session expires after 15 seconds without
-work; active frames have a 30-second timeout and model startup a 60-second
-timeout. Termination escalates to a forced kill after two seconds. The inference
-reservation remains held until the worker actually exits.
+**How to use Ocular** opens by itself the first time a browser shows the
+camera screen (remembered under the `localStorage` key
+`ocular.camera.guideSeen`) and reopens from the **How to use** button at the
+top of the screen. It is a non-modal panel: monitoring and alert announcements
+continue while it is open, Escape or Close closes it, and focus returns to the
+button. Its text is below, so it can be printed for instructors.
 
-The selected model stays loaded for the session. Browser JPEG frames are scaled
-to at most 1280 × 720, with one frame in flight and at most ten capture requests
-per second. Actual speed may be lower; displayed throughput includes request,
-response, and scheduling time. Capture timestamps use monotonic elapsed seconds
-from the start of frame processing. No camera pixels, recordings, or observation
-records are saved by this mode. Microphone access is not requested.
+**Camera checks** warn about interrupted tracks, a frozen preview, stale
+processed frames, fewer usable heads than seats, and very dark/low-detail
+views. These are experimental technical warnings; they cannot establish the
+cause of poor visibility. See [check thresholds and limitations](../docs/review-workload.md#camera-checks).
 
-Camera and saved-file inference share one processing reservation. Stop camera
-analysis before running an upload or another live session. This supports a
-single local server, not public or multi-worker hosting. Use a browser with
-camera support at the loopback URL; remote-device access is not supported.
+## Using the live camera
 
-`POST /api/camera` starts a session with `method`, `mirrored`, and `tileGrid`.
-`POST /api/camera/<uuid>` sends `id`, `timestamp_seconds`, and a base64 JPEG;
-`DELETE /api/camera/<uuid>` stops it. Routes retain the local-origin guards and
-enforce bounded request sizes. Frames pass in memory through stdin/stdout to
-`scripts/camera_worker.py`, using `.venv` and project-local caches.
+### How to use Ocular
 
-Stop camera processing, then use **Download PDF report**. It includes processed
-capture timestamps, direction counts and sampling gaps. No camera pixels or
-video are retained. Up to 18,000 numeric frame summaries remain in local server
-memory for 30 minutes after Stop, until a server restart, or until the eight-session
-cache evicts them. Download before leaving the workspace. This mode provides
-directions only; seat association, calibrated seat-relative directions,
-histories, movement events and recording remain outside this version.
-Physical-camera behavior and the authorized three-seat
-demonstration remain human checks; classroom accuracy remains unvalidated.
-See the [design](../docs/superpowers/specs/2026-10-29-live-camera-design.md).
+1. **Before the exam:** install Camo on the phone and on this laptop; connect
+   them over USB or the same Wi-Fi.
+2. **Place the phone:** mount it high at the front so every desk and face is
+   visible; landscape; good lighting; do not move it after setup.
+3. **Start:** choose the phone in the camera list and press **Start**.
+4. **Seats:** Ocular finds the students and numbers the seats left to right.
+   Use **Adjust seats** only if a seat is missing or wrong.
+5. **Monitor:** press **Start monitoring**. An alert tells you which seat to
+   look at. Look up, decide, then press **Checked** or **Dismiss** (or the C
+   and D keys).
+6. **If it stops:** reconnect the phone and press **Resume**. Your seats and
+   alerts are kept.
+7. **After the exam:** press **Stop**, download the PDF, and delete the
+   session when your institution's retention period ends.
+
+### Troubleshooting
+
+- **The phone is not in the camera list:** open Camo on the phone and on this
+  laptop and check that they are connected. Then reload the page and choose
+  the phone.
+- **"No students found":** check that the phone sees every desk and that faces
+  are lit, then press **Try again**. You can also draw the seats yourself.
+- **"Running slowly":** close other programs on this laptop. If it stays slow,
+  press **Stop**, choose fewer detector tiles under Advanced settings, and
+  start again.
+- **The alert sound does not play:** click the page once, and check that
+  **Mute alerts** is off and the laptop volume is up.
+- **The seats no longer line up:** the phone has moved. End the session and
+  start a new one, so Ocular can find the seats again.
+
+### What alerts mean
+
+An alert is a prompt to look, not a finding. It means a head in that seat
+turned left or right for a while, or several times. Looking down (writing)
+never alerts. Seats are positions in the room, not people: Ocular does not
+recognise anyone. You decide what, if anything, needs attention.
 
 To verify a production build alongside a development server (macOS/Linux):
 
@@ -153,13 +174,14 @@ sources. Original model records remain unchanged. See [review workload tools](..
 for grouping rules, storage, limits and conflict recovery.
 
 **Download PDF report** is prominently displayed in the report bar above the
-analysis controls in every source mode, including before processing. Its helper
+analysis controls, including before processing. Its helper
 text explains when the download becomes available. Save edited
 notes/statuses before downloading; the PDF uses the latest saved review
 revision, including coverage gaps and local sign-off. An unedited session can
 also export a draft PDF. The editable Markdown download remains available.
 
-Choose **Saved video → Seats & movement review**. Upload an authorized
+From the camera screen choose **Review a recording instead**
+(`/analyze?mode=video`). Upload an authorized
 browser-playable MP4/WebM from one fixed camera. Video timing is checked
 automatically. Click **Suggest seats**, review the boxes and names, then correct
 missed/incorrect regions with **Add seat**, **Edit region** and Remove. Edit
@@ -173,10 +195,10 @@ rules. **Advanced seat editing** contains optional exact percentage coordinates
 and a numeric Add control for keyboard-accessible setup. Seek the setup frame
 with the slider. Regions cannot overlap and stay fixed during processing.
 
-The automatic head model and existing experimental rules are the defaults.
-**Advanced settings** contains optional method selection, sustained duration,
-repetition count/window, minimum dwell, maximum gap, mirroring and baseline
-tiling. For mirrored source pixels, the interface maps
+The method is fixed to Baseline, as in live camera mode, so a recording and
+a live session use the same rules; the existing experimental movement rules are
+the defaults. **Advanced settings** contains sustained duration, repetition
+count/window, minimum dwell, maximum gap, mirroring and detector tiling. For mirrored source pixels, the interface maps
 drawn regions into unmirrored configuration coordinates once. Source playback
 itself stays unchanged. Automatic head directions remain camera-relative; these
 regions do not perform neutral/desk calibration.
@@ -221,7 +243,7 @@ from one fixed camera uses the upload path; a changed camera angle/layout needs
 new seat confirmation. The intended interface users are faculty, with technical
 controls available only when needed.
 
-**Directions only** preserves the earlier generic video-upload workflow. The
+The directions-only video option is no longer offered in the website. The
 existing calibrated head/seat CLI remains available separately. This web review
 does not establish seat consistency, event accuracy, classroom generalization,
 or CP4 completion. See [technical evidence](../docs/superpowers/specs/2026-10-29-saved-review-verification.md),
@@ -357,7 +379,8 @@ and physical-device checks. Camera mode does not save frames or recordings.
 - `src/app/api/analyze/` and `src/lib/server-analysis.ts`: local Python invocation and downloads.
 - `src/lib/analysis-contract.ts`: shared formats, limits, types, and request guards.
 - `tests/analysis.test.mjs`: Node tests (run with Node.js 22.18+).
-- `src/components/analysis-modes.tsx` and `camera-workspace.tsx`: source selection and camera controls/display.
+- `src/components/analysis-modes.tsx`: opens the camera, or Saved video seat review for `?mode=video` / `?session=`.
+- `src/components/camera-workspace.tsx` and the `camera-*` components: the camera screens, alerts, past sessions and the How to use Ocular guide (`camera-guide.tsx`).
 - `src/app/api/camera/`, `src/lib/server-camera.ts`, and `camera-session.ts`: live worker/session lifecycle.
 - `src/lib/camera-client.ts`, `camera-contract.ts`, and `processing-slot.ts`: sequential capture, frame contracts, and inference reservation.
 - `tests/camera.test.mjs` and `camera-client.test.mjs`: camera transport, cleanup, timing, and frame-loop tests.

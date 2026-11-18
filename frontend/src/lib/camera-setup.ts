@@ -90,3 +90,17 @@ export function readSavedDevice(storage?: Store | null): string {
 export function writeSavedDevice(deviceId: string, storage?: Store | null) {
   try { if (deviceId) store(storage)?.setItem(DEVICE_KEY, deviceId); } catch { /* storage blocked: nothing to remember */ }
 }
+
+export const GUIDE_KEY = 'ocular.camera.guideSeen';
+
+/**
+ * Whether How to use Ocular has been shown in this browser. Blocked storage reads as "not seen", so the guide
+ * still opens for someone new; it then cannot be remembered and opens on each visit.
+ */
+export function readGuideSeen(storage?: Store | null): boolean {
+  try { return store(storage)?.getItem(GUIDE_KEY) === 'true'; } catch { return false; }
+}
+
+export function writeGuideSeen(storage?: Store | null) {
+  try { store(storage)?.setItem(GUIDE_KEY, 'true'); } catch { /* storage blocked: the guide opens again next visit */ }
+}

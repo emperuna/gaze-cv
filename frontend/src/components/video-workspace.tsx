@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback,useEffect,useRef,useState } from 'react';
-import { LoaderCircle,Play,Square } from 'lucide-react';
-import { AnalysisWorkspace } from './analysis-workspace';
+import { ArrowLeft,LoaderCircle,Play,Square } from 'lucide-react';
 import { SeatEditor } from './seat-editor';
 import { SessionPlayer } from './session-player';
 import { Button } from './ui/button';
@@ -12,20 +11,21 @@ import type { ReviewSettings,ReviewSeat,ReviewRecord,SavedReview,ReviewPreparati
 import type { AnalysisMethod,BackendStatus } from '@/lib/analysis-contract';
 import '@/app/analyze/saved-review.css';
 
-export function VideoWorkspace({onRunningChange}:{onRunningChange:(running:boolean)=>void}) {
-  const [mode,setMode]=useState<'review'|'quick'>('review');
-  const [busy,setBusy]=useState(false);
+/** Saved video seat review, reached from "Review a recording instead"; it uses the camera's fixed rules. */
+export function VideoWorkspace() {
   return <>
-    <div className="review-mode-switch" role="group" aria-label="Video workflow"><button aria-pressed={mode==='review'} disabled={busy} onClick={()=>setMode('review')}>Seats & movement review</button><button aria-pressed={mode==='quick'} disabled={busy} onClick={()=>setMode('quick')}>Directions only</button></div>
-    {mode==='quick'?<AnalysisWorkspace initialKind="video" onRunningChange={running=>{setBusy(running);onRunningChange(running);}}/>:<SavedReviewWorkspace onRunningChange={running=>{setBusy(running);onRunningChange(running);}}/>}
+    <div className="recording-bar"><a className="setup-link" href="/analyze"><ArrowLeft size={14} aria-hidden="true" />Back to live camera</a><p>Review a recorded clip with the same seat rules as the live camera.</p></div>
+    <SavedReviewWorkspace/>
   </>;
 }
 
-function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolean)=>void}) {
+/** The method is fixed to Baseline, as in live camera mode, so a recording and a live session give comparable alerts. */
+const method:AnalysisMethod='baseline';
+
+function SavedReviewWorkspace() {
   const [file,setFile]=useState<File|null>(null);
   const [preview,setPreview]=useState<string|null>(null);
   const [seats,setSeats]=useState<ReviewSeat[]>([]);
-  const [method,setMethod]=useState<AnalysisMethod>('head');
   const [mirrored,setMirrored]=useState(false);
   const [tileGrid,setTileGrid]=useState(1);
   const [movement,setMovement]=useState({...DEFAULT_MOVEMENT});
@@ -46,8 +46,6 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
   const request=useRef<AbortController|null>(null);
   const loadNumber=useRef(0);
   const setupNumber=useRef(0);
-  const busyCallback=useRef(onRunningChange);busyCallback.current=onRunningChange;
-  useEffect(()=>{busyCallback.current(busy||preparing||reviewPending);},[busy,preparing,reviewPending]);
 
   const refresh=useCallback(async()=>{
     try{const response=await fetch('/api/review',{cache:'no-store'});if(!response.ok)throw new Error('Could not read saved sessions.');const list=await response.json();if(active.current)setSessions(list);}
@@ -74,7 +72,7 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
       if(!active.current)return;setSessions(list);
       const id=new URLSearchParams(window.location.search).get('session');if(id)void openSession(id,list);
     }).catch(error=>{if(active.current)setError((error as Error).message);});
-    return()=>{active.current=false;request.current?.abort();loadNumber.current++;setupNumber.current++;busyCallback.current(false);};
+    return()=>{active.current=false;request.current?.abort();loadNumber.current++;setupNumber.current++;};
     // Initial URL restoration runs once; manual reopening uses the current list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
@@ -129,13 +127,12 @@ function SavedReviewWorkspace({onRunningChange}:{onRunningChange:(running:boolea
           {suggestionNote&&<p className="review-help" role="status">{suggestionNote}</p>}
           {pendingSeats&&<div className="seat-replacement"><p>Found {pendingSeats.length} suggested seats. Your current boxes are unchanged.</p><button disabled={busy||preparing} onClick={()=>{setSeats(pendingSeats);setPendingSeats(null);}}>Replace current seats</button><button disabled={busy||preparing} onClick={()=>setPendingSeats(null)}>Keep my seats</button></div>}
           <SeatEditor key={preview} source={{kind:'video',url:preview}} seats={seats} onChange={next=>{setSeats(next);setPendingSeats(null);}} disabled={busy||preparing} onPlayable={setPlayable}/></>}
-        <div className="review-rule-summary"><strong>Movement rules</strong><p>Records movements held for {movement.min_duration} seconds, or {movement.repetition_count} qualifying turns within {movement.repetition_window} seconds. Missing observations reset continuity. These records support human review.</p><span>{status?.methods[method]?.ready?`Using ${method==='head'?'the automatic head model':'the reference method'}.`:status?.methods[method]?.message??'Checking the local processor…'}</span></div>
+        <div className="review-rule-summary"><strong>Movement rules</strong><p>Records movements held for {movement.min_duration} seconds, or {movement.repetition_count} qualifying turns within {movement.repetition_window} seconds. Missing observations reset continuity. These records support human review.</p><span>{status?.methods[method]?.ready?'Uses the same rules as the live camera.':status?.methods[method]?.message??'Checking the local processor…'}</span></div>
         <details className="review-details advanced-review-settings"><summary>Advanced settings</summary>
         <fieldset disabled={busy||preparing} className="review-settings"><legend>Customize analysis (optional)</legend>
-          <label>Analysis method<select value={method} onChange={event=>setMethod(event.target.value as AnalysisMethod)}><option value="head">Automatic head model</option><option value="baseline">Geometric baseline</option></select></label>
-          <p className="review-help">{status?.methods[method]?.message??'Checking the local processor…'} Direction labels are camera-relative, not calibrated to a desk.</p>
+          <p className="review-help">Direction labels are camera-relative, not calibrated to a desk.</p>
           <label className="review-checkbox"><input type="checkbox" checked={mirrored} onChange={event=>setMirrored(event.target.checked)}/>Source pixels are already mirrored</label>
-          {method==='baseline'&&<label>Detector tiling<select value={tileGrid} onChange={event=>setTileGrid(Number(event.target.value))}>{[1,2,3,4].map(n=><option key={n} value={n}>{n===1?'1 — full frame':`${n} — more tiles, slower`}</option>)}</select></label>}
+          <label>Detector tiling<select value={tileGrid} onChange={event=>setTileGrid(Number(event.target.value))}>{[1,2,3,4].map(n=><option key={n} value={n}>{n===1?'1 — full frame':`${n} — more tiles, slower`}</option>)}</select></label>
           <div className="review-setting-grid">{([{key:'min_duration',label:'Sustained duration (s)',max:300,step:.25},{key:'repetition_count',label:'Repetition count',max:100,step:1},{key:'repetition_window',label:'Repetition window (s)',max:300,step:.25},{key:'repeat_min_duration',label:'Minimum dwell (s)',max:300,step:.05},{key:'max_gap',label:'Maximum gap (s)',max:5,step:.05}] as const).map(({key,label,max,step})=><label key={key}>{label}<input type="number" min={key==='repetition_count'?2:step} max={max} step={step} value={movement[key]} onChange={event=>setMovement({...movement,[key]:Number(event.target.value)})}/></label>)}</div>
           <p className="review-help">Defaults are experimental movement rules, not validated indicators of misconduct. Changes apply to new sessions; saved sessions retain their original settings.</p>
         </fieldset>
