@@ -394,3 +394,53 @@ test('ending a saved interrupted record marks it ended', async () => withLive(as
   assert.equal(ended.state, 'ended'); assert.ok(ended.endedAt);
   assert.equal((await loadRecord(recordId, { root })).state, 'ended');
 }));
+
+test('Stop while the record lock is held briefly still saves the record as ended', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start(undefined, { lockTimeoutMs: 30 });
+  const { recordId } = await live.monitor(MONITOR);
+  const lock = join(root, recordId, 'session.lock');
+  await fs.writeFile(lock, '');
+  setTimeout(() => { void fs.unlink(lock); }, 80);
+  assert.deepEqual(await stopCamera(sessionId), { recordId, saveError: null });
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).state, 'ended');
+}));
+
+test('a Stop whose save keeps failing reports 503, and Stop or End again retries it', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start(undefined, { lockTimeoutMs: 20 });
+  const { recordId } = await live.monitor(MONITOR);
+  const lock = join(root, recordId, 'session.lock');
+  await fs.writeFile(lock, '');
+  await assert.rejects(stopCamera(sessionId), error => error.status === 503 && /could not be saved/.test(error.message));
+  assert.equal(isActive(recordId), false);
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).state, 'monitoring');
+  assert.equal((await getCameraRecord(recordId, { root })).state, 'ended', 'the in-memory ended record is what is reported');
+  await assert.rejects(endCameraRecord(recordId, { root }), error => error.status === 503);
+  await fs.unlink(lock);
+  assert.deepEqual(await stopCamera(sessionId), { recordId, saveError: null });
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).state, 'ended');
+  assert.throws(() => getCamera(sessionId), error => error.status === 404, 'once saved, the stopped session is released');
+}));
+
+test('Stop waits for an in-flight frame before the final save', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start(m => ({ events: [turn('left', 0, m.timestamp_seconds, { still: JPEG64 })] }));
+  const { recordId } = await live.monitor(MONITOR);
+  const pending = live.frame(frame(1, 2));
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+  await stopCamera(sessionId);
+  await pending.catch(() => {});
+  const disk = JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8'));
+  assert.equal(disk.state, 'ended');
+  assert.ok(disk.alerts.every(a => a.still === null || a.still === 'stills/alert-1.jpg'), 'no base64 still reaches the file');
+}));
+
+test('worker crash during a brief lock still saves the record as interrupted', async () => withLive(async ({ root, start }) => {
+  const { live, child } = await start(undefined, { lockTimeoutMs: 30 });
+  const { recordId } = await live.monitor(MONITOR);
+  const lock = join(root, recordId, 'session.lock');
+  await fs.writeFile(lock, '');
+  setTimeout(() => { void fs.unlink(lock); }, 80);
+  child.emit('close', 1);
+  await live.exited;
+  assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).state, 'interrupted');
+}));

@@ -12,7 +12,10 @@ import { AnalysisError } from './server-analysis.ts';
 export const SESSION_LIMIT_SECONDS = 10_800;
 export const SESSION_WARNING_SECONDS = 9_900;
 export const LIMIT_MESSAGE = 'Monitoring stopped at the 3-hour limit.';
+export const FINAL_SAVE_FAILED = 'The session stopped, but it could not be saved. Try Stop again.';
 const SAVE_INTERVAL_MS = 5_000;
+const FINAL_SAVE_ATTEMPTS = 3;
+const FINAL_SAVE_BACKOFF_MS = 250;
 
 /** `root` and `lockTimeoutMs` reach every record function; `now` is the wall clock (tests). */
 export interface LiveOptions { root?: string; lockTimeoutMs?: number; now?: () => Date }
@@ -45,6 +48,8 @@ export class LiveCamera {
   private dirty = false;
   private lastSave = 0;
   private lastTimestamp = -1;
+  /** The post-worker part of a monitored frame (applyFrame, stills, save); final saves wait for it. */
+  private processing?: Promise<unknown>;
 
   readonly id: string;
   readonly session: CameraSession;
@@ -132,6 +137,12 @@ export class LiveCamera {
     this.lastTimestamp = result.timestamp_seconds;
     // A result that arrives after Stop or an interruption must not change the record.
     if (record.state !== 'monitoring') throw new AnalysisError('Monitoring has ended for this session.', 409);
+    const work = this.process(record, result);
+    this.processing = work;
+    try { return await work; } finally { if (this.processing === work) this.processing = undefined; }
+  }
+
+  private async process(record: LiveSessionRecord, result: CameraResult): Promise<LiveFrameResult> {
     const offset = record.segments.at(-1)!.offsetSeconds;
     const time = offset + result.timestamp_seconds;
     const events = (result.events ?? []).map(e => ({ ...e, start_time: e.start_time + offset, end_time: e.end_time + offset, observed_at: e.observed_at + offset }));
@@ -144,9 +155,11 @@ export class LiveCamera {
       catch { alert.stillError = 'Still could not be saved'; record.stillsSaved--; }
     }
     let notice: string | null = null;
-    if (time >= SESSION_LIMIT_SECONDS && record.state === 'monitoring') { this.end(record); notice = LIMIT_MESSAGE; }
-    if (opened.length || updated.length || events.length || notice || this.dirty || Date.now() - this.lastSave >= SAVE_INTERVAL_MS) await this.save();
-    if (notice) void this.session.close(LIMIT_MESSAGE);
+    if (time >= SESSION_LIMIT_SECONDS && record.state === 'monitoring') {
+      this.end(record); notice = LIMIT_MESSAGE;
+      if (!await this.persistFinal()) console.error(`Camera session ${record.id} reached the 3-hour limit but could not be saved: ${this.saveError}`);
+      void this.session.close(LIMIT_MESSAGE);
+    } else if (opened.length || updated.length || events.length || this.dirty || Date.now() - this.lastSave >= SAVE_INTERVAL_MS) await this.save();
     const alerts = [...new Set([...opened.map(o => o.alert), ...updated])].map(a => ({ ...a, eventIndexes: [...a.eventIndexes] }));
     return { ...withoutStills(result, events), alerts, sessionTime: time, revision: record.revision, state: record.state, saveError: this.saveError, notice };
   }
@@ -165,18 +178,42 @@ export class LiveCamera {
   }
 
   private end(record: LiveSessionRecord) {
+    this.dirty = true;
     record.state = 'ended';
     record.endedAt = this.now().toISOString();
     const segment = record.segments.at(-1);
     if (segment && segment.endSeconds === null) segment.endSeconds = record.lastTime;
   }
 
-  /** Stop: the record (if any) is ended and saved before the worker closes. */
+  /** True when the record has left `monitoring` but its final state is not on disk yet. */
+  get unsaved(): boolean { return !!this.record && this.record.state !== 'monitoring' && this.dirty; }
+
+  /** Final saves wait for an in-flight frame, then retry with backoff (lock collisions with marks or frames are brief). */
+  private async persistFinal(): Promise<boolean> {
+    for (let attempt = 0; attempt < FINAL_SAVE_ATTEMPTS; attempt++) {
+      if (attempt) await new Promise(resolve => setTimeout(resolve, FINAL_SAVE_BACKOFF_MS * attempt));
+      await this.save();
+      if (!this.saveError) return true;
+    }
+    return false;
+  }
+
+  /** Retries an unsaved final state; throws 503 if it still cannot be written. */
+  async flush(): Promise<void> {
+    await this.processing?.catch(() => {});
+    if (this.unsaved && !await this.persistFinal()) throw new AnalysisError(FINAL_SAVE_FAILED, 503);
+  }
+
+  /**
+   * Stop / End: the record (if any) is ended and saved before the worker closes. Repeating it on an already
+   * stopped session retries a save that failed. Throws 503 when the ended record could not be written.
+   */
   async stop(): Promise<{ recordId: string | null; saveError: string | null }> {
     const record = this.record;
-    if (record?.state === 'monitoring') { this.end(record); await this.save(); }
-    await this.session.close();
-    return { recordId: record?.id ?? null, saveError: record ? this.saveError : null };
+    if (record && record.state !== 'ended') this.end(record);
+    try { await this.flush(); }
+    finally { await this.session.close(); }
+    return { recordId: record?.id ?? null, saveError: null };
   }
 
   private async interrupt() {
@@ -186,7 +223,9 @@ export class LiveCamera {
     record.interruptedAt = this.now().toISOString();
     const segment = record.segments.at(-1);
     if (segment && segment.endSeconds === null) segment.endSeconds = record.lastTime;
-    await this.save();
+    this.dirty = true;
+    await this.processing?.catch(() => {});
+    if (!await this.persistFinal()) console.error(`Camera session ${record.id} stopped unexpectedly and could not be saved: ${this.saveError}`);
   }
 
   /** Save failures never stop monitoring: the in-memory record stays authoritative and the next frame retries. */

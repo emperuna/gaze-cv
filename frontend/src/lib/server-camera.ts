@@ -20,7 +20,13 @@ export interface CameraOptions extends LiveOptions {
   session?: { idleMs?: number; frameMs?: number; startupMs?: number };
 }
 
-const shared = globalThis as typeof globalThis & { gazeCameraSession?: LiveCamera };
+/** `gazeCameraUnsaved` keeps a stopped live object whose final save failed, so Stop/End can retry it. */
+const shared = globalThis as typeof globalThis & { gazeCameraSession?: LiveCamera; gazeCameraUnsaved?: LiveCamera };
+
+function remember(live: LiveCamera) {
+  if (live.unsaved) shared.gazeCameraUnsaved=live;
+  else if (shared.gazeCameraUnsaved===live) shared.gazeCameraUnsaved=undefined;
+}
 
 async function launchWorker(settings: CameraSettings): Promise<ChildProcessWithoutNullStreams> {
   const status=await backendStatus();
@@ -36,6 +42,9 @@ export function isActive(recordId: string): boolean {
   return !!live && live.monitoring && live.record?.id===recordId;
 }
 const activeFor=(recordId:string) => isActive(recordId) ? shared.gazeCameraSession : undefined;
+/** The live object that owns a record in memory: the active session, or a stopped one whose final save failed. */
+const ownerFor=(recordId:string) => activeFor(recordId) ??
+  (shared.gazeCameraUnsaved?.unsaved && shared.gazeCameraUnsaved.record?.id===recordId ? shared.gazeCameraUnsaved : undefined);
 const recordOptions=(options:LiveOptions):RecordOptions => ({root:options.root,lockTimeoutMs:options.lockTimeoutMs,isActive});
 
 /**
@@ -56,6 +65,7 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal,
       return record;
     };
     if (resume) {
+      await ownerFor(resume)?.flush();
       const saved=await interrupted();
       settings={mirrored:saved.settings.mirrored,tileGrid:saved.settings.tileGrid};
       await removeStaleLock(resume,{root:options.root});
@@ -66,6 +76,7 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal,
     const live=new LiveCamera(randomUUID(),session,settings,options);
     shared.gazeCameraSession=live;
     session.onExit(() => {if (shared.gazeCameraSession===live) shared.gazeCameraSession=undefined;});
+    void live.exited.then(() => remember(live));
     const current=session;
     const abort=() => {void current.close('Camera startup cancelled.');};
     signal.addEventListener('abort',abort,{once:true});
@@ -87,27 +98,38 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal,
 }
 
 export function getCamera(id:string): LiveCamera {
-  const live=shared.gazeCameraSession;
-  if (live?.id!==id) throw new AnalysisError('Camera session ended. Start again.',404);
+  const live=shared.gazeCameraSession?.id===id ? shared.gazeCameraSession
+    : shared.gazeCameraUnsaved?.unsaved && shared.gazeCameraUnsaved.id===id ? shared.gazeCameraUnsaved : undefined;
+  if (!live) throw new AnalysisError('Camera session ended. Start again.',404);
   return live;
 }
 
 /** Stop: ends and saves the record (if monitoring), then closes the worker. A preview-only worker just closes. */
-export function stopCamera(id:string) {return getCamera(id).stop();}
+export async function stopCamera(id:string) {
+  const live=getCamera(id);
+  try {return await live.stop();} finally {remember(live);}
+}
 
 export function listCameraRecords(options:LiveOptions={}): Promise<RecordSummary[]> {return listRecords(recordOptions(options));}
 
 /** The live in-memory record for the active session (disk may lag by a few seconds), otherwise the saved one. */
 export async function getCameraRecord(recordId:string,options:LiveOptions={}): Promise<LiveSessionRecord> {
-  return activeFor(recordId)?.record ?? loadRecord(recordId,recordOptions(options));
+  return ownerFor(recordId)?.record ?? loadRecord(recordId,recordOptions(options));
 }
 
-export function deleteCameraRecord(recordId:string,options:LiveOptions={}): Promise<void> {return deleteRecord(recordId,recordOptions(options));}
+export async function deleteCameraRecord(recordId:string,options:LiveOptions={}): Promise<void> {
+  await deleteRecord(recordId,recordOptions(options));
+  // A deleted record must not be recreated by a later retry of its failed final save.
+  if (shared.gazeCameraUnsaved?.record?.id===recordId) shared.gazeCameraUnsaved=undefined;
+}
 
 /** End session: stops the live worker when the record is active, otherwise ends the saved record. */
 export async function endCameraRecord(recordId:string,options:LiveOptions={}): Promise<LiveSessionRecord> {
-  const live=activeFor(recordId);
-  if (live) {await live.stop(); return live.record!;}
+  const live=ownerFor(recordId);
+  if (live) {
+    try {await live.stop();} finally {remember(live);}
+    return live.record!;
+  }
   return endSavedRecord(recordId,recordOptions(options));
 }
 
@@ -115,7 +137,7 @@ export async function markCameraAlert(recordId:string,alertId:string,body:unknow
   Promise<{ alert: LiveAlert; revision: number; saveError?: string | null }> {
   let value;
   try {value=validateAlertMark(body);} catch (error) {throw new AnalysisError((error as Error).message,400);}
-  const live=activeFor(recordId);
+  const live=ownerFor(recordId);
   if (live) return live.mark(alertId,value.mark,value.note,value.revision);
   const alert=await updateAlertMark(recordId,alertId,value.mark,value.note,value.revision,recordOptions(options));
   return {alert,revision:value.revision+1};
