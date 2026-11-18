@@ -1,4 +1,4 @@
-import { mirrorSeats } from './review-contract.ts';
+import { seatsForMonitor } from './camera-setup.ts';
 import type { ReviewSeat } from './review-contract.ts';
 import type { LiveSessionRecord } from './live-alerts.ts';
 
@@ -53,10 +53,24 @@ export function interruptedAt(record: Pick<LiveSessionRecord, 'interruptedAt' | 
 
 /**
  * Seats are saved as sent to monitoring (flipped back to unmirrored coordinates when the input is mirrored),
- * so they are flipped again to line up with the live view.
+ * so they are flipped again to line up with the live view. Mirroring is its own inverse.
  */
 export function displaySeats(settings: Pick<LiveSessionRecord['settings'], 'seats' | 'mirrored'>): ReviewSeat[] {
-  return settings.mirrored ? mirrorSeats(settings.seats) : settings.seats.map(s => ({ id: s.id, roi: [...s.roi] as ReviewSeat['roi'] }));
+  return seatsForMonitor(settings.seats, settings.mirrored);
+}
+
+export type LeaveAction = 'none' | 'pause' | 'cancel-resume' | 'stop';
+
+/**
+ * What leaving the page (hidden tab, page closed, camera unplugged, unmount) does to a run. It depends on
+ * whether a record exists, not on the screen phase: once Start monitoring or Resume has a record, the run is
+ * paused so the record stays resumable, even before the screen shows Monitoring. A resume check that has no
+ * record yet goes back to the interrupted view; anything else (a preview) stops.
+ */
+export function leaveAction(run: { recordId?: string; resumeOf?: string } | null | undefined): LeaveAction {
+  if (!run) return 'none';
+  if (run.recordId) return 'pause';
+  return run.resumeOf ? 'cancel-resume' : 'stop';
 }
 
 /** The PDF route and a file name for one record. */

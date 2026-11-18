@@ -137,6 +137,17 @@ export function useSessionRecovery(host: () => RecoveryHost) {
     if (h.run.current) h.release(h.run.current);
     setResumeStep(''); h.setHasFrame(false); h.setError(''); setAction('end');
     try {
+      // A worker paused from this tab may still be closing; pausing again is harmless.
+      if (pausedSession.current) { await interruptSession(pausedSession.current); pausedSession.current = null; }
+      // The end route would stop a session another tab has resumed meanwhile, so check first.
+      const latest = await h.fetchRecord(id);
+      if (!h.mounted.current || h.recordIdRef.current !== id) return;
+      if (latest.state === 'monitoring') {
+        h.applyRecord(latest); setConfirm(''); setPauseReason(''); setStoppedAt(null);
+        h.setError('The session was not ended here, because it is live in another tab or window. Use that tab to stop it.');
+        h.go('ended');
+        return;
+      }
       const response = await fetch(`/api/camera/sessions/${encodeURIComponent(id)}/end`, { method: 'POST', signal: AbortSignal.timeout(20_000) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || 'The session could not be ended.');
