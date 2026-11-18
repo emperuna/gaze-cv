@@ -14,7 +14,7 @@ export async function PUT(request:Request,context:Context) {
   if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return Response.json({error:'Send the mark as JSON.'},{status:415});
   try {
     const {recordId,alertId}=await context.params;
-    return Response.json(await markCameraAlert(recordId,alertId,await readCameraJson(request,8192)),{headers});
+    return Response.json(await markCameraAlert(recordId,alertId,await readCameraJson(request,16384)),{headers});
   } catch (error) {
     return Response.json({error:error instanceof Error ? error.message : 'The alert could not be marked.'},
       {status:error instanceof AnalysisError ? error.status : 400,headers});

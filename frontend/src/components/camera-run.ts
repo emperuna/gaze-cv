@@ -5,8 +5,9 @@ import type { CameraHealth } from '@/lib/camera-health';
 import { markSetupFrame, newSetupProgress, recordSetupResult, setupComplete, shouldMarkSetup } from '@/lib/camera-setup';
 import type { SetupProgress } from '@/lib/camera-setup';
 import type { ReviewSeat } from '@/lib/review-contract';
+import type { LiveAlert } from '@/lib/live-alerts';
 import { drawSeatBoxes } from './camera-setup';
-import type { CameraPhase } from './camera-setup';
+import type { CameraPhase, SeatOverlay } from './camera-setup';
 
 /**
  * One camera run. Worker commands (find seats, start monitoring) go through `commands`, which the frame
@@ -16,18 +17,31 @@ export type Run = {
   active: boolean; controller: AbortController; stream?: MediaStream; sessionId?: string; recordId?: string;
   commands: (() => Promise<void>)[]; progress: SetupProgress; setupQueued: boolean; still: HTMLCanvasElement;
 };
-export type MonitorFrame = CameraResult & { state?: 'monitoring' | 'interrupted' | 'ended'; notice?: string | null; saveError?: string | null };
+/** A preview frame is a plain `CameraResult`; a monitoring frame adds the alert fields. */
+export type MonitorFrame = CameraResult & {
+  alerts?: LiveAlert[]; sessionTime?: number; revision?: number;
+  state?: 'monitoring' | 'interrupted' | 'ended'; notice?: string | null; saveError?: string | null;
+};
 
 export function newRun(): Run {
   return { active: true, controller: new AbortController(), commands: [], progress: newSetupProgress(), setupQueued: false, still: document.createElement('canvas') };
 }
 
+/** The server waits for an in-flight frame and retries the final save, so Stop waits at least this long. */
+export const STOP_TIMEOUT_MS = 20_000;
+
+/**
+ * Stop answers `{recordId, saveError}`. A non-null `saveError` or any error status (for example 503)
+ * means the session is not saved yet, so Stop stays available to retry.
+ */
 export async function stopSession(id: string): Promise<{ ok: true } | { ok: false; message: string }> {
   try {
-    const response = await fetch(`/api/camera/${id}`, { method: 'DELETE', keepalive: true, signal: AbortSignal.timeout(10_000) });
-    if (response.ok || response.status === 404) return { ok: true };
+    const response = await fetch(`/api/camera/${id}`, { method: 'DELETE', keepalive: true, signal: AbortSignal.timeout(STOP_TIMEOUT_MS) });
+    if (response.status === 404) return { ok: true };
     const data = await response.json().catch(() => ({}));
-    return { ok: false, message: data.error || 'The session could not be saved. Press Stop again.' };
+    if (response.ok && !data.saveError) return { ok: true };
+    const reason = response.ok ? data.saveError : data.error;
+    return { ok: false, message: `The session is not saved yet${reason ? ` (${reason})` : ''}. Press Stop again.` };
   } catch {
     return { ok: false, message: 'Ocular could not be reached to save the session. Press Stop again.' };
   }
@@ -40,6 +54,8 @@ export interface CaptureLoop {
   valid: () => boolean;
   phase: () => CameraPhase;
   seats: () => ReviewSeat[];
+  /** Directions and open-alert highlights drawn on the seat boxes while monitoring. */
+  overlay?: () => SeatOverlay;
   /** A result has been drawn on the live view. */
   onDrawn: () => void;
   onSetupReceived: (received: number) => void;
@@ -98,8 +114,11 @@ export async function runCaptureLoop(loop: CaptureLoop) {
         draw.fillStyle = '#ffffff'; draw.fillText(detection.direction, x + w - draw.measureText(detection.direction).width - 6, labelY - 5);
       }
       const phase = loop.phase();
+      // Alerts are merged before the seat boxes are drawn, so a new alert is highlighted on this frame.
+      if (phase === 'monitoring') loop.onMonitorFrame(result);
       const showSeats = phase === 'found' || phase === 'monitoring';
-      if (showSeats) drawSeatBoxes(draw, loop.seats(), capture.width, capture.height);
+      if (showSeats) drawSeatBoxes(draw, loop.seats(), capture.width, capture.height,
+        phase === 'monitoring' ? { ...loop.overlay?.(), directions: result.seats ?? {} } : {});
       loop.onDrawn();
       if (phase === 'preparing') {
         recordSetupResult(current.progress, result.timestamp_seconds, frame.setup === true);
@@ -117,7 +136,6 @@ export async function runCaptureLoop(loop: CaptureLoop) {
         const usable = result.result.detections.filter(detection => detection.direction !== 'unknown' && !detection.unavailable_reason).length;
         health.lowCoverageSince = expected && usable < expected ? (health.lowCoverageSince ?? capturedAt) : null;
       }
-      if (phase === 'monitoring') loop.onMonitorFrame(result);
     },
   });
 }

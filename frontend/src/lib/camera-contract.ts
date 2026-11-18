@@ -42,7 +42,8 @@ export function validateCameraFrame(value: unknown): CameraFrame {
   return setup === undefined ? { id, timestamp_seconds, image } : { id, timestamp_seconds, image, setup };
 }
 
-export const MAX_ALERT_NOTE = 500;
+/** Matches the PDF renderer's 2000-character limit for notes. */
+export const MAX_ALERT_NOTE = 2000;
 /** Body of PUT …/alerts/[alertId]. */
 export function validateAlertMark(value: unknown): { mark: 'Checked' | 'Dismissed'; note: string; revision: number } {
   if (!value || typeof value !== 'object') throw new Error('Send a mark, note and revision.');

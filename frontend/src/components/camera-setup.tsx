@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { SeatEditor } from './seat-editor';
 import { SETUP_FRAMES, seatLabel } from '@/lib/camera-setup';
 import type { ReviewSeat } from '@/lib/review-contract';
+import type { LiveSeatState } from '@/lib/camera-contract';
 import type { DEFAULT_MOVEMENT } from '@/lib/review-contract';
 import '@/app/analyze/saved-review.css';
 
@@ -35,21 +36,29 @@ export function preparingText(received: number) {
   return `Getting ready: looking for students… (${Math.min(received, SETUP_FRAMES)} of ${SETUP_FRAMES})`;
 }
 
-/** Numbered seat boxes over the live canvas; `roi` is in fractions of the drawn frame. */
-export function drawSeatBoxes(draw: CanvasRenderingContext2D, seats: ReviewSeat[], width: number, height: number) {
+export interface SeatOverlay { directions?: Record<string, LiveSeatState>; highlighted?: Set<string> }
+
+/**
+ * Numbered seat boxes over the live canvas; `roi` is in fractions of the drawn frame. While monitoring,
+ * each badge also shows the seat's current direction, and a seat with an open alert is highlighted.
+ */
+export function drawSeatBoxes(draw: CanvasRenderingContext2D, seats: ReviewSeat[], width: number, height: number, overlay: SeatOverlay = {}) {
   draw.save();
-  draw.lineWidth = 3;
   draw.font = 'bold 20px Arial';
   for (const seat of seats) {
     const [l, t, r, b] = seat.roi;
     const x = l * width, y = t * height;
-    draw.strokeStyle = '#9cc7ff';
+    const alert = overlay.highlighted?.has(seat.id) ?? false;
+    draw.lineWidth = alert ? 6 : 3;
+    draw.strokeStyle = alert ? '#ff9f1c' : '#9cc7ff';
     draw.strokeRect(x, y, (r - l) * width, (b - t) * height);
-    const label = seatLabel(seat.id).replace(/^Seat /, '');
+    const number = seatLabel(seat.id).replace(/^Seat /, '');
+    const direction = overlay.directions ? overlay.directions[seat.id]?.direction ?? 'unknown' : null;
+    const label = direction ? `${number} ${direction}` : number;
     const badge = Math.max(30, draw.measureText(label).width + 14);
-    draw.fillStyle = '#1d3557';
+    draw.fillStyle = alert ? '#ff9f1c' : '#1d3557';
     draw.fillRect(x, y, badge, 28);
-    draw.fillStyle = '#ffffff';
+    draw.fillStyle = alert ? '#1f1300' : '#ffffff';
     draw.fillText(label, x + 7, y + 21);
   }
   draw.restore();
