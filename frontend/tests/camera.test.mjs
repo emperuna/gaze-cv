@@ -393,7 +393,7 @@ test('a failed live save keeps monitoring and retries on the next frame', async 
   const lock = join(root, recordId, 'session.lock');
   await fs.writeFile(lock, '');
   const failed = await live.frame(frame(1, 2));
-  assert.match(failed.saveError, /save/);
+  assert.match(failed.saveError, /busy saving/);
   assert.equal(failed.state, 'monitoring');
   assert.equal(JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8')).alerts.length, 0);
   await fs.unlink(lock);

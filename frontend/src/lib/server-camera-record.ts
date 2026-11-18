@@ -14,6 +14,8 @@ export const MAX_STILL_BYTES = 200_000;
 export interface RecordOptions { root?: string; isActive?: (id: string) => boolean; lockTimeoutMs?: number }
 export interface RecordSummary { id: string; createdAt: string; endedAt: string | null; state: LiveSessionRecord['state']; seconds: number; seats: number; alerts: number; unmarked: number }
 
+/** The 409 when the record lock stays held; a lock left by a crashed save is cleared after 30 s by marks, End and Resume. */
+export const BUSY_MESSAGE = 'This session is busy saving. Try again in a moment.';
 const ALERT_ID = /^alert-[1-9][0-9]{0,5}$/;
 
 function folder(id: string, root: string): string {
@@ -51,7 +53,7 @@ async function withRecordLock<T>(dir: string, timeoutMs: number, fn: () => Promi
       const code = (error as NodeJS.ErrnoException).code;
       if (code === 'ENOENT') throw new AnalysisError('Session not found.', 404);
       if (code !== 'EEXIST') throw error;
-      if (Date.now() >= deadline) throw new AnalysisError('Another save is in progress. Retry; if this persists after a server crash, remove the session.lock file in the session folder.', 409);
+      if (Date.now() >= deadline) throw new AnalysisError(BUSY_MESSAGE, 409);
       await new Promise(resolve => setTimeout(resolve, 25));
     }
   }
@@ -165,6 +167,7 @@ export async function updateAlertMark(recordId: string, alertId: string, mark: A
   const dir = folder(recordId, root);
   checkAlertId(alertId);
   if (isActive(recordId)) throw new AnalysisError('This session is live. Mark the alert from the live dashboard.', 409);
+  await removeStaleLock(recordId, { root });
   return withRecordLock(dir, lockTimeoutMs, async () => {
     // A resume may have taken the record while this waited for the lock.
     if (isActive(recordId)) throw new AnalysisError('This session is live. Mark the alert from the live dashboard.', 409);
@@ -199,6 +202,7 @@ export async function removeStaleLock(recordId: string, { root = cameraRecordRoo
 export async function endSavedRecord(recordId: string, { root = cameraRecordRoot, isActive = () => false, lockTimeoutMs = 1000 }: RecordOptions = {}): Promise<LiveSessionRecord> {
   const dir = folder(recordId, root);
   if (isActive(recordId)) throw new AnalysisError('This session is live. Stop it from the live dashboard.', 409);
+  await removeStaleLock(recordId, { root });
   return withRecordLock(dir, lockTimeoutMs, async () => {
     if (isActive(recordId)) throw new AnalysisError('This session is live. Stop it from the live dashboard.', 409);
     const record = await readRecord(recordId, root);
