@@ -4,7 +4,7 @@ import { promises as fs } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { applyFrame } from '../src/lib/live-alerts.ts';
-import { createRecord, endSavedRecord, loadRecord, saveRecord, writeStill, stillFile, listRecords, updateAlertMark, deleteRecord } from '../src/lib/server-camera-record.ts';
+import { createRecord, endSavedRecord, loadRecord, presentStills, saveRecord, writeStill, stillFile, listRecords, updateAlertMark, deleteRecord } from '../src/lib/server-camera-record.ts';
 
 const settings = { mirrored: false, tileGrid: 2, seats: [{ id: 'seat-A' }], movement: DEFAULT_MOVEMENT, maxGapAuto: true };
 const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
@@ -141,4 +141,12 @@ test('a stale lock left by a crashed save is cleared before a mark or End; a fre
   await fs.writeFile(lock, ''); await fs.utimes(lock, past, past);
   assert.equal((await endSavedRecord(record.id, { root, lockTimeoutMs: 50 })).state, 'ended');
   await assert.rejects(fs.access(lock));
+}));
+
+test('presentStills lists only still files that are still on disk', async () => withRoot(async (root) => {
+  const record = await withAlert(root);
+  record.alerts[0].still = await writeStill(record.id, 'alert-1', JPEG, { root });
+  record.alerts.push({ ...record.alerts[0], id: 'alert-2', still: 'stills/alert-2.jpg' });
+  record.alerts.push({ ...record.alerts[0], id: 'alert-3', still: null });
+  assert.deepEqual([...await presentStills(record, { root })], ['stills/alert-1.jpg']);
 }));
