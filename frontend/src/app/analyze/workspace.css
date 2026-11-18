@@ -446,3 +446,5 @@
 .recording-bar p { font-size:13px; color:#4a596c; }
 .camera-status:focus { outline:none; }
 .camera-status:focus-visible { outline:2px solid #5b6879; outline-offset:2px; }
+.monitor-bar .setup-title:focus { outline:none; }
+.monitor-bar .setup-title:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
