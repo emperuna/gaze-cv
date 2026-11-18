@@ -82,3 +82,41 @@ test('unsafe ids are refused', async () => withRoot(async (root) => {
   await assert.rejects(deleteRecord('../x', { root }), { status: 400 });
   await assert.rejects(stillFile('../x', 'alert-1', { root }), { status: 400 });
 }));
+
+test('marking a monitoring record keeps its on-disk state', async () => withRoot(async (root) => {
+  const record = await withAlert(root);
+  await updateAlertMark(record.id, 'alert-1', 'Checked', '', 0, { root });
+  assert.equal(JSON.parse(await fs.readFile(join(root, record.id, 'session.json'), 'utf8')).state, 'monitoring');
+}));
+
+test('updateAlertMark refuses a live session', async () => withRoot(async (root) => {
+  const record = await withAlert(root);
+  await assert.rejects(updateAlertMark(record.id, 'alert-1', 'Checked', '', 0, { root, isActive: () => true }), { status: 409 });
+}));
+
+test('saveRecord waits for a held lock then succeeds', async () => withRoot(async (root) => {
+  const record = await createRecord(settings, { root });
+  const lock = join(root, record.id, 'session.lock');
+  await fs.writeFile(lock, '');
+  setTimeout(() => fs.unlink(lock), 150);
+  record.framesProcessed = 7;
+  await saveRecord(record, { root });
+  assert.equal((await loadRecord(record.id, { root })).framesProcessed, 7);
+}));
+
+test('saveRecord gives 409 when the lock is never released', async () => withRoot(async (root) => {
+  const record = await createRecord(settings, { root });
+  await fs.writeFile(join(root, record.id, 'session.lock'), '');
+  await assert.rejects(saveRecord(record, { root, lockTimeoutMs: 100 }), { status: 409 });
+}));
+
+test('listRecords skips malformed records and loadRecord reports 422', async () => withRoot(async (root) => {
+  const good = await createRecord(settings, { root });
+  const bad = await createRecord(settings, { root });
+  const file = join(root, bad.id, 'session.json');
+  const broken = JSON.parse(await fs.readFile(file, 'utf8'));
+  delete broken.settings;
+  await fs.writeFile(file, JSON.stringify(broken));
+  assert.deepEqual((await listRecords({ root })).map(r => r.id), [good.id]);
+  await assert.rejects(loadRecord(bad.id, { root }), { status: 422 });
+}));
