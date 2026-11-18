@@ -84,3 +84,53 @@ class CameraTests(unittest.TestCase):
         serve(pipeline, io.StringIO('x' * 1_500_000 + '\n'), outgoing)
         self.assertIn('error', json.loads(outgoing.getvalue().splitlines()[-1]))
         self.assertEqual(pipeline.calls, 0)
+
+
+SETTINGS = {'mirrored': False, 'tileGrid': 1, 'seats': [{'id': 'seat-1', 'roi': [0, 0, .5, 1]}],
+            'movement': {'min_duration': 2., 'repetition_count': 3, 'repetition_window': 10.,
+                         'max_gap': .75, 'repeat_min_duration': .25}}
+
+
+def run_protocol(pipeline, messages):
+    outgoing = io.StringIO()
+    serve(pipeline, io.StringIO(''.join(json.dumps(m) + '\n' for m in messages)), outgoing)
+    return [json.loads(line) for line in outgoing.getvalue().splitlines()][1:]
+
+
+class SeatProtocolTests(unittest.TestCase):
+    def test_configure_then_frames_return_seat_states(self):
+        out = run_protocol(Pipeline(), [{'type': 'configure', 'settings': SETTINGS},
+                                        frame(.1), {**frame(.4), 'id': 2, 'open_alerts': [['seat-1', 'left']]}])
+        self.assertTrue(out[0]['configured'])
+        self.assertEqual(out[0]['seats'][0]['id'], 'seat-1')
+        self.assertEqual(out[1]['seats'], {'seat-1': {'direction': 'left', 'reason': None}})
+        self.assertEqual(out[1]['events'], [])
+        self.assertIn('seats', out[2])
+
+    def test_frames_before_configure_have_no_seats(self):
+        out = run_protocol(Pipeline(), [frame(.1)])
+        self.assertNotIn('seats', out[0])
+        self.assertNotIn('events', out[0])
+
+    def test_second_configure_is_error(self):
+        out = run_protocol(Pipeline(), [{'type': 'configure', 'settings': SETTINGS},
+                                        {'type': 'configure', 'settings': SETTINGS}])
+        self.assertTrue(out[0]['configured'])
+        self.assertIn('already configured', out[1]['error'])
+
+    def test_invalid_settings_and_open_alerts_are_errors(self):
+        out = run_protocol(Pipeline(), [{'type': 'configure', 'settings': {**SETTINGS, 'seats': []}},
+                                        {**frame(.1), 'open_alerts': 'x'}])
+        self.assertIn('error', out[0])
+        self.assertIn('error', out[1])
+
+    def test_suggest_seats_uses_setup_frames(self):
+        out = run_protocol(Pipeline(), [{**frame(i * .2), 'id': i + 1, 'setup': True} for i in range(6)]
+                           + [{'type': 'suggest_seats'}])
+        suggestion = out[-1]
+        self.assertTrue(suggestion['suggested'])
+        self.assertEqual(suggestion['sampled_frames'], 5)
+        self.assertEqual([s['id'] for s in suggestion['seats']], ['seat-1'])
+
+    def test_suggest_without_setup_frames_is_error(self):
+        self.assertIn('error', run_protocol(Pipeline(), [{'type': 'suggest_seats'}])[0])
