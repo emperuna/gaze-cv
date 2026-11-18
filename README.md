@@ -16,11 +16,18 @@ below the 10 FPS target. Different CP3/CP4 datasets prevent an improvement claim
 Team review of effort-weighted completion and independent classroom validation
 remain outstanding.
 
-The local website also supports live camera direction analysis. Open `/analyze`,
-choose **Camera**, select a method, and click **Start camera**. Allow browser
-camera access; **Stop** releases capture and the local processor. Camera frames
-stay in memory. This mode does not create seat histories, movement events, or
-recordings. See [website setup and camera use](frontend/README.md#live-camera).
+The local website's main workflow is the live camera (since 18 November 2026,
+pending team agreement; the CP5 demonstration used saved video). Open `/analyze`,
+press **Start**, and allow browser camera access; Ocular finds the seats, and
+**Start monitoring** raises an alert naming the seat to look at when a head turns
+left or right for a while or repeatedly. Looking down never alerts. Frames stay in
+memory; the session, its alerts and one cropped still per alert are saved on
+this computer, can be resumed, reopened from **Past sessions** and downloaded as
+a PDF. **Review a recording instead** opens the saved-video seat review; Image
+is no longer offered on the website. Alert accuracy has not been measured and the
+physical-camera check is not performed. See
+[website setup and camera use](frontend/README.md#live-camera) and the
+[verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md).
 
 ## Current state
 
@@ -30,11 +37,14 @@ coverage warnings. See [review workload tools](docs/review-workload.md).
 These additions support human review and do not establish examination-scale
 readiness or change the existing validation results.
 
-**Download PDF report** is available after Image analysis, either Saved video
-workflow, and Camera Stop. PDFs list potential incident observations for human
+**Download PDF report** is available for the Saved video seat review and for a Camera
+session (the Image website workflow was removed on 18 November 2026; the PDF
+route for earlier Image/directions-only runs remains in the code). PDFs list potential incident observations for human
 review, with timestamps where available, source/method details and coverage
 limitations. Saved-seat PDFs include saved statuses, notes and local sign-off.
-Camera PDFs use bounded numeric summaries without saving pixels or recordings.
+Camera PDFs include the session's alerts, their cropped stills, marks and notes; the
+camera is never recorded, and stills are kept only in the local session folder
+until the session is deleted.
 Install the updated pinned `requirements.txt` for PDF generation. See
 [PDF reporting](docs/review-workload.md#pdf-reports-for-all-three-options).
 
@@ -165,10 +175,11 @@ The public-facing introduction to GAZE lives in [frontend/](frontend/README.md).
 It uses React, Next.js, TypeScript, Tailwind CSS, and a local shadcn/ui button
 component. Run `npm ci` and `npm run dev` from `frontend/` after the project-local
 cache setup in that README. The landing page contains an explicitly illustrative
-session example. The `/analyze` workspace accepts one image or saved video and
-calls the existing automatic Python runner locally, once the project `.venv` and
-selected models are installed. It previews the input and provides annotated
-outputs and observation downloads. **Saved video → Seats & movement review**
+session example. The `/analyze` workspace opens the live camera and, through
+**Review a recording instead**, a saved video; it calls the existing Python code locally,
+once the project `.venv` and selected models are installed. The earlier Image
+and directions-only upload workflows are no longer reachable from the website
+(code and routes kept). **Saved video → Seats & movement review**
 adds visual/numeric seat setup, configurable movement rules, synchronized browser
 playback, clickable events, per-seat histories, saved-session reopening and JSON
 downloads. It reuses the existing Python modules; directions remain camera-relative.
@@ -176,9 +187,9 @@ The directions-only upload and calibrated CLI workflows remain available.
 See [saved-review use](frontend/README.md#saved-video-seat-and-movement-review),
 the [CP4 checklist](docs/checkpoints/cp4-checklist.md), and the
 [before/after table](docs/checkpoints/cp4-before-after.md).
-The **Camera** source also provides live directions
-through the same models, with Start/Stop, in-memory frames, and a persistent
-local Python worker. See [camera use and limitations](frontend/README.md#live-camera).
+The **Camera** workflow runs the Baseline model through a persistent local Python
+worker with automatic seat setup, seat alerts, alert stills, resume, Past
+sessions and a PDF. See [camera use and limitations](frontend/README.md#live-camera).
 Physical-camera and classroom checks remain unverified. The website has not been published; this interface
 does not establish a checkpoint gate or classroom accuracy.
 

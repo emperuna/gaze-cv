@@ -601,7 +601,7 @@ Scope update (27 October 2026): live camera support (`cp4-camera`) is optional. 
 - [ ] Make live camera seat alerts the main workflow
   - **ID**: post-camera-alerts
   - **Assignee**: Unassigned
-  - **Status**: Backlog
+  - **Status**: Review
   - **Milestone**: Post-CP5
   - **Tags**: camera, seats, temporal, integration, documentation
   - **Files**: `src/gaze/`, `scripts/camera_worker.py`, `tests/`, `frontend/`, `PRD.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `README.md`
@@ -610,4 +610,5 @@ Scope update (27 October 2026): live camera support (`cp4-camera`) is optional. 
   - **Blocked by**: cp5-hand-in
   - **Acceptance**: As defined in the [camera alerts design](docs/superpowers/specs/2026-11-18-camera-alerts-design.md): Camera is the only visible source with Baseline fixed; seats are set on a live frame; left/right sustained or repeated movements open one alert per seat and direction with one cropped still; alerts can be marked, sessions resumed and reopened; the PDF includes alerts, stills and marks; the landing page and PRD describe the new workflow after team agreement.
   - **Verification**: Python and TypeScript unit tests listed in the design; real-model run with a synthetic browser stream; physical check with Camo on the ASUS laptop, one iPhone and one Android phone, three seated people, measured live FPS, one sustained and one repeated alert, and a writing interval with no alert.
-  - **Remaining**: Design drafted 18 November 2026; awaiting team approval of the design and PRD changes. Not started.
+  - **Evidence**: Implemented on branch `feat/camera-alerts`, commits `df29d29..HEAD` (not pushed, no PR or Issue). Run 18 November 2026 and recorded in the [verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md): `.venv/bin/python .github/automation.py check` passed; `.github/tests` 16 tests OK; `tests` 189 tests with 2 pre-existing macOS `/private/var` path failures (`test_data`, `test_evaluation`); `npm test` 124/124; `npm run typecheck` and `npm run build` passed. Headless-Chrome fake-camera checks with the FourPeople proxy (seat finding) and the local Pexels 8419341 clip (alerts, stills, marks, interruption and resume) are described there with their limits.
+  - **Remaining**: Physical check on the ASUS laptop with Camo, one iPhone, one Android phone and three seated people (live frames per second at tiling 2, automatic maximum gap, one sustained and one repeated alert, a writing interval with no alert, Resume after unplugging) is not performed. Team agreement to the PRD changes (FR15, FR16, data handling) and peer review are outstanding, as are alert timing cross-check against `scripts/process_video.py --events`, alert precision/recall and consent plus a retention period before use with real students. Do not mark Done before these.

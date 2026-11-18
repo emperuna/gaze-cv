@@ -1,5 +1,14 @@
 # GAZE Product Requirements Draft
 
+Status note, 18 November 2026: the requirement changes marked "Camera alerts"
+below (FR01, FR13, FR14, FR15, FR16, the workflow, the mobile-client exclusion
+and the data-handling rules) make live camera seat alerts the main website
+workflow. They are **pending team agreement** and are not a revised commitment.
+The CP5 demonstration (19 November) used the earlier saved-video workflow. This
+note does not change course dates or checkpoint gates and claims no alert
+accuracy; see the [camera alerts design](docs/superpowers/specs/2026-11-18-camera-alerts-design.md)
+and its [verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md).
+
 Status: Requirements for team review, with implementation evidence as of 22 October 2026. Working image/video and core session behavior are recorded in [the checkpoint report](docs/checkpoints/cp2-progress.md); final targets and academic submission are not claimed.
 
 Implementation update, 29 October 2026: the local website now provides optional
@@ -59,24 +68,35 @@ The minimum fallback is multi-face detection and frame-level direction labels on
 - Facial recognition, student identity databases, and identification across sessions.
 - Automatic grading, disciplinary actions, or claims of cheating detection.
 - Multiple cameras, moving cameras, and unrestricted classroom coverage.
-- Cloud hosting, mobile clients, school system integrations, and account management.
+- Cloud hosting, mobile clients, school system integrations, and account management. A phone used as the laptop's webcam through a third-party app (for example Camo) is a camera source, not a mobile client: nothing runs on the phone.
 - Training a new head-pose model from scratch.
 
 ## Proposed user workflow
 
-1. Select a saved video; a live camera may be used if the optional camera workflow is implemented.
-2. Configure the fixed seat regions and confirm that at least three faces are sufficiently visible.
-3. Load or adjust direction and movement thresholds. Show their values for the session.
-4. Start processing and view face regions, seat IDs, direction labels, and processing status.
-5. Review timestamped movement events alongside the annotated preview.
-6. Stop the session and save its configuration and event log for later review.
+Camera alerts (pending team agreement, 18 November 2026): the main workflow is
+a live camera, for example a phone used as a webcam, fixed at the front of the room.
 
-Saved video is the required input workflow for demonstrations, evaluation, and project completion. Live camera support is an optional extension and is not a completion gate.
+1. Open the website, choose the camera and press Start.
+2. Ocular finds the visible students and numbers the seats left to right; the instructor adjusts a seat only if one is missing or wrong, and confirms that at least three faces are sufficiently visible.
+3. Start monitoring. The movement settings are shown and can be changed under advanced settings; their values are saved with the session.
+4. When a seat shows a sustained or repeated left or right movement, an alert names the seat to look at, with a cropped still of that moment. Looking down never alerts. The instructor looks, decides, and marks the alert Checked or Dismissed.
+5. If the camera stops, the instructor reconnects it and resumes the same session; seats and alerts are kept and the unmonitored interval is recorded.
+6. Stop the session, download the PDF, and delete the session when the agreed retention period ends. Past sessions can be reopened later.
 
-The implemented website Camera mode follows a shorter direction-only flow:
-choose Camera and a method, Start and grant permission, review processed frames,
-then Stop. The six-step seat/event workflow above remains a separate configured
-saved-video workflow; camera directions do not establish completion of it.
+Alerts are prompts to look; they do not establish cheating. Saved video seat
+review remains a secondary website path (**Review a recording instead**), and
+saved video remains supported by the command line and the evaluation scripts.
+Image processing remains in the code and command line for evaluation only; the
+website no longer offers it. Before this change, saved video was the required
+input workflow for demonstrations, evaluation and project completion; the
+CP5 demonstration used that workflow. Whether live camera becomes a
+completion gate is a team decision and is not made here.
+
+The earlier website Camera mode followed a shorter direction-only flow (choose
+Camera and a method, Start, review processed frames, Stop); the live alert
+workflow above replaces it on the website. The original six-step configured
+seat/event workflow (select input, configure seats, set thresholds, process,
+review events, save) remains available for saved video.
 
 The website also now exposes the saved-video seat/history/event flow through
 visual/numeric seat setup, adjustable movement settings, synchronized source
@@ -90,7 +110,7 @@ Phase 4 hand-in instructions, including held-out evaluation, to remaining eviden
 
 | ID | Requirement | Acceptance evidence |
 | --- | --- | --- |
-| FR01 | Read saved video. Live camera input is optional. | Valid saved input processes; missing files and unreadable input produce understandable errors. If the optional camera workflow is implemented, verify camera startup, stop, elapsed session time, and unavailable-camera errors separately. |
+| FR01 | Read live camera input (the main website workflow, pending team agreement) and saved video (a secondary website path, the command line and the evaluation scripts). | Valid saved input processes; missing files and unreadable input produce understandable errors. For the camera, check startup, stop, resume after an unplugged camera, elapsed session time and unavailable-camera errors; physical-camera checks are recorded in the [verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md) and are not performed there. |
 | FR02 | Detect multiple visible faces. | An annotated test clip shows at least three visible faces processed in the same frame; missed detections are included in evaluation. |
 | FR03 | Produce the four direction labels using documented rules. | Labeled evaluation samples produce reproducible predictions; left and right follow a documented subject-relative convention, with preview mirroring handled explicitly. |
 | FR04 | Associate detections with fixed seat IDs within a session. | A labeled multi-person clip supports measurement of ID consistency; ambiguous associations remain unassigned. |
@@ -102,18 +122,21 @@ Phase 4 hand-in instructions, including held-out evaluation, to remaining eviden
 | FR10 | Handle unreliable or missing observations explicitly. | A face that disappears or loses usable landmarks becomes unknown; missing observations do not accumulate movement duration, and histories do not bridge gaps as continuous evidence. |
 | FR11 | Run both methods through a common evaluation procedure. | The same held-out labeled inputs, label mapping, and failure accounting are used for baseline and main-method comparison. |
 | FR12 | Group related saved-video movement records into review items with surrounding footage, human statuses and notes. | Same-seat/direction grouping preserves original events, respects unavailable observations, and saved decisions survive reopening; conflicting saves cannot silently overwrite notes. |
-| FR13 | Show technical camera warnings and per-seat saved-video coverage gaps. | Interrupted/stale input and experimental image-quality/visibility checks are explicit, recover when observations recover, and cannot be presented as confirmed obstructions or accuracy measurements. |
-| FR14 | Generate local PDF reports for Image, Saved video and Camera; retain editable saved-seat reports with human sign-off. | Each source offers a PDF download with mode-appropriate observations, timestamps where available and explicit uncertainty. Saved-seat reports include statuses, notes and sign-off; edits clear sign-off. No image durations, camera seat identities or misconduct conclusions are invented. |
+| FR13 | Show technical camera warnings and per-seat saved-video coverage gaps. | Interrupted/stale input and experimental image-quality/visibility checks are explicit, recover when observations recover, and cannot be presented as confirmed obstructions or accuracy measurements. Camera alerts: a slow-processing warning appears when the measured processing gap exceeds the maximum gap, because alerts may be missed. |
+| FR14 | Generate local PDF reports for Camera and Saved video (Camera alerts, pending team agreement: Image no longer has a website report); retain editable saved-seat reports with human sign-off. | Each website source offers a PDF download with mode-appropriate observations, timestamps where available and explicit uncertainty. The camera PDF includes alerts, their stills, marks and notes, and unmonitored intervals. Saved-seat reports include statuses, notes and sign-off; edits clear sign-off. No camera seat identities or misconduct conclusions are invented. |
+| FR15 | Live seat alerts (Camera alerts, pending team agreement). Sustained or repeated left or right movement on live input names the seat; gaps never accumulate; down never alerts; wording never asserts misconduct. | Checks to run: feed a known clip as a fake camera and compare alert times with `scripts/process_video.py --events` on the same clip (the same movement rules); confirm the alert appears within one processed frame of the threshold crossing, that a gap larger than the maximum gap prevents an alert, that a writing (down) interval produces none, and that alert text contains no misconduct wording. Measure live frames per second and false alerts on labeled writing intervals before any accuracy statement; a physical three-person check is needed. |
+| FR16 | Alert stills (Camera alerts, pending team agreement). One cropped still per alert, stored only in the local session folder and in the PDF; deleted with the session. | Checks to run: an alert has one still; stills exist only under the session folder and in that session's PDF; deleting the session removes the folder and its stills; an active session cannot be deleted; non-alert frames are never stored. Consent and a retention period must be agreed before use with real students. |
 
 FR12–FR14 are the user-requested workload extensions of 17 November 2026.
 Their rules and verification boundaries are documented in [review workload tools](docs/review-workload.md).
-They do not expand camera mode to recording/seat tracking, introduce identity
-recognition, or establish multi-room/examination-scale readiness.
+They did not, when added, expand camera mode to recording/seat tracking; FR15
+and FR16 (pending team agreement) now add seat alerts and alert stills to it.
+Neither introduces identity recognition or establishes multi-room/examination-scale readiness.
 
 On 18 November, the user extended FR14 to require a PDF document in all three
-analysis options. Camera now retains bounded numeric summaries in server memory
-for reporting after Stop; it still does not record camera pixels, track seats or
-establish continuous movement events. [PDF reporting rules](docs/review-workload.md#pdf-reports-for-all-three-options)
+analysis options. At that time Camera retained bounded numeric summaries in server
+memory and did not record camera pixels, track seats or establish continuous
+movement events; the Camera alerts changes above supersede that behavior once agreed. [PDF reporting rules](docs/review-workload.md#pdf-reports-for-all-three-options)
 define retention, truncation, source distinctions and human-review wording.
 
 Unknown and unassigned are processing states, not extra head-direction classes. Proposed event fields are session ID, seat ID, event type, direction, start time, end time, duration, repetition count where relevant, and a reference to the configuration used. Seat IDs identify positions rather than people.
@@ -148,12 +171,13 @@ Targets are proposed success criteria, not achieved results. At CP2, report repr
 
 ## Reliability and data handling
 
-- Keep processing and storage local for the initial prototype.
+- Keep processing and storage local for the initial prototype. A phone used as a webcam through a third-party app does not change this; the laptop's local server is the only service.
 - Record session settings and the approach used so evaluation results can be reproduced.
 - Preserve observation gaps and assignment uncertainty in exported results.
 - Keep private footage and session records out of the public repository.
 - Publish only sample assets that have permission for redistribution. Record permissions separately from code licensing.
 - Make recording optional; agree on access, retention, and deletion before collecting classroom footage.
+- Camera alerts (pending team agreement): live camera frames are processed in memory and are not recorded. The session record (settings, seats, alerts, marks) and one cropped still per alert are saved in the local session folder; a still may show a student's face. Stills appear only there and in that session's PDF, and are deleted when the session is deleted. Consent and a retention period must be agreed before use with real students, and the instructor deletes sessions when that period ends.
 
 ## Team ownership
 
@@ -199,3 +223,4 @@ At the planning date, the guide's CP1 deadline has passed and CP2 is the next li
 4. Agree on seat setup, handling unclear observations, and the criteria for reviewing movement events.
 5. Confirm a local preview is sufficient for the course demonstration and agree on footage retention.
 6. Confirm checkpoint submission status, GitHub visibility, repository license, and asset publication permissions.
+7. Camera alerts (18 November 2026): agree or reject the pending requirement changes above, including FR15 and FR16, whether live camera becomes a completion gate, the consent and still-retention period for real students, and the camera hardware (Camo with one iPhone and one Android phone) for the physical check.

@@ -26,7 +26,7 @@ Movement observations support the instructor's judgment. A sideways or downward 
 
 ## Session flow
 
-1. The instructor or demonstrator selects prerecorded examination footage. Live camera input is an optional extension, not required for project completion.
+1. The instructor or demonstrator selects an input. Camera alerts (pending team agreement, 18 November 2026): the main website workflow is a live fixed camera, for example a phone used as a webcam; prerecorded footage is a secondary website path and the command-line workflow. The CP5 demonstration used saved video.
 2. The seating arrangement and observation settings are established.
 3. GAZE observes visible head directions and associates them with seats.
 4. Movement histories identify sustained or repeated patterns according to the session settings.
@@ -39,20 +39,28 @@ If a face cannot be observed reliably, the session should show that uncertainty.
 
 | Entry point | Processing path | Available outputs |
 | --- | --- | --- |
-| Website Image/Saved video | Next.js upload API → `scripts/run.py` → shared head or baseline pipeline | Annotated PNG/AVI, direction counts, JSON/JSONL, run metadata. |
-| Website Saved video: seat review | Visual seat/settings editor → local review API → `scripts/review_video.py` → shared video/seat/history/event modules | Source-time playback overlays, event seeking, per-seat intervals, raw JSON/AVI downloads and saved-session reopening. |
-| Website Camera | Browser capture → local camera API → persistent `scripts/camera_worker.py` → shared head or baseline pipeline | Continuous preview, matching processed-frame annotations, per-frame counts, elapsed capture time, measured processing throughput. |
+| Image / directions-only video (routes kept, not reachable from the website since 18 November 2026) | Next.js upload API → `scripts/run.py` → shared head or baseline pipeline | Annotated PNG/AVI, direction counts, JSON/JSONL, run metadata. |
+| Website Saved video: seat review (secondary path, **Review a recording instead**) | Visual seat/settings editor → local review API → `scripts/review_video.py` → shared video/seat/history/event modules | Source-time playback overlays, event seeking, per-seat intervals, raw JSON/AVI downloads and saved-session reopening. |
+| Website Camera (main workflow, pending team agreement) | Browser capture → local camera API → persistent `scripts/camera_worker.py` → fixed Baseline pipeline → automatic seat setup → `SeatAssociator` and `MovementMonitor` → alert grouping and cropped stills | Live preview with seat boxes, per-seat alerts with one cropped still each, Checked/Dismissed marks, session record on disk (`outputs/runs/camera/<id>/session.json` and `stills/`), resume after interruption, Past sessions, PDF with alerts, stills and marks. |
 | Configured saved-video command | `scripts/process_video.py` → selected pipeline → fixed-seat association → histories → optional movement rules | Annotated video, observations, seat histories, settings, and optional movement events. Head mode requires seat-bound neutral calibration. |
 
-The Camera path is an optional direction-only extension. The browser owns camera
-permission and device selection; Python keeps the selected model loaded. Frames
-remain in memory, with one in flight and no recording. Capture timestamps use
-elapsed monotonic time. Stop, source navigation, hidden tabs, and processing
-failures release the camera and worker; idle/processing timeouts bound abandoned
-sessions. Live and upload processing share one inference reservation per local
-server process. Seat histories and events are available through the configured
-saved-video command and the website's seat-review mode; they are not connected
-to Camera mode. Review sessions retain their original source, source hash,
+The Camera path was an optional direction-only extension (29 October 2026). Since
+18 November 2026 (pending team agreement) it is the main workflow. The browser owns camera
+permission and device selection; Python keeps the Baseline model loaded. Frames
+are processed in memory, with one in flight, and are not recorded. Capture
+timestamps use elapsed monotonic time. Before monitoring, the worker suggests
+seats from several frames; the instructor confirms or adjusts them. While
+monitoring, the same `SeatAssociator` and `MovementMonitor` used for saved video
+produce left/right movement events; Node groups them into one alert per seat and
+direction and saves one cropped still (at most 200 KB each) per alert. Down never alerts, and
+unknown observations never accumulate. The session record, alerts, marks and
+stills are written under `outputs/runs/camera/<id>/` (ignored by Git) and are
+deleted only when the session is deleted. Hiding the tab or losing the camera pauses
+the session as interrupted instead of ending it; Resume continues it and records
+the unmonitored interval. A session is limited to three hours. Live and upload
+processing share one inference reservation per local server process. Saved-video
+seat review remains available as a secondary website path and from the command
+line. Review sessions retain their original source, source hash,
 settings and generated records locally. Only completed manifests are listed;
 failed/cancelled partial files require manual cleanup. Browser review assumes
 CFR, with frame-index/FPS overlays on the original source; annotated AVI remains
@@ -74,15 +82,18 @@ Seat references identify positions within a session. The project does not requir
 The website review layer derives grouped queue items and frame-based seat
 coverage from saved observations. Human statuses, notes, report text and local
 sign-off are saved separately with revision checks; they never replace original
-model records. Camera health checks remain transient and direction-only.
+model records. Camera health checks remain transient; camera alerts and marks are saved in the session record.
 
 All three website sources offer a PDF observation report. A bounded JSON report
 passes through `scripts/render_incident_report.py` into the shared ReportLab
 renderer in `src/gaze/incident_pdf.py`; bytes stream back as a local PDF download.
 Image/directions-only runs retain completion metadata for report provenance.
-Camera keeps bounded numeric capture summaries in an eight-session memory cache,
-with timed expiry 30 minutes after worker exit, without retaining pixels or
-tracking seats. Reports preserve source-specific uncertainty and human review.
+The Camera PDF is built from the saved session record (alerts, their stills,
+marks, notes, unmonitored intervals and per-seat coverage) through the same
+renderer, which reads only `.jpg` stills inside the session folder. Before
+18 November 2026 Camera kept bounded numeric summaries in an eight-session memory
+cache without stills; that cache is no longer used. Reports preserve
+source-specific uncertainty and human review.
 See [review workload tools](docs/review-workload.md) for the implemented rules
 and limitations.
 
@@ -115,4 +126,4 @@ Use only authorized footage and respect dataset permissions. Agree on who can ac
 
 ## Current evidence boundary
 
-The prototype now supports image direction observations, saved-video annotation, configured fixed seats, source-time histories, movement-rule records, and optional browser camera directions. Validation images and an office video proxy establish limited technical evidence. Camera integration was checked with both real model pipelines and synthetic browser media; physical-camera behavior and the authorized three-seat camera demonstration remain unverified. See [camera verification](docs/superpowers/specs/2026-10-29-live-camera-verification.md). Final held-out results, classroom event labels, writing-related false alerts, integrated representative laptop performance, and each member's own contribution/defense remain separate obligations. See [the checkpoint report](docs/checkpoints/cp2-progress.md).
+The prototype now supports image direction observations, saved-video annotation, configured fixed seats, source-time histories, movement-rule records, and optional browser camera directions. Validation images and an office video proxy establish limited technical evidence. Camera integration was checked with both real model pipelines and synthetic browser media; physical-camera behavior and the authorized three-seat camera demonstration remain unverified. See [camera verification](docs/superpowers/specs/2026-10-29-live-camera-verification.md) and, for the later seat-alert workflow, the [camera alerts verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md), which lists the physical check as not performed. Final held-out results, classroom event labels, writing-related false alerts, integrated representative laptop performance, and each member's own contribution/defense remain separate obligations. See [the checkpoint report](docs/checkpoints/cp2-progress.md).
