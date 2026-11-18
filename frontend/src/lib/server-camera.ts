@@ -110,6 +110,20 @@ export async function stopCamera(id:string) {
   try {return await live.stop();} finally {remember(live);}
 }
 
+export const PAUSE_MESSAGE = 'Monitoring paused: the camera page was hidden or closed.';
+
+/**
+ * Pause (hidden tab, page closed): closes the worker without ending the record, so a monitored record is
+ * saved as `interrupted` and can be resumed. A preview-only worker just closes. Idempotent.
+ */
+export async function interruptCamera(id:string): Promise<{ recordId: string | null; state: LiveSessionRecord['state'] | null }> {
+  const live=getCamera(id);
+  await live.session.close(PAUSE_MESSAGE);
+  await live.exited;
+  remember(live);
+  return {recordId:live.record?.id ?? null,state:live.record?.state ?? null};
+}
+
 export function listCameraRecords(options:LiveOptions={}): Promise<RecordSummary[]> {return listRecords(recordOptions(options));}
 
 /** The live in-memory record for the active session (disk may lag by a few seconds), otherwise the saved one. */

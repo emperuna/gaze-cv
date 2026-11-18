@@ -180,7 +180,7 @@ import { join, resolve } from 'node:path';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { newRecord } from '../src/lib/live-alerts.ts';
 import { saveRecord, loadRecord } from '../src/lib/server-camera-record.ts';
-import { startCamera, getCamera, stopCamera, isActive, markCameraAlert, getCameraRecord, endCameraRecord } from '../src/lib/server-camera.ts';
+import { startCamera, getCamera, stopCamera, isActive, markCameraAlert, getCameraRecord, endCameraRecord, interruptCamera } from '../src/lib/server-camera.ts';
 
 const JPEG64 = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]).toString('base64');
 const PNG64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).toString('base64');
@@ -345,6 +345,28 @@ test('worker crash marks the record interrupted', async () => withLive(async ({ 
   assert.equal(record.state, 'interrupted');
   assert.ok(record.interruptedAt);
   assert.equal(record.segments[0].endSeconds, 4);
+}));
+
+test('pausing a monitored session leaves it interrupted and resumable, not ended', async () => withLive(async ({ root, start }) => {
+  const { live, sessionId } = await start();
+  const { recordId } = await live.monitor(MONITOR);
+  await live.frame(frame(1, 4));
+  assert.deepEqual(await interruptCamera(sessionId), { recordId, state: 'interrupted' });
+  assert.equal(isActive(recordId), false);
+  assert.throws(() => getCamera(sessionId), error => error.status === 404);
+  const saved = JSON.parse(await fs.readFile(join(root, recordId, 'session.json'), 'utf8'));
+  assert.equal(saved.state, 'interrupted');
+  assert.ok(saved.interruptedAt);
+  assert.equal(saved.endedAt, null);
+  const resumed = await start(undefined, {}, recordId);
+  assert.equal(resumed.record.state, 'monitoring');
+  assert.equal(resumed.record.segments.length, 2);
+}));
+
+test('pausing a preview-only session just closes it', async () => withLive(async ({ start }) => {
+  const { sessionId } = await start();
+  assert.deepEqual(await interruptCamera(sessionId), { recordId: null, state: null });
+  await assert.rejects(interruptCamera(sessionId), error => error.status === 404);
 }));
 
 test('3-hour limit ends the record', async () => withLive(async ({ root, start }) => {
