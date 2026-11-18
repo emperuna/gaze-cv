@@ -99,3 +99,14 @@ test('live session reports skip an unknown tail shorter than two seconds and cap
   const capped = liveSessionReport(record, '/r');
   assert.equal(capped.items.length, 500); assert.equal(capped.omittedItems, 10);
 });
+
+test('a missing still file is listed as unavailable instead of breaking the report', () => {
+  const report = liveSessionReport(liveRecord(), '/records/live-1', () => false);
+  assert.equal(report.items[0].image, null);
+  assert.match(report.items[0].detail, /Still unavailable/);
+  assert.doesNotMatch(report.items[1].detail, /Still unavailable/, 'an alert that never had a still keeps its own reason');
+  assert.ok(report.coverage.some(line => line.includes('2 alerts without a saved still')));
+  const present = liveSessionReport(liveRecord(), '/records/live-1', still => still === 'stills/a1.jpg');
+  assert.equal(present.items[0].image, 'stills/a1.jpg');
+  assert.doesNotMatch(present.items[0].detail, /Still unavailable/);
+});

@@ -146,6 +146,18 @@ export async function stillFile(recordId: string, alertId: string, { root = came
   return file;
 }
 
+/** The record's still paths whose files are present (regular files, not links); the PDF leaves out the others. */
+export async function presentStills(record: LiveSessionRecord, { root = cameraRecordRoot }: RecordOptions = {}): Promise<Set<string>> {
+  const dir = folder(record.id, root);
+  const present = new Set<string>();
+  for (const { still } of record.alerts) {
+    if (typeof still !== 'string' || !still) continue;
+    try { const info = await lstat(join(dir, still)); if (info.isFile() && !info.isSymbolicLink()) present.add(still); }
+    catch (error) { if (!missing(error) && (error as NodeJS.ErrnoException).code !== 'ENOTDIR') throw error; }
+  }
+  return present;
+}
+
 export async function listRecords(options: RecordOptions = {}): Promise<RecordSummary[]> {
   const root = options.root ?? cameraRecordRoot;
   let names: string[];

@@ -65,18 +65,25 @@ const clock = (seconds: number) => {
 };
 const MIN_TAIL_GAP_SECONDS = 2;
 
-/** Alerts, marks, stills and coverage of a live session; `recordRoot` is the session folder that holds `stills/`. */
-export function liveSessionReport(record: LiveSessionRecord, recordRoot: string): IncidentReport {
+/**
+ * Alerts, marks, stills and coverage of a live session; `recordRoot` is the session folder that holds `stills/`.
+ * `hasStill` says whether a saved still's file is still there; a missing one is listed as "Still unavailable"
+ * without an image, so one lost file does not stop the whole PDF.
+ */
+export function liveSessionReport(record: LiveSessionRecord, recordRoot: string, hasStill: (still: string) => boolean = () => true): IncidentReport {
   const report = baseReport('camera', record.id, 'Local live camera - saved alerts and stills');
   const { settings } = record;
   report.confidential = true; report.imageRoot = recordRoot;
   const alerts = record.alerts.slice(0, MAX_REPORT_ITEMS);
-  report.items = alerts.map(alert => ({ label: alertTitle(alert, record.events), time: `${clock(alert.openedAt)} \u2013 ${clock(alert.lastAt)}`,
-    detail: `${alert.eventIndexes.map(i => record.events[i]?.event_type).filter(Boolean).join(', ') || 'movement'}; looking ${alert.direction}; ${alert.eventIndexes.length} ${alert.eventIndexes.length === 1 ? 'event' : 'events'}; ${seatLabel(alert.seatId)}.`
-      + (alert.still ? '' : alert.stillError ? ` No still saved: ${alert.stillError}` : ' No still saved.'),
-    status: alert.mark ?? 'Not reviewed', notes: alert.note, image: alert.still }));
+  report.items = alerts.map(alert => {
+    const image = alert.still && hasStill(alert.still) ? alert.still : null;
+    return { label: alertTitle(alert, record.events), time: `${clock(alert.openedAt)} \u2013 ${clock(alert.lastAt)}`,
+      detail: `${alert.eventIndexes.map(i => record.events[i]?.event_type).filter(Boolean).join(', ') || 'movement'}; looking ${alert.direction}; ${alert.eventIndexes.length} ${alert.eventIndexes.length === 1 ? 'event' : 'events'}; ${seatLabel(alert.seatId)}.`
+        + (image ? '' : alert.still ? ' Still unavailable: the image file is missing.' : alert.stillError ? ` No still saved: ${alert.stillError}` : ' No still saved.'),
+      status: alert.mark ?? 'Not reviewed', notes: alert.note, image };
+  });
   report.omittedItems = Math.max(0, record.alerts.length - alerts.length);
-  const withoutStill = record.alerts.filter(alert => !alert.still).length;
+  const withoutStill = record.alerts.filter(alert => !alert.still || !hasStill(alert.still)).length;
   report.metadata = [['Method', 'Baseline'], ['Session started (UTC)', record.createdAt], ['Session ended (UTC)', record.endedAt ?? 'Not ended'],
     ['Seats', settings.seats.map(seat => seatLabel(seat.id)).join(', ') || 'None'], ['Movement settings', JSON.stringify(settings.movement)],
     ['Maximum gap', `${settings.movement.max_gap} s (${settings.maxGapAuto ? 'automatic' : 'manual'})`],
