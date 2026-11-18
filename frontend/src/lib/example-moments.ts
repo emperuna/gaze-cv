@@ -24,9 +24,10 @@ export const EXAMPLE_TIMELINES: Record<ExampleSeatId, Segment[]> = {
 };
 
 export const EXAMPLE_MOMENTS: ExampleMoment[] = [
-  { time: 12, seat: '03', title: 'Seat 03 turns left.', note: 'A direction describes what was seen, not why.' },
-  { time: 24, seat: '01', title: 'Seat 01 looks down.', note: 'Ordinary writing can look the same.' },
-  { time: 36, seat: '02', title: 'Seat 02 is out of view.', note: 'Gaps are never filled in.' },
+  { time: 12, seat: '03', title: 'Check seat 03.', note: 'Illustrative alert: a sustained left turn. A direction describes what was seen, not why.' },
+  { time: 24, seat: '01', title: 'Seat 01 looks down.', note: 'Writing looks the same; down never alerts.' },
+  { time: 36, seat: '04', title: 'Check seat 04.', note: 'Illustrative alert: a sustained right turn. The instructor decides what it means.' },
+  { time: 38, seat: '02', title: 'Seat 02 is out of view.', note: 'Out of view; gaps are never filled in.' },
 ];
 
 export function directionAt(seat: ExampleSeatId, time: number): ExampleDirection {

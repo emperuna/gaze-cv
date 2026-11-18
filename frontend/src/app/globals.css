@@ -231,8 +231,8 @@ h2 { font-size: clamp(30px, 3.3vw, 44px); font-weight: 500; line-height: 1.1; le
 .dir-down { background: var(--dir-down); }
 .dir-unknown { background: repeating-linear-gradient(135deg, var(--dir-unknown-a) 0 4px, var(--dir-unknown-b) 4px 8px); }
 .example-playhead { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: var(--foreground); border-radius: 2px; transition: left .3s var(--ease-out); }
-.example-moments { position: relative; height: 36px; margin-left: 74px; }
-.example-moments button { position: absolute; top: 0; transform: translateX(-50%); min-width: 56px; min-height: 32px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 99px; background: var(--card); font-size: var(--text-meta); color: var(--text-secondary); font-variant-numeric: tabular-nums; transition: border-color .2s var(--ease-out), background-color .2s var(--ease-out); }
+.example-moments { display: flex; flex-wrap: wrap; gap: 8px; margin-left: 74px; }
+.example-moments button { min-width: 56px; min-height: 32px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 99px; background: var(--card); font-size: var(--text-meta); color: var(--text-secondary); font-variant-numeric: tabular-nums; transition: border-color .2s var(--ease-out), background-color .2s var(--ease-out); }
 .example-moments button[aria-pressed="true"] { background: var(--foreground); border-color: var(--foreground); color: var(--primary-foreground); }
 .example-moments button:hover { border-color: var(--dir-left); }
 .example-note { font-size: var(--text-body); line-height: 1.6; color: var(--text-secondary); }
