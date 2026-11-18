@@ -597,3 +597,17 @@ Scope update (27 October 2026): live camera support (`cp4-camera`) is optional. 
   - **Acceptance**: Final gates, report, demonstration, contribution evidence, and individual preparation are checked; actual submission commit is identified without claiming unsupported capabilities.
   - **Verification**: Walk through final and individual-defense gates; repository owner handles the authorized v1.0 tag and manual push.
   - **Remaining**: Final team submission remains dependent on the final report (#33), each individual defense (#34/#35/#36), gate review, and an actual authorized final submission revision. See [acceptance audit](docs/checkpoints/task-reconciliation.md).
+
+- [ ] Make live camera seat alerts the main workflow
+  - **ID**: post-camera-alerts
+  - **Assignee**: Unassigned
+  - **Status**: Backlog
+  - **Milestone**: Post-CP5
+  - **Tags**: camera, seats, temporal, integration, documentation
+  - **Files**: `src/gaze/`, `scripts/camera_worker.py`, `tests/`, `frontend/`, `PRD.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `README.md`
+  - **Issue**: None yet; create only when authorized.
+  - **Related work**: cp4-camera
+  - **Blocked by**: cp5-hand-in
+  - **Acceptance**: As defined in the [camera alerts design](docs/superpowers/specs/2026-11-18-camera-alerts-design.md): Camera is the only visible source with Baseline fixed; seats are set on a live frame; left/right sustained or repeated movements open one alert per seat and direction with one cropped still; alerts can be marked, sessions resumed and reopened; the PDF includes alerts, stills and marks; the landing page and PRD describe the new workflow after team agreement.
+  - **Verification**: Python and TypeScript unit tests listed in the design; real-model run with a synthetic browser stream; physical check with Camo on the ASUS laptop, one iPhone and one Android phone, three seated people, measured live FPS, one sustained and one repeated alert, and a writing interval with no alert.
+  - **Remaining**: Design drafted 18 November 2026; awaiting team approval of the design and PRD changes. Not started.
