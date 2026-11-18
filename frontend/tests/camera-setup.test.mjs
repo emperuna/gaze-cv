@@ -101,3 +101,33 @@ test('the how-to guide is remembered per browser, and blocked storage never thro
   assert.doesNotThrow(() => writeGuideSeen(broken));
   assert.equal(readGuideSeen(null), false);
 });
+
+import { movementProblem } from '../src/lib/camera-setup.ts';
+import { validateReviewSettings } from '../src/lib/review-contract.ts';
+
+test('movement setting problems use the Advanced settings field names, never internal names or NaN', () => {
+  const ok = cameraMovement(.5);
+  assert.equal(movementProblem(ok), '');
+  const cases = [
+    [{ min_duration: Number.NaN }, 'Enter a number for Sustained duration.'],
+    [{ repetition_count: Number.NaN }, 'Enter a number for Repetition count.'],
+    [{ repetition_window: Number.NaN }, 'Enter a number for Repetition window.'],
+    [{ repeat_min_duration: Number.NaN }, 'Enter a number for Minimum dwell.'],
+    [{ max_gap: Number.NaN }, 'Enter a number for Maximum gap.'],
+    [{ min_duration: 0 }, 'Sustained duration must be more than 0 and at most 300 seconds.'],
+    [{ repetition_window: 301 }, 'Repetition window must be more than 0 and at most 300 seconds.'],
+    [{ max_gap: 6 }, 'Maximum gap must be more than 0 and at most 5 seconds.'],
+    [{ repetition_count: 1 }, 'Repetition count must be a whole number from 2 to 100.'],
+    [{ repetition_count: 2.5 }, 'Repetition count must be a whole number from 2 to 100.'],
+    [{ repeat_min_duration: 12, repetition_window: 10 }, 'Minimum dwell must not be longer than the repetition window.'],
+  ];
+  const seats = [{ id: 'seat-1', roi: [0, 0, .5, 1] }];
+  for (const [change, expected] of cases) {
+    const movement = { ...ok, ...change };
+    const text = movementProblem(movement);
+    assert.equal(text, expected);
+    assert.doesNotMatch(text, /NaN|_|min duration|repeat min|max gap/);
+    // The server-side validator refuses the same values, so the helper never hides a real problem.
+    assert.throws(() => validateReviewSettings({ method: 'baseline', mirrored: false, tileGrid: 1, seats, movement }));
+  }
+});

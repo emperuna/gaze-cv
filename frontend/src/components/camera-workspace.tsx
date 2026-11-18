@@ -16,7 +16,7 @@ import {
 import type { AlertMap, RunningStatus } from '@/lib/camera-dashboard';
 import { DEFAULT_MOVEMENT, validateReviewSettings } from '@/lib/review-contract';
 import type { MovementEvent, ReviewSeat } from '@/lib/review-contract';
-import { cameraMovement, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice, seatsForMonitor, setupStep, writeGuideSeen, writeSavedDevice } from '@/lib/camera-setup';
+import { cameraMovement, movementProblem, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice, seatsForMonitor, setupStep, writeGuideSeen, writeSavedDevice } from '@/lib/camera-setup';
 import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
 import { interruptSession, newRun, runCaptureLoop, stopSession } from './camera-run';
 import { CameraPastSessions, InlineConfirm } from './camera-past-sessions';
@@ -214,8 +214,12 @@ export function CameraWorkspace() {
   const movement = { ...cameraMovement(maxGap), ...rules };
   let validation = '';
   if (phase === 'found' && seats.length) {
-    try { validateReviewSettings({ method: 'baseline', mirrored, tileGrid, seats: seatsForMonitor(seats, mirrored), movement }); }
-    catch (problem) { validation = `Check Advanced settings: ${(problem as Error).message.replace(/^max gap/, 'maximum gap')}`; }
+    const rulesProblem = movementProblem(movement);
+    if (rulesProblem) validation = `Check Advanced settings: ${rulesProblem}`;
+    else {
+      try { validateReviewSettings({ method: 'baseline', mirrored, tileGrid, seats: seatsForMonitor(seats, mirrored), movement }); }
+      catch (problem) { validation = `Check Advanced settings: ${(problem as Error).message}`; }
+    }
   }
 
   const check = useCallback(async () => {
