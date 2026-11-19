@@ -29,6 +29,52 @@ physical-camera check is not performed. See
 [website setup and camera use](frontend/README.md#live-camera) and the
 [verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md).
 
+## Final presentation build
+
+[Final hand-in index](docs/checkpoints/cp5-hand-in/README.md) · [Report PDF](docs/checkpoints/cp5-hand-in/ocular-final-report.pdf) · [Slides PDF](docs/checkpoints/cp5-hand-in/ocular-final-slides.pdf) · [Backup video](outputs/final/ocular-backup-demo.mp4)
+
+![Four-seat Ocular saved review in the final build](outputs/final/09-final-saved-review.png)
+
+Ocular uses one fixed view to show visible head directions and movement observations by seat. For the presentation use **Review a recording instead** or open `/analyze?mode=video` directly. The default workspace is live camera. The [runbook](docs/checkpoints/cp5-hand-in/presentation-runbook.md) covers the saved-video workflow, teacher inputs and the backup.
+
+### Set up once
+
+Use Python 3.12 and Node.js 22.18 or later. On Windows, run the [F: setup block below](#windows-setup-on-f) first to create the environment, install pinned requirements and fetch the checksum-verified baseline model. In the same repository root, install the locked frontend dependencies:
+
+```powershell
+npm --prefix frontend ci
+```
+
+On macOS/Linux, use `python3.12 -m venv .venv`, then use `.venv/bin/python` for the remaining Python commands. Install `requirements.txt` and run `scripts/download_model.py` before starting the frontend. The first install and model download need network access. [Model sources and hashes](models/README.md).
+
+### Start the app with one command
+
+```powershell
+npm --prefix frontend run dev
+```
+
+Open `http://127.0.0.1:3000/analyze?mode=video` and use the included [four-person sample](data/samples/cp4/fourpeople-2s.webm). In **Advanced settings**, select Baseline and two detector tiles. Verify the four regions described by the [sample seat settings](configs/cp4-review-baseline.json). The clip is a public-domain office proxy. Use the [included validation photographs](data/samples/pointing04/README.md) for the image CLI. The app runs on loopback and keeps saved review artifacts under `outputs/runs/`.
+
+### Reproduce the direction results table
+
+Install the optional learned model runtime and retrieve the models and prepared data once. Use the verified archive already at `data/raw/pointing04/HeadPoseImageDatabase.tar.gz` with `scripts/prepare_data.py --offline` if the source is unavailable. The [data card](docs/evaluation/data-card.md) gives the source, attribution terms and split.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-head-pose.txt
+.\.venv\Scripts\python.exe scripts/download_head_models.py
+.\.venv\Scripts\python.exe scripts/prepare_data.py
+```
+
+Run both methods on the same frozen 120-image selection with one command. Pick a new output path for each run.
+
+```powershell
+.\.venv\Scripts\python.exe src/evaluate.py run --protocol docs/checkpoints/cp5-hand-in/reproduction-protocol.json --output outputs/runs/final-reproduction.json
+```
+
+The evaluator prints accuracy, macro F1 and coverage, and writes per-image predictions, class scores and confusion matrices. The earlier [held-out result](outputs/evidence/cp4/held-out-results.json) records Baseline 99/120 (82.50%) and learned Head 92/120 (76.67%). The CP5 reproduction protocol pins the current source and the same data and settings. This is a repeat of the exposed CP4 test set. The [experiment record](docs/checkpoints/cp4-hand-in/03-evaluation-and-speed.md) provides separate commands and settings for the laptop speed table. Throughput varies with hardware and workload.
+
+The `frontend/` application calls Python entry points in `scripts/`. Shared processing, seat histories, movement rules and PDF rendering are in `src/gaze/`. Checkpoints and experiments live in `docs/` and `outputs/evidence/`. Marc Justin Alberto contributed the frontend and review tools, Jose Aquino III the learned head-pose and camera features, and Jeremy Garin the baseline pipeline, session records and validation. The report contains the Git-backed contribution table.
+
 ## Current state
 
 The local website also includes a grouped movement-review queue, saved review
