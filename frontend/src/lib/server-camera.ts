@@ -74,6 +74,7 @@ export async function startCamera(settings: CameraSettings, signal: AbortSignal,
     if (resume) {
       await ownerFor(resume)?.flush();
       saved=await loadRecord(resume,recordOptions(options));
+      if (saved.source) throw new AnalysisError('Use Review again for a recording.',409);
       if (saved.state!=='interrupted') throw new AnalysisError('Only an interrupted session can be resumed.',409);
       settings={mirrored:saved.settings.mirrored,tileGrid:saved.settings.tileGrid};
       await removeStaleLock(resume,{root:options.root});
