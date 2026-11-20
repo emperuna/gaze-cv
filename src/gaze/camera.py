@@ -74,14 +74,18 @@ class CameraProcessor:
         height, width = image.shape[:2]
         if max(width, height) > 1280 or width * height > 1280 * 720:
             raise ValueError('Camera frames must fit within 1280 x 720 pixels')
-        open_alerts = self._open_alerts(message.get('open_alerts'))
+        return self.analyse(timestamp, image, self._open_alerts(message.get('open_alerts')), identifier,
+                            message.get('setup') is True)
+
+    def analyse(self, timestamp, image, open_alerts, frame_id=0, setup=False):
+        """Run one already decoded frame through the pipeline and the seat monitor."""
         result = self.pipeline.process(image)
-        response = {'id': identifier, 'timestamp_seconds': timestamp, 'result': result.to_dict(),
+        response = {'id': frame_id, 'timestamp_seconds': timestamp, 'result': result.to_dict(),
                     'counts': dict(Counter(d.direction for d in result.detections))}
         if self.live is not None:
             response.update(self.live.update(timestamp, result, image, open_alerts))
         self.last_timestamp = timestamp
-        if message.get('setup') is True:
+        if setup:
             self.setup_samples = (self.setup_samples + [image])[-MAX_SETUP_SAMPLES:]
         return response
 
