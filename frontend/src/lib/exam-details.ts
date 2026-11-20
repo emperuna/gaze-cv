@@ -1,4 +1,4 @@
-/** Optional details about the exam, entered at camera setup and printed at the top of the faculty PDF report. */
+/** Optional details about the session (exam, quiz or class), entered at camera setup and printed at the top of the faculty PDF report. */
 export interface ExamDetails { title: string; room: string; proctor: string }
 
 export const EMPTY_EXAM: ExamDetails = { title: '', room: '', proctor: '' };
