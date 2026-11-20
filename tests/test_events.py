@@ -99,3 +99,29 @@ class MovementTests(unittest.TestCase):
             with self.assertRaises(ValueError):MovementSettings(**kwargs)
 
 if __name__=='__main__':unittest.main()
+
+
+class UnobservedSeatTests(unittest.TestCase):
+    def test_a_seat_not_seen_for_a_moment_keeps_its_movement_within_the_gap(self):
+        monitor = MovementMonitor(["a"], MovementSettings(min_duration=1, max_gap=.5))
+        monitor.update(0, {"a": "left"})
+        monitor.update(.3, {}, unobserved={"a"})
+        monitor.update(.5, {"a": "left"})
+        events = monitor.update(1, {"a": "left"})
+        self.assertEqual([e["event_type"] for e in events], ["sustained_movement"])
+        self.assertEqual(events[0]["start_time"], 0)
+
+    def test_a_seat_not_seen_for_longer_than_the_gap_starts_again(self):
+        monitor = MovementMonitor(["a"], MovementSettings(min_duration=1, max_gap=.5))
+        monitor.update(0, {"a": "left"})
+        for t in (.3, .6, .9):
+            monitor.update(t, {}, unobserved={"a"})
+        self.assertEqual(monitor.update(1.2, {"a": "left"}), [])
+        self.assertEqual(monitor.states["a"]["start"], 1.2)
+
+    def test_unobserved_seats_must_be_configured_and_not_also_observed(self):
+        monitor = MovementMonitor(["a"], MovementSettings())
+        with self.assertRaises(ValueError):
+            monitor.update(0, {}, unobserved={"b"})
+        with self.assertRaises(ValueError):
+            monitor.update(0, {"a": "left"}, unobserved={"a"})

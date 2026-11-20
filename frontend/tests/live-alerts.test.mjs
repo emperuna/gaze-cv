@@ -108,9 +108,10 @@ test('minutes accumulate direction counts and stills cap at 200', () => {
 });
 
 test('chooseMaxGap rounds 2.5x the median up to 0.25 s and clamps', () => {
-  assert.deepEqual(chooseMaxGap([0.29, 0.29, 0.29]), { maxGap: .75, tooSlow: false, medianInterval: 0.29 });
+  // At least 1 s: a face can drop out for up to about a second on a phone camera.
+  assert.deepEqual(chooseMaxGap([0.29, 0.29, 0.29]), { maxGap: 1, tooSlow: false, medianInterval: 0.29 });
   assert.equal(chooseMaxGap([0.5]).maxGap, 1.25);
-  assert.equal(chooseMaxGap([0.1]).maxGap, .5);
+  assert.equal(chooseMaxGap([0.1]).maxGap, 1);
   const mid = chooseMaxGap([0.7]);
   assert.equal(mid.maxGap, 1.5); assert.equal(mid.tooSlow, false);
   assert.equal(chooseMaxGap([1.6]).tooSlow, true);

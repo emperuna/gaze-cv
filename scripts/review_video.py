@@ -21,7 +21,8 @@ def main():
             pipeline = HeadImagePipeline(mirrored=settings['mirrored'])
         else:
             from gaze.pipeline import ImagePipeline
-            pipeline = ImagePipeline(mirrored=settings['mirrored'], tile_grid=settings['tileGrid'])
+            from gaze.live_session import live_thresholds
+            pipeline = ImagePipeline(mirrored=settings['mirrored'], tile_grid=settings['tileGrid'], thresholds=live_thresholds())
         with pipeline:
             record = process_session(args.input, args.output_dir, settings, pipeline)
         print(f"Saved {len(record['frames'])} frames and {len(record['events'])} movement events")

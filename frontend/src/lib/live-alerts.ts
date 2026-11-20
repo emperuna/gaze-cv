@@ -119,7 +119,8 @@ function median(values: number[]): number {
 export function chooseMaxGap(intervalsSeconds: number[]): { maxGap: number; tooSlow: boolean; medianInterval: number } {
   const medianInterval = median(intervalsSeconds);
   const rounded = Math.ceil(Math.round(medianInterval * 2.5 * 4 * 1e6) / 1e6) / 4;
-  return { maxGap: Math.min(1.5, Math.max(0.5, rounded)), tooSlow: medianInterval > 1.2, medianInterval };
+  // At least 1 s: on a phone camera a face can drop out for up to about a second between readings.
+  return { maxGap: Math.min(1.5, Math.max(1, rounded)), tooSlow: medianInterval > 1.2, medianInterval };
 }
 
 export function rateWarning(intervalsSeconds: number[], maxGap: number): string | null {

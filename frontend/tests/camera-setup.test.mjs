@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import {
-  DEVICE_KEY, GUIDE_KEY, SETUP_FRAMES, cameraMovement, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice,
+  DEVICE_KEY, GUIDE_KEY, SETUP_FRAMES, cameraMovement, cameraRules, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice,
   recordSetupResult, seatLabel, seatsForMonitor, setupComplete, setupStep, shouldMarkSetup, markSetupFrame, writeGuideSeen, writeSavedDevice,
 } from '../src/lib/camera-setup.ts';
 
@@ -32,7 +32,8 @@ test('setup is not complete until five setup results have returned', () => {
 });
 
 test('camera movement uses the saved-video rules with the measured maximum gap', () => {
-  assert.deepEqual(cameraMovement(0.75), { ...DEFAULT_MOVEMENT, max_gap: 0.75 });
+  // Live glances at a neighbour last about 1.3-1.7 s, so the camera's sustained rule is 1.5 s.
+  assert.deepEqual(cameraMovement(1), { ...DEFAULT_MOVEMENT, min_duration: 1.5, max_gap: 1 });
   assert.equal(DEFAULT_MOVEMENT.max_gap, 0.25);
 });
 
@@ -130,4 +131,8 @@ test('movement setting problems use the Advanced settings field names, never int
     // The server-side validator refuses the same values, so the helper never hides a real problem.
     assert.throws(() => validateReviewSettings({ method: 'baseline', mirrored: false, tileGrid: 1, seats, movement }));
   }
+});
+
+test('the camera screen starts from the camera rules, not the saved-video ones', () => {
+  assert.deepEqual(cameraRules(), { min_duration: 1.5, repetition_count: 3, repetition_window: 10, repeat_min_duration: .25 });
 });
