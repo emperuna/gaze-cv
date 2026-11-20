@@ -1,6 +1,7 @@
 import { displaySeats } from './camera-sessions.ts';
 import { EMPTY_EXAM } from './exam-details.ts';
 import type { ExamDetails } from './exam-details.ts';
+import { stoppedShort } from './live-alerts.ts';
 import type { LiveAlert, LiveSessionRecord } from './live-alerts.ts';
 import type { MovementEvent } from './review-contract.ts';
 
@@ -123,10 +124,12 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
   const recording = record.source?.kind === 'recording' ? record.source : null;
   const clock = (seconds: number) => recording ? videoTime(seconds) : clockAt(record, seconds, zone);
   const timesOf = (from: number, to: number) => recording ? videoRange(videoTime(from), videoTime(to)) : range(clock(from), clock(to));
-  // An interrupted recording keeps its whole length on the timeline; the unreviewed rest is the "off" span.
-  // The length may be an estimate (frames / frame rate), so it never counts as shorter than what was reviewed.
+  // An interrupted recording, or a finished one whose video stopped decoding well short of its length, keeps its whole
+  // length on the timeline; the unreviewed rest is the "off" span. The length may be an estimate (frames / frame
+  // rate), so it never counts as shorter than what was reviewed.
   const videoLength = recording ? Math.max(recording.durationSeconds, record.lastTime) : 0;
-  const unreviewedFrom = recording && record.state === 'interrupted' && videoLength > record.lastTime ? record.lastTime : null;
+  const unreadEnd = record.state === 'ended' && stoppedShort(record.lastTime, videoLength);
+  const unreviewedFrom = recording && (record.state === 'interrupted' || unreadEnd) && videoLength > record.lastTime ? record.lastTime : null;
   const timelineEnd = unreviewedFrom !== null ? videoLength : record.lastTime;
   const total = timelineEnd > 0 ? timelineEnd : 1;
   const eventsOf = (alert: LiveAlert) => alert.eventIndexes.map(index => record.events[index]).filter(Boolean);
@@ -237,7 +240,7 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
   }));
 
   const allBlindSpots = [
-    ...offGaps.map(gap => recording ? ({ what: 'Rest of the video not reviewed', when: `${timesOf(gap.start, gap.end)} (${duration(gap.end - gap.start)})`, reason: 'Review stopped early' })
+    ...offGaps.map(gap => recording ? ({ what: 'Rest of the video not reviewed', when: `${timesOf(gap.start, gap.end)} (${duration(gap.end - gap.start)})`, reason: unreadEnd ? 'The video could not be read further' : 'Review stopped early' })
       : ({ what: 'Whole room not watched', when: `${timesOf(gap.start, gap.end)} (${duration(gap.end - gap.start)})`, reason: 'Camera stopped; monitoring resumed' })),
     ...settings.seats.map(seat => ({ seat, share: hiddenShare(seat.id) })).filter(item => item.share >= REPORTED_SHARE)
       .sort((a, b) => b.share - a.share).map(({ seat, share }) => {

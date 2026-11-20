@@ -33,6 +33,15 @@ export interface LiveSessionRecord {
 
 export class RevisionError extends Error {}
 
+/**
+ * True when a recording review reached `lastTime` but the video's length says more than 5 s and 5% remain: the video
+ * stopped decoding early, so the rest was never reviewed. A smaller gap is just an estimated length.
+ */
+export function stoppedShort(lastTime: number, durationSeconds: number): boolean {
+  const gap = durationSeconds - lastTime;
+  return gap > 5 && gap > 0.05 * durationSeconds;
+}
+
 const MAX_STILLS = 200;
 const MAX_GAPS = 200;
 const MIN_GAP_SECONDS = 2;
