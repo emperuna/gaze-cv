@@ -5,6 +5,8 @@ import { EventEmitter } from 'node:events';
 import { CameraSession } from '../src/lib/camera-session.ts';
 import { workerArgs } from '../src/lib/server-camera.ts';
 import { MAX_ALERT_NOTE, validateAlertMark, validateCameraSettings, validateCameraFrame, readCameraJson } from '../src/lib/camera-contract.ts';
+import { createRecord, saveRecord } from '../src/lib/server-camera-record.ts';
+import { recordFrame } from '../src/lib/server-live-session.ts';
 import { acquireProcessingSlot } from '../src/lib/processing-slot.ts';
 
 function worker() {
@@ -582,4 +584,24 @@ test('the worker reads strong head turns only when asked and the head model is i
   assert.ok(!workerArgs(on, false).includes('--head-turns'));
   assert.ok(!workerArgs({ ...on, headTurns: false }, true).includes('--head-turns'));
   assert.ok(workerArgs({ ...on, mirrored: true }, true).includes('--mirrored'));
+});
+
+test('recordFrame writes the opening event\'s still and never stores base64 in the record', async () => {
+  const base = resolve(process.cwd(), '..', '.work', 'tmp');
+  await fs.mkdir(base, { recursive: true });
+  const root = await fs.mkdtemp(join(base, 'record-frame-'));
+  try {
+    const record = await createRecord({ mirrored: false, tileGrid: 2, seats: [{ id: 'seat-A' }], movement: DEFAULT_MOVEMENT, maxGapAuto: true }, { root });
+    const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+    const event = { seat_id: 'seat-A', event_type: 'sustained_movement', direction: 'left', start_time: 1, end_time: 4, duration: 3,
+      observed_at: 4, review_required: true, review_label: 'For review', still: jpeg.toString('base64') };
+    const { opened } = await recordFrame(record, 4, {}, [event], { recordOptions: { root }, groupWithinSeconds: 30 });
+    assert.equal(opened.length, 1);
+    assert.equal(record.alerts[0].still, 'stills/alert-1.jpg');
+    assert.deepEqual(await fs.readFile(join(root, record.id, 'stills', 'alert-1.jpg')), jpeg);
+    await saveRecord(record, { root });
+    const saved = await fs.readFile(join(root, record.id, 'session.json'), 'utf8');
+    assert.ok(!saved.includes(jpeg.toString('base64')));
+    assert.equal((await loadRecord(record.id, { root })).alerts[0].still, 'stills/alert-1.jpg');
+  } finally { await fs.rm(root, { recursive: true, force: true }); }
 });
