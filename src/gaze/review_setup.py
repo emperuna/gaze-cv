@@ -1,4 +1,5 @@
 """Video timing inspection and optional fixed-seat suggestions, never identities."""
+import dataclasses
 import math
 from pathlib import Path
 
@@ -64,6 +65,33 @@ def inspect_video(path, *, max_frames=18000, max_seconds=300):
         return timing, samples
     finally:
         capture.release()
+
+
+MIN_HEAD_SHARE = 1 / 3
+
+
+class FacesAndHeads:
+    """Find people for seat setup with both models: faces, plus heads with no face inside them.
+
+    The face model misses students who look down, turn away or sit far back; the head model finds
+    their heads. A head whose box contains a found face's centre is that same person, so it is dropped.
+    """
+
+    def __init__(self, faces, heads):
+        self.faces, self.heads = faces, heads
+
+    def process(self, image):
+        faces = self.faces.process(image)
+        found = list(faces.detections)
+        centres = [(x + w / 2, y + h / 2) for x, y, w, h in (d.bbox for d in found)]
+        heads = self.heads.process(image).detections
+        # A head-only find under a third of the typical head's width is not a seated student (e.g. a poster photo).
+        typical = float(np.median([d.bbox[2] for d in heads])) if heads else 0.
+        for head in heads:
+            x, y, w, h = head.bbox
+            if w >= typical * MIN_HEAD_SHARE and not any(x <= cx <= x + w and y <= cy <= y + h for cx, cy in centres):
+                found.append(head)
+        return dataclasses.replace(faces, detections=found)
 
 
 def suggest_seats(samples, detector):

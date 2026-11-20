@@ -69,3 +69,34 @@ class ReviewSetupTests(unittest.TestCase):
         result = suggest_seats(images, Detector([[(70, 20, 8, 15), (80, 20, 8, 15)]] * 3))
         self.assertEqual(len(result['seats']), 2)
         self.assertLessEqual(result['seats'][0]['roi'][2], result['seats'][1]['roi'][0])
+
+
+class Boxes:
+    """A pipeline that always returns the same boxes."""
+    def __init__(self, boxes):
+        self.boxes, self.calls = boxes, 0
+
+    def process(self, image):
+        self.calls += 1
+        return ImageResult(200, 100, [FaceObservation(box, 'unknown', {}, {}) for box in self.boxes], 1., {})
+
+
+class FacesAndHeadsTests(unittest.TestCase):
+    def test_a_head_around_a_found_face_is_the_same_person(self):
+        from gaze.review_setup import FacesAndHeads
+        found = FacesAndHeads(Boxes([(20, 30, 20, 20)]), Boxes([(15, 20, 30, 35), (130, 20, 30, 35)])).process(None)
+        self.assertEqual([d.bbox for d in found.detections], [(20, 30, 20, 20), (130, 20, 30, 35)])
+
+    def test_a_student_looking_down_during_setup_still_gets_a_seat(self):
+        from gaze.review_setup import FacesAndHeads
+        images = [np.zeros((100, 200, 3), np.uint8) for _ in range(3)]
+        faces_only = suggest_seats(images, Boxes([(20, 30, 20, 20)]))
+        both = suggest_seats(images, FacesAndHeads(Boxes([(20, 30, 20, 20)]), Boxes([(130, 20, 30, 35)])))
+        self.assertEqual(len(faces_only['seats']), 1)
+        self.assertEqual(len(both['seats']), 2)
+
+    def test_a_tiny_head_far_smaller_than_everyone_else_is_ignored(self):
+        # e.g. a photo on a poster: a head-only find under a third of the typical person's width.
+        from gaze.review_setup import FacesAndHeads
+        found = FacesAndHeads(Boxes([(20, 30, 30, 30)]), Boxes([(15, 20, 40, 45), (130, 20, 36, 40), (180, 5, 9, 8)])).process(None)
+        self.assertEqual([d.bbox for d in found.detections], [(20, 30, 30, 30), (130, 20, 36, 40)])
