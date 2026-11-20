@@ -195,7 +195,8 @@ video. Recordings appear in **Past sessions** as "Recording" and share the
 camera's session folders under ignored `outputs/runs/camera/<uuid>/`; opening
 `/analyze?recording=<uuid>` reopens one without inference. Recording review and
 the camera share one local inference reservation: a second job is refused while
-one runs.
+one runs. Known limitation: an HDR phone video re-encoded with tone mapping can
+come out darker and miss some head turns; review the original file when possible.
 
 Old Saved video reviews under `outputs/runs/review/` are kept on disk but are no
 longer listed or opened by the website, and the `/api/review` routes were
