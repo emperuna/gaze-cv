@@ -78,7 +78,7 @@ export function CameraGuide({ open, onClose, returnFocus, announcement }: {
           <dd>The phone moved: end the session and start a new one.</dd>
         </dl>
         <h3>What alerts mean</h3>
-        <p>Alerts are prompts, not proof. Seats are places, not people. Writing never alerts.</p>
+        <p>Alerts are prompts, not proof. Seats are places, not people. Writing never alerts. You decide.</p>
         <div className="camera-actions"><Button variant="outline" onClick={onClose}>Close the guide</Button></div>
       </div>
     </div>
