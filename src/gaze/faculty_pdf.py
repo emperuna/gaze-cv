@@ -234,6 +234,26 @@ def _timeline(timeline, width):
     return drawing
 
 
+LEGEND_WIDTH = WIDTH - 205 - 12  # the right column of the seat map / timeline pair, less its cell padding
+
+
+def _legend(para, clean, off_label):
+    """The timeline key. A named off label (a recording) is longer than "Camera off", so it takes a second row."""
+    marks = [_legend_swatch(INK), para('Checked', 'legend'), _legend_swatch(ORANGE), para('Not reviewed', 'legend'),
+             _legend_swatch(GREY), para('Dismissed', 'legend'), _legend_swatch(HIDDEN, True), para('Seat hidden', 'legend')]
+    widths = [7, 40, 7, 52, 7, 45, 14, 46]
+    off = [_legend_swatch(OFF, True), para(f'Video {clean(off_label)}' if off_label else 'Camera off', 'legend')]
+    if off_label:
+        second = Table([off], colWidths=[14, 120])
+        second.setStyle(TableStyle([('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 2), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+        table = Table([marks, [second] + [''] * 7], colWidths=widths)
+        table.setStyle(TableStyle([('SPAN', (0, 1), (-1, 1)), ('ALIGN', (0, 1), (0, 1), 'LEFT')]))
+    else:
+        table = Table([marks + off], colWidths=widths + [14, 44])
+    table.setStyle(TableStyle([('LEFTPADDING', (0, 0), (-1, -1), 1), ('RIGHTPADDING', (0, 0), (-1, -1), 2), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+    return table
+
+
 def _legend_swatch(colour, wide=False):
     swatch = Drawing(12 if wide else 5, 9)
     swatch.add(Rect(0, 0, 12 if wide else 3, 9, fillColor=colour, strokeColor=None))
@@ -294,14 +314,10 @@ def build_story(fac, para, clean, resolve):
         story.append(para(clean(fac['quietSeats']), 'small'))
     story.append(Spacer(1, 10))
 
-    legend = Table([[_legend_swatch(INK), para('Checked', 'legend'), _legend_swatch(ORANGE), para('Not reviewed', 'legend'),
-                     _legend_swatch(GREY), para('Dismissed', 'legend'), _legend_swatch(HIDDEN, True), para('Seat hidden', 'legend'),
-                     _legend_swatch(OFF, True), para(f'Video {clean(off_label)}' if off_label else 'Camera off', 'legend')]],
-                   colWidths=[7, 40, 7, 52, 7, 45, 14, 46, 14, 44 if not off_label else 80])
-    legend.setStyle(TableStyle([('LEFTPADDING', (0, 0), (-1, -1), 1), ('RIGHTPADDING', (0, 0), (-1, -1), 2), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+    legend = _legend(para, clean, off_label)
     left = [para('Where the seats are', 'h3'), _seat_map(fac['map']),
             para('Numbered left to right as the camera sees them. Highlighted: look again. Dashed: hidden 10% or more of the exam.', 'small')]
-    right = [para('When alerts happened', 'h3'), _timeline(fac['timeline'], WIDTH - 205 - 12), legend]
+    right = [para('When alerts happened', 'h3'), _timeline(fac['timeline'], LEGEND_WIDTH), legend]
     pair = Table([[left, right]], colWidths=[205, WIDTH - 205])
     pair.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
     story += [pair, Spacer(1, 10)]
