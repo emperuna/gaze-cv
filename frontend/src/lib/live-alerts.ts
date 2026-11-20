@@ -18,7 +18,9 @@ export interface LiveSessionRecord {
   createdAt: string; endedAt: string | null;
   settings: { mirrored: boolean; tileGrid: number; seats: ReviewSeat[]; movement: typeof DEFAULT_MOVEMENT; maxGapAuto: boolean;
     /** Optional exam details for the faculty report; records made before they existed have none. */
-    exam?: ExamDetails };
+    exam?: ExamDetails;
+    /** Recordings only: whether strong head turns were read, so Review again repeats the same choice. */
+    headTurns?: boolean };
   segments: { startedAt: string; offsetSeconds: number; endSeconds: number | null }[];
   events: (MovementEvent & { segment: number })[]; alerts: LiveAlert[];
   coverage: Record<string, SeatCoverage>; minutes: { minute: number; counts: Record<string, number> }[];
