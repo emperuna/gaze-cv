@@ -135,6 +135,8 @@ def validate_faculty(value, resolve):
             _text(spot.get(key), f'blind spot {key}')
     for seat in _list(fac.get('reviewSeats'), 'reviewSeats', MAX_SEATS):
         _text(seat, 'review seat')
+    if 'offLabel' in fac:
+        _text(fac['offLabel'], 'offLabel')
     if 'omittedAlerts' in fac:
         _count(fac['omittedAlerts'], 'omittedAlerts')
     return fac
@@ -260,11 +262,12 @@ def build_story(fac, para, clean, resolve):
     story += [top, Spacer(1, 10)]
 
     glance = fac['glance']
+    off_label = fac.get('offLabel')
     seats_word = 'seat' if glance['lookAgain'] == 1 else 'seats'
     cells = [[para(str(glance['alerts']), 'big'), para('alerts during the exam', 'glance')],
              [para(f"{glance['lookAgain']} {seats_word}", 'big'), para('to look at again', 'glance')],
              [para(str(glance['notReviewed']), 'big'), para('alert you did not review' if glance['notReviewed'] == 1 else 'alerts you did not review', 'glance')],
-             [para(f"{glance['notWatchedMinutes']} min", 'big'), para('not watched (camera off)', 'glance')]]
+             [para(f"{glance['notWatchedMinutes']} min", 'big'), para(clean(off_label) if off_label else 'not watched (camera off)', 'glance')]]
     boxes = Table([cells], colWidths=[WIDTH / 4] * 4)
     boxes.setStyle(TableStyle([('BOX', (0, 0), (0, 0), .7, RULE), ('BOX', (2, 0), (2, 0), .7, RULE), ('BOX', (3, 0), (3, 0), .7, RULE),
                                ('BOX', (1, 0), (1, 0), 1.6, INK), ('BACKGROUND', (1, 0), (1, 0), SOFT), ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -293,8 +296,8 @@ def build_story(fac, para, clean, resolve):
 
     legend = Table([[_legend_swatch(INK), para('Checked', 'legend'), _legend_swatch(ORANGE), para('Not reviewed', 'legend'),
                      _legend_swatch(GREY), para('Dismissed', 'legend'), _legend_swatch(HIDDEN, True), para('Seat hidden', 'legend'),
-                     _legend_swatch(OFF, True), para('Camera off', 'legend')]],
-                   colWidths=[7, 40, 7, 52, 7, 45, 14, 46, 14, 44])
+                     _legend_swatch(OFF, True), para(f'Video {clean(off_label)}' if off_label else 'Camera off', 'legend')]],
+                   colWidths=[7, 40, 7, 52, 7, 45, 14, 46, 14, 44 if not off_label else 80])
     legend.setStyle(TableStyle([('LEFTPADDING', (0, 0), (-1, -1), 1), ('RIGHTPADDING', (0, 0), (-1, -1), 2), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
     left = [para('Where the seats are', 'h3'), _seat_map(fac['map']),
             para('Numbered left to right as the camera sees them. Highlighted: look again. Dashed: hidden 10% or more of the exam.', 'small')]

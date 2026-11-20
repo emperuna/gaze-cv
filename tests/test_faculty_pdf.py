@@ -110,6 +110,20 @@ class FacultyLayoutTests(unittest.TestCase):
         self.assertIn(b'/Subtype /Image', pdf)
         self.assertEqual(value, original)
 
+    def test_off_label_is_drawn_when_given_and_camera_off_otherwise(self):
+        _, live = rendered_text(camera_report())
+        self.assertIn('not watched (camera off)', live)
+        self.assertIn('Camera off', live)
+        fac = faculty()
+        fac['offLabel'] = 'not reviewed'
+        _, text = rendered_text(camera_report(fac))
+        self.assertIn('not reviewed', text)
+        self.assertIn('Video not reviewed', text)
+        self.assertNotIn('camera off', text.lower())
+        fac['offLabel'] = 7
+        with self.assertRaises(ValueError):
+            validate_report(camera_report(fac))
+
     def test_no_banned_words_are_drawn(self):
         _, text = rendered_text(camera_report())
         for word in ['suspicious', 'incident', 'violation', 'catch']:

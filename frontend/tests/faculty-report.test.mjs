@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clockAt, facultyReport } from '../src/lib/faculty-report.ts';
+import { clockAt, facultyReport, videoTime } from '../src/lib/faculty-report.ts';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 
 // 9:00 AM in Manila (UTC+8) is 01:00 UTC. Session seconds run from 9:00; a 3-minute camera-off gap runs 9:50–9:53.
@@ -209,4 +209,44 @@ test('an alert read from the shape of the head says so in the report', () => {
   assert.match(seat2.rule, /shape of the head/);
   const seat5 = build(record).alertGroups.find(group => group.seat === 'Seat 5').alerts[0];
   assert.doesNotMatch(seat5.rule, /shape of the head/);
+});
+
+const recordingOf = (overrides = {}) => sample({
+  segments: [], lastTime: 2100, state: 'ended',
+  source: { kind: 'recording', filename: 'midterm.mp4', durationSeconds: 2100, video: 'video.mp4' }, ...overrides,
+});
+
+test('a finished recording reports video times and its length', () => {
+  const report = build(recordingOf());
+  assert.equal(report.date, 'Recording: midterm.mp4');
+  assert.equal(report.timeRange, '35 min');
+  assert.equal(report.offLabel, 'not reviewed');
+  assert.equal(report.glance.notWatchedMinutes, 0);
+  assert.deepEqual(report.timeline.off, []);
+  assert.equal(report.alertGroups[0].alerts[0].time, '41:00');
+  assert.equal(report.alertGroups[0].alerts[1].time, '47:00–49:00');
+  assert.match(report.sessionLine, /^Session details for your records: session 3f2a9c1e · recording midterm\.mp4 · alert rules: /);
+  assert.deepEqual(report.timeline.ticks.slice(0, 2).map(t => t.label), ['0:00', '10:00']);
+  assert.equal(build(recordingOf({ lastTime: 35, source: { kind: 'recording', filename: 'a.mp4', durationSeconds: 35, video: 'v' } })).timeRange, '35 s');
+});
+
+test('video times past an hour carry hours', () => {
+  assert.equal(videoTime(65), '1:05');
+  assert.equal(videoTime(3723), '1:02:03');
+});
+
+test('an interrupted recording shows the unreviewed rest as not reviewed', () => {
+  const report = build(recordingOf({ state: 'interrupted', lastTime: 750, source: { kind: 'recording', filename: 'midterm.mp4', durationSeconds: 2700, video: 'v' } }));
+  assert.equal(report.timeRange, 'reviewed 12:30 of 45:00');
+  assert.equal(report.glance.notWatchedMinutes, 33);
+  assert.equal(report.timeline.off.length, 1);
+  assert.ok(Math.abs(report.timeline.off[0].from - 750 / 2700) < 1e-9 && report.timeline.off[0].to === 1);
+  assert.match(report.blindSpots[0].what, /not reviewed/);
+  assert.equal(report.blindSpots[0].when, '12:30–45:00 (33 min)');
+});
+
+test('an estimated length shorter than the reviewed part never makes a negative span', () => {
+  const report = build(recordingOf({ state: 'interrupted', lastTime: 900, source: { kind: 'recording', filename: 'm.mp4', durationSeconds: 800, video: 'v' } }));
+  assert.deepEqual(report.timeline.off, []);
+  assert.equal(report.glance.notWatchedMinutes, 0);
 });
