@@ -7,6 +7,7 @@ import { displaySeats, interruptedAt } from '@/lib/camera-sessions';
 import { PlainError, describeProblem } from '@/lib/camera-messages';
 import type { CameraAction, CameraScreen, Problem } from '@/lib/camera-messages';
 import { deleteSession } from './camera-past-sessions';
+import { recordingUrl } from '@/lib/recording-flow';
 import { interruptSession, newRun } from './camera-run';
 import type { Run } from './camera-run';
 import type { CameraPhase } from './camera-setup';
@@ -79,6 +80,8 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       if (pausedSession.current) { await interruptSession(pausedSession.current); pausedSession.current = null; }
       const record = await h.fetchRecord(id, current.controller.signal);
       if (!valid()) return;
+      // A recording has no camera to resume; it is reviewed again from its own screen.
+      if (record.source?.kind === 'recording') throw new PlainError('This is a recording. Open it from Past sessions, then press Review again.');
       if (record.state !== 'interrupted') {
         throw new PlainError(record.state === 'ended' ? 'This session has ended, so it cannot be resumed. Open it from Past sessions to mark alerts or download the PDF.'
           : 'This session is live in another tab or window. Use that tab to continue.');
@@ -193,6 +196,7 @@ export function useSessionRecovery(host: () => RecoveryHost) {
     try {
       const record = await h.fetchRecord(id);
       if (!h.mounted.current || h.run.current) return;
+      if (record.source?.kind === 'recording') { window.location.assign(recordingUrl(id)); return; }
       h.resetDashboard(); h.showRecord(id, record);
       h.setSeats(displaySeats(record.settings)); h.setHasFrame(false); h.setSessionTime(record.lastTime);
       if (record.state === 'interrupted') { setStoppedAt(interruptedAt(record)); h.go('interrupted'); }

@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FolderOpen, LoaderCircle, Play, RefreshCw, Trash2 } from 'lucide-react';
+import { FolderOpen, LoaderCircle, Play, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { DELETE_CONFIRM_TEXT, countText, formatDuration, formatSessionDate, stateLabel, unmarkedText } from '@/lib/camera-sessions';
 import type { RecordSummary } from '@/lib/server-camera-record';
+import { AGAIN_CONFIRM_TEXT, RECORDING_DELETE_TEXT, recordingUrl, startReviewAgain } from '@/lib/recording-flow';
 
 /**
  * An in-page confirmation for destructive actions (no browser `confirm()`). The safe choice gets focus
@@ -37,14 +38,20 @@ export async function deleteSession(recordId: string): Promise<string | null> {
   }
 }
 
-/** Saved camera sessions on the idle screen, newest first. */
+/**
+ * Saved sessions on the idle screen, newest first. A recording opens on the recording screen, and an interrupted one
+ * offers Review again (never Resume: there is no live camera to resume).
+ */
 export function CameraPastSessions({ refreshKey, onOpen, onResume, disabled = false }: {
   refreshKey: number; onOpen: (recordId: string) => void; onResume: (recordId: string) => void; disabled?: boolean;
 }) {
   const [sessions, setSessions] = useState<RecordSummary[] | null>(null);
   const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [confirming, setConfirming] = useState<string | null>(null);
+  /** The row asking to confirm, and what for. */
+  const [confirming, setConfirmingState] = useState<{ id: string; kind: 'delete' | 'again' } | null>(null);
+  const setConfirming = (id: string | null, kind: 'delete' | 'again' = 'delete') => setConfirmingState(id ? { id, kind } : null);
+  const [again, setAgain] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<{ id: string; text: string } | null>(null);
   const live = useRef(true);
@@ -85,6 +92,14 @@ export function CameraPastSessions({ refreshKey, onOpen, onResume, disabled = fa
     setSessions(current => current?.filter(item => item.id !== id) ?? current);
   }
 
+  async function reviewAgain(id: string) {
+    setAgain(id); setDeleteError(null);
+    const problem = await startReviewAgain(id);
+    if (!live.current) return;
+    if (problem) { setAgain(null); setDeleteError({ id, text: problem }); return; }
+    window.location.assign(recordingUrl(id));
+  }
+
   return <section className="workspace-card camera-past" aria-labelledby="camera-past-title">
     <div className="workspace-card-header"><h2 id="camera-past-title" tabIndex={-1}>Past sessions</h2>
       <button type="button" className="setup-link camera-past-refresh" onClick={() => void load()} disabled={loading}><RefreshCw size={13} />Refresh</button>
@@ -96,19 +111,26 @@ export function CameraPastSessions({ refreshKey, onOpen, onResume, disabled = fa
       {sessions && !sessions.length && <p className="alerts-empty">No saved sessions yet. A session is saved here when you start monitoring.</p>}
       {sessions && sessions.length > 0 && <ul className="camera-past-list">
         {sessions.map(item => {
-          const label = stateLabel(item.state);
+          const recording = item.recording;
+          const label = recording && item.state === 'monitoring' ? 'Reviewing' : stateLabel(item.state);
+          const date = formatSessionDate(item.createdAt);
+          const name = recording ? `the recording ${recording.filename}` : `the session from ${date}`;
           return <li key={item.id} className="camera-past-item">
             <div className="camera-past-text">
-              <h3>{formatSessionDate(item.createdAt)} <span className={`camera-past-state camera-past-${item.state}`}>{label}</span></h3>
-              <p>{formatDuration(item.seconds)} · {countText(item.seats, 'seat')} · {countText(item.alerts, 'alert')} · {unmarkedText(item.alerts, item.unmarked)}</p>
+              <h3>{recording ? `Recording · ${recording.filename}` : date} <span className={`camera-past-state camera-past-${item.state}`}>{label}</span></h3>
+              <p>{recording ? `${date} · ` : ''}{formatDuration(item.seconds)} · {countText(item.seats, 'seat')} · {countText(item.alerts, 'alert')} · {unmarkedText(item.alerts, item.unmarked)}</p>
             </div>
-            {confirming === item.id ? <InlineConfirm text={DELETE_CONFIRM_TEXT} confirmLabel="Delete" cancelLabel="Keep" busy={deleting === item.id} busyLabel="Deleting…"
+            {confirming?.id === item.id && confirming.kind === 'delete' ? <InlineConfirm text={recording ? RECORDING_DELETE_TEXT : DELETE_CONFIRM_TEXT} confirmLabel="Delete" cancelLabel="Keep" busy={deleting === item.id} busyLabel="Deleting…"
               onConfirm={() => void remove(item.id)} onCancel={() => { setConfirming(null); setDeleteError(null); focusNext.current = `[data-delete="${item.id}"]`; }} />
+              : confirming?.id === item.id && confirming.kind === 'again' ? <InlineConfirm text={AGAIN_CONFIRM_TEXT} confirmLabel="Review again" cancelLabel="Keep" busy={again === item.id} busyLabel="Starting…"
+              onConfirm={() => void reviewAgain(item.id)} onCancel={() => { setConfirming(null); setDeleteError(null); focusNext.current = `[data-again="${item.id}"]`; }} />
               : <div className="camera-past-actions">
-                <Button variant="outline" data-open={item.id} onClick={() => onOpen(item.id)} disabled={disabled} aria-label={`Open the session from ${formatSessionDate(item.createdAt)}`}><FolderOpen size={15} />Open</Button>
-                {item.state === 'interrupted' && <Button variant="outline" onClick={() => onResume(item.id)} disabled={disabled} aria-label={`Resume the session from ${formatSessionDate(item.createdAt)}`}><Play size={15} />Resume</Button>}
+                <Button variant="outline" data-open={item.id} onClick={() => recording ? window.location.assign(recordingUrl(item.id)) : onOpen(item.id)} disabled={disabled} aria-label={`Open ${name}`}><FolderOpen size={15} />Open</Button>
+                {item.state === 'interrupted' && (recording
+                  ? <Button variant="outline" data-again={item.id} onClick={() => { setConfirming(item.id, 'again'); setDeleteError(null); }} disabled={disabled || !!again} aria-label={`Review ${name} again`}><RotateCcw size={15} />Review again</Button>
+                  : <Button variant="outline" onClick={() => onResume(item.id)} disabled={disabled} aria-label={`Resume ${name}`}><Play size={15} />Resume</Button>)}
                 {item.state !== 'monitoring' && <Button variant="outline" data-delete={item.id} onClick={() => { setConfirming(item.id); setDeleteError(null); }} disabled={disabled || !!deleting}
-                  aria-label={`Delete the session from ${formatSessionDate(item.createdAt)}`}><Trash2 size={15} />Delete</Button>}
+                  aria-label={`Delete ${name}`}><Trash2 size={15} />Delete</Button>}
               </div>}
             {deleteError?.id === item.id && <p className="analysis-error" role="alert">{deleteError.text}</p>}
           </li>;

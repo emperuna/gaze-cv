@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Bell, BellOff, Check, LoaderCircle, X } from 'lucide-react';
+import { Bell, BellOff, Check, LoaderCircle, Play, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { MAX_ALERT_NOTE } from '@/lib/camera-contract';
 import { formatElapsed, newestOpenAlert, seatNumber, shortcutMark } from '@/lib/camera-dashboard';
 import { alertTitle, readFromHeadShape } from '@/lib/live-alerts';
 import type { AlertMark, LiveAlert } from '@/lib/live-alerts';
 import type { MovementEvent } from '@/lib/review-contract';
+import { playWindow } from '@/lib/recording-flow';
+import { MomentPlayer } from './moment-player';
 
 /**
  * A short two-note tone made with Web Audio, so no sound file is needed. Browsers allow sound only
@@ -49,18 +51,26 @@ const stillUrl = (recordId: string, alertId: string) => `/api/camera/sessions/${
 /**
  * The alert list, newest first, with a still, Checked / Dismiss and an optional note per alert.
  * With `live` false (a stopped, interrupted or reopened session) there is no sound toggle; marking still works.
+ * With `videoUrl` (a recording) times are in the video and each card can play its moment; `videoLength` clamps that window.
  */
-export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, onMark, message, announcement, live = true }: {
+export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, onMark, message, announcement, live = true, videoUrl, videoLength = 0 }: {
   recordId: string | null; alerts: LiveAlert[]; events: MovementEvent[];
   muted: boolean; onMuted: (muted: boolean) => void;
   /** Resolves once the server answered; the parent shows any failure in `message`. */
   onMark: (alert: LiveAlert, mark: AlertMark, note: string) => Promise<void>;
-  message: string; announcement: string; live?: boolean;
+  message: string; announcement: string; live?: boolean; videoUrl?: string; videoLength?: number;
 }) {
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [playing, setPlaying] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const newest = newestOpenAlert(alerts);
   const openCount = alerts.filter(alert => alert.mark === null).length;
+
+  /** The alert's first event; an alert without its events falls back to when it opened. */
+  function momentOf(alert: LiveAlert) {
+    const first = events[alert.eventIndexes[0]] ?? { start_time: alert.openedAt, end_time: alert.lastAt };
+    return playWindow(first, videoLength);
+  }
 
   async function mark(alert: LiveAlert, value: AlertMark) {
     if (pending) return;
@@ -103,13 +113,18 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
             <div className="alert-seat" aria-hidden="true"><small>Seat</small>{seatNumber(alert.seatId)}</div>
             <div className="alert-main">
               <h3 id={`${alert.id}-title`}>{alertTitle(alert, events)}</h3>
-              <p className="alert-time">Opened at {formatElapsed(alert.openedAt)}{alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''} into the session{open ? '' : ` · ${alert.mark}`}</p>
+              <p className="alert-time">{videoUrl
+                ? `At ${formatElapsed(alert.openedAt)}${alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''}`
+                : `Opened at ${formatElapsed(alert.openedAt)}${alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''} into the session`}{open ? '' : ` · ${alert.mark}`}</p>
               {readFromHeadShape(alert, events) && <p className="alert-time">Face turned away: read from the shape of the head.</p>}
               <div className="alert-still">
                 {alert.still && recordId
                   ? <img src={stillUrl(recordId, alert.id)} alt={`Seat ${seatNumber(alert.seatId)} when the alert opened`} />
                   : <p>{alert.stillError ? 'The picture for this alert could not be saved.' : 'No picture for this alert.'}</p>}
               </div>
+              {videoUrl && (playing === alert.id
+                ? <MomentPlayer src={videoUrl} {...momentOf(alert)} label={`Video of seat ${seatNumber(alert.seatId)} at ${formatElapsed(alert.openedAt)}`} onClose={() => setPlaying(null)} />
+                : <Button variant="outline" className="alert-play" onClick={() => setPlaying(alert.id)}><Play size={15} aria-hidden="true" />Play this moment</Button>)}
               {open ? <>
                 <label className="alert-note" htmlFor={noteId}>Note (optional)
                   <textarea id={noteId} rows={1} maxLength={MAX_ALERT_NOTE} value={notes[alert.id] ?? alert.note ?? ''} readOnly={busy} aria-busy={busy || undefined}
