@@ -175,3 +175,13 @@ class SetupWithHeadsTests(unittest.TestCase):
         serve(NoFaces(), io.StringIO(''.join(json.dumps(m) + '\n' for m in messages)), outgoing, fallback=Pipeline())
         suggestion = json.loads(outgoing.getvalue().splitlines()[-1])
         self.assertEqual([s['id'] for s in suggestion['seats']], ['seat-1'])
+
+
+class AnalyseTests(unittest.TestCase):
+    def test_analyse_matches_process_for_the_same_frame(self):
+        image = np.zeros((60, 80, 3), np.uint8)
+        message = {**frame(1.5, image), 'id': 7}
+        decoded = cv2.imdecode(np.frombuffer(base64.b64decode(message['image']), np.uint8), cv2.IMREAD_COLOR)
+        processed = CameraProcessor(Pipeline()).process(message)
+        analysed = CameraProcessor(Pipeline()).analyse(1.5, decoded, set(), 7)
+        self.assertEqual(analysed, processed)
