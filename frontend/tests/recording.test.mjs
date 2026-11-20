@@ -233,3 +233,41 @@ test('the video is served whole or by byte range, as a draft and as a record', a
   line(child, { done: true, duration: 120 }); child.stdout.end(); child.emit('close', 0);
   await job()?.finished;
 }));
+
+test('review again clears a lock left by a crash mid-save', async () => withDraft(async ({ opts, draftId, dir, fake }) => {
+  await suggestRecording(draftId, settings, opts);
+  await startRecordingReview(draftId, body, opts);
+  let child = fake.reviews()[0].child;
+  child.stdout.end(); child.emit('close', 1);
+  await job()?.finished;
+  const lock = join(dir, 'session.lock');
+  await fs.writeFile(lock, '');
+  const old = new Date(Date.now() - 60_000);
+  await fs.utimes(lock, old, old);
+  await reviewAgain(draftId, { ...opts, lockTimeoutMs: 50 });
+  assert.equal(fake.reviews().length, 2);
+  assert.equal((await getCameraRecord(draftId, opts)).state, 'monitoring');
+  child = fake.reviews()[1].child;
+  line(child, { done: true, duration: 120 }); child.stdout.end(); child.emit('close', 0);
+  await job()?.finished;
+  acquireProcessingSlot()();
+}));
+
+test('a recording left monitoring by a server stop reads interrupted and can be reviewed again', async () => withDraft(async ({ opts, draftId, dir, fake }) => {
+  await suggestRecording(draftId, settings, opts);
+  await startRecordingReview(draftId, body, opts);
+  const saved = JSON.parse(await fs.readFile(join(dir, 'session.json'), 'utf8'));
+  assert.equal(saved.state, 'monitoring');
+  // The server stops: the job vanishes from memory and its worker is gone, but the file still says monitoring.
+  const running = job();
+  running.cancelled = true; running.child.kill(); await running.finished;
+  assert.equal(JSON.parse(await fs.readFile(join(dir, 'session.json'), 'utf8')).state, 'monitoring');
+  assert.equal((await getCameraRecord(draftId, opts)).state, 'interrupted');
+  await reviewAgain(draftId, opts);
+  assert.equal(fake.reviews().length, 2);
+  const child = fake.reviews()[1].child;
+  line(child, { done: true, duration: 120 }); child.stdout.end(); child.emit('close', 0);
+  await job()?.finished;
+  assert.equal((await loadRecord(draftId, opts)).state, 'ended');
+  acquireProcessingSlot()();
+}));
