@@ -15,6 +15,8 @@ def main():
     parser.add_argument('--method', choices=('head', 'baseline'), required=True)
     parser.add_argument('--mirrored', action='store_true')
     parser.add_argument('--tile-grid', type=int, choices=range(1, 5), default=1)
+    parser.add_argument('--head-turns', action='store_true',
+                        help='Read seats whose face is lost (strong head turns) with the head-pose model')
     args = parser.parse_args()
     from gaze.camera import serve
     with redirect_stdout(sys.stderr):
@@ -25,8 +27,19 @@ def main():
             from gaze.pipeline import ImagePipeline
             from gaze.live_session import live_thresholds
             pipeline = ImagePipeline(mirrored=args.mirrored, tile_grid=args.tile_grid, thresholds=live_thresholds())
-    with pipeline:
-        serve(pipeline, sys.stdin, sys.stdout)
+        fallback = None
+        if args.head_turns and args.method == 'baseline':
+            try:
+                from gaze.head_image import HeadImagePipeline
+                fallback = HeadImagePipeline(mirrored=args.mirrored)
+            except (ImportError, OSError, ValueError, RuntimeError) as error:
+                print(f'Head-turn reading unavailable, continuing without it: {error}', file=sys.stderr)
+    try:
+        with pipeline:
+            serve(pipeline, sys.stdin, sys.stdout, fallback)
+    finally:
+        if fallback is not None:
+            fallback.close()
 
 
 if __name__ == '__main__':

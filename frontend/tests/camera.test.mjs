@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { PassThrough } from 'node:stream';
 import { EventEmitter } from 'node:events';
 import { CameraSession } from '../src/lib/camera-session.ts';
+import { workerArgs } from '../src/lib/server-camera.ts';
 import { MAX_ALERT_NOTE, validateAlertMark, validateCameraSettings, validateCameraFrame, readCameraJson } from '../src/lib/camera-contract.ts';
 import { acquireProcessingSlot } from '../src/lib/processing-slot.ts';
 
@@ -16,9 +17,9 @@ function worker() {
 }
 
 test('camera settings and frames reject invalid methods, types, sizes and timestamps', () => {
-  assert.deepEqual(validateCameraSettings({mirrored: false, tileGrid: 1}), {mirrored: false, tileGrid: 1});
-  assert.deepEqual(validateCameraSettings({method:'baseline', mirrored: true, tileGrid: 2}), {mirrored: true, tileGrid: 2});
-  for (const settings of [{method:'pose'}, {method:'head'}, {mirrored:'false'}, {tileGrid:5}, null]) assert.throws(() => validateCameraSettings(settings));
+  assert.deepEqual(validateCameraSettings({mirrored: false, tileGrid: 1}), {mirrored: false, tileGrid: 1, headTurns: true});
+  assert.deepEqual(validateCameraSettings({method:'baseline', mirrored: true, tileGrid: 2, headTurns: false}), {mirrored: true, tileGrid: 2, headTurns: false});
+  for (const settings of [{method:'pose'}, {method:'head'}, {mirrored:'false'}, {tileGrid:5}, {headTurns:'yes'}, null]) assert.throws(() => validateCameraSettings(settings));
   assert.equal(validateCameraFrame({id:1,timestamp_seconds:.5,image:'/9j/'}).id, 1);
   for (const value of [-1, NaN, Infinity, '1']) assert.throws(() => validateCameraFrame({id:1,timestamp_seconds:value,image:'/9j/'}));
   assert.throws(() => validateCameraFrame({id:1,timestamp_seconds:0,image:'x'.repeat(1_400_000)}));
@@ -574,3 +575,11 @@ test('a session ended while a resume configures the worker is not resumed', asyn
   assert.equal(JSON.parse(await fs.readFile(join(root, old.id, 'session.json'), 'utf8')).state, 'ended');
   assert.equal(isActive(old.id), false);
 }));
+
+test('the worker reads strong head turns only when asked and the head model is installed', () => {
+  const on = { mirrored: false, tileGrid: 2, headTurns: true };
+  assert.deepEqual(workerArgs(on, true).slice(1), ['--method', 'baseline', '--tile-grid', '2', '--head-turns']);
+  assert.ok(!workerArgs(on, false).includes('--head-turns'));
+  assert.ok(!workerArgs({ ...on, headTurns: false }, true).includes('--head-turns'));
+  assert.ok(workerArgs({ ...on, mirrored: true }, true).includes('--mirrored'));
+});

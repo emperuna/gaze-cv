@@ -45,6 +45,7 @@ const initialRules = (): MovementRules => cameraRules();
 export function CameraWorkspace() {
   const [mirrored, setMirrored] = useState(false);
   const [tileGrid, setTileGrid] = useState(2);
+  const [headTurns, setHeadTurns] = useState(true);
   const [rules, setRules] = useState<MovementRules>(initialRules);
   const [gapOverride, setGapOverride] = useState<number | null>(null);
   /** Optional exam details printed at the top of the PDF report; blank ones print as lines to fill in by hand. */
@@ -541,7 +542,7 @@ export function CameraWorkspace() {
       if (!valid()) return;
       go('loading');
       const response = await fetch('/api/camera', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mirrored, tileGrid }), signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(65_000)]) });
+        body: JSON.stringify({ mirrored, tileGrid, headTurns }), signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(65_000)]) });
       const data = await response.json();
       if (!response.ok) throw new PlainError('The camera could not start. Press Start again.', data.error || '');
       current.sessionId = data.sessionId;
@@ -595,7 +596,7 @@ export function CameraWorkspace() {
         {live && <section className={`camera-health${warnings.length ? ' camera-health-warning' : ''}`} aria-label="Camera checks" role="status"><h3>Camera checks</h3>{warnings.length ? <ul>{warnings.map(warning => <li key={warning}>{warning}</li>)}</ul> : <p>No camera problems detected right now.</p>}</section>}
 
         <CameraAdvancedSettings inputLocked={busy} rulesLocked={phase === 'monitoring' || phase === 'stopping' || phase === 'ended' || !!requesting}
-          mirrored={mirrored} onMirrored={setMirrored} tileGrid={tileGrid} onTileGrid={setTileGrid}
+          mirrored={mirrored} onMirrored={setMirrored} tileGrid={tileGrid} onTileGrid={setTileGrid} headTurns={headTurns} onHeadTurns={setHeadTurns}
           rules={rules} onRules={setRules} gapOverride={gapOverride} onGapOverride={setGapOverride} measured={measured} />
         <p className="camera-note">No video is recorded. While monitoring, the session and a small picture of the seat for each alert are saved on this computer. Hiding this tab pauses monitoring and releases the camera; press Resume to continue.</p>
   </>;

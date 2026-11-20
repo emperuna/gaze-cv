@@ -201,3 +201,12 @@ test('a quiet seat hidden most of the time is not reported as simply having no a
   record.coverage['seat-3'] = { ...record.coverage['seat-3'], observedFrames: 0 };
   assert.equal(build(record).quietSeats, 'No alerts: Seats 1, 2, 4 and 5. Seat 3 was hidden 100% and Seat 6 12% of the exam (see page 3).');
 });
+
+test('an alert read from the shape of the head says so in the report', () => {
+  const record = sample();
+  record.events[3] = { ...record.events[3], estimation_source: 'head_pose_fallback' };
+  const seat2 = build(record).alertGroups.find(group => group.seat === 'Seat 2').alerts[0];
+  assert.match(seat2.rule, /shape of the head/);
+  const seat5 = build(record).alertGroups.find(group => group.seat === 'Seat 5').alerts[0];
+  assert.doesNotMatch(seat5.rule, /shape of the head/);
+});

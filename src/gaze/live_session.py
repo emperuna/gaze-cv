@@ -1,12 +1,15 @@
 """Per-seat movement monitoring for live frames, reusing the saved-video rules."""
 import base64
+import dataclasses
+import math
 
 import cv2
+import numpy as np
 
 from gaze.baseline import Thresholds
 from gaze.events import MovementMonitor, MovementSettings
 from gaze.history import HistoryTracker
-from gaze.seats import SeatAssociator
+from gaze.seats import AssociationResult, SeatAssociator
 
 MAX_STILL_BYTES = 200_000
 STILL_LONG_SIDE = 320
@@ -45,8 +48,12 @@ def live_thresholds():
 
 
 class LiveSeatMonitor:
-    def __init__(self, config, mirrored):
+    """`fallback` (optional) is a second pipeline, the head-pose model, asked only about seats whose face was not
+    found this frame: the face model misses heads turned strongly to the side."""
+
+    def __init__(self, config, mirrored, fallback=None):
         self.mirrored = mirrored
+        self.fallback = fallback
         # Nearest seat wins, so a student who shifts in their chair keeps their seat.
         self.associator = SeatAssociator({'schema_version': 1, 'seats': config['seats']}, nearest=True)
         seat_ids = self.associator.seat_ids
@@ -68,17 +75,44 @@ class LiveSeatMonitor:
         cx, cy = min(max(cx, half_w), 1 - half_w), min(max(cy, half_h), 1 - half_h)
         return cx - half_w, cy - half_h, cx + half_w, cy + half_h
 
+    def _read_lost_seats(self, association, image, width, height):
+        """Fill seats with no face from the fallback model, run once on the area around those seats."""
+        lost = [seat for seat in self.associator.seat_ids if association.seat_reasons[seat] == 'missing']
+        if self.fallback is None or not lost:
+            return association
+        areas = []
+        for seat in lost:
+            left, top, right, bottom = self.rois[seat]
+            if self.mirrored:
+                left, right = 1 - right, 1 - left
+            w, h = right - left, bottom - top
+            areas.append((max(0., left - w), max(0., top - h), min(1., right + w), min(1., bottom + h)))
+        x0, y0 = int(min(a[0] for a in areas) * width), int(min(a[1] for a in areas) * height)
+        x1, y1 = math.ceil(max(a[2] for a in areas) * width), math.ceil(max(a[3] for a in areas) * height)
+        found = self.fallback.process(np.ascontiguousarray(image[y0:y1, x0:x1])).detections
+        heads = [dataclasses.replace(o, bbox=(o.bbox[0] + x0, o.bbox[1] + y0, o.bbox[2], o.bbox[3]))
+                 for o in found if o.unavailable_reason is None and o.direction != 'unknown']
+        matched = self.associator.associate(heads, width, height, self.mirrored).assignments
+        assignments, reasons = dict(association.assignments), dict(association.seat_reasons)
+        for seat in lost:
+            if matched[seat] is not None:
+                assignments[seat], reasons[seat] = matched[seat], None
+        return AssociationResult(assignments, reasons, association.detection_indices, association.unassigned)
+
     def update(self, timestamp, result, image, open_alerts):
         association = self.associator.associate(result.detections, result.width, result.height, self.mirrored)
+        association = self._read_lost_seats(association, image, result.width, result.height)
         entries = self.history.update(timestamp, association)
         # A seat with no face in its region this frame is "not seen", not a reading: a face that drops out for a
         # moment keeps its movement going if it is seen again within max_gap. Its seat state still reads unknown.
         unseen = {e.seat_id for e in entries if e.reason == 'missing'}
         seen = [e for e in entries if e.seat_id not in unseen]
-        new = self.monitor.update(timestamp, {e.seat_id: e.direction for e in seen},
-                                  {e.seat_id: e.estimation_source for e in seen}, unobserved=unseen)
+        # No sources here: a turn read by the face model and then by the head model is one continuous turn.
+        new = self.monitor.update(timestamp, {e.seat_id: e.direction for e in seen}, unobserved=unseen)
+        source = {e.seat_id: e.estimation_source for e in entries}
         events = []
         for event in new:
+            event = {**event, 'estimation_source': source[event['seat_id']]}
             if event['review_required'] and (event['seat_id'], event['direction']) not in open_alerts:
                 region = self._still_region(event['seat_id'], association.assignments.get(event['seat_id']),
                                             result.width, result.height)

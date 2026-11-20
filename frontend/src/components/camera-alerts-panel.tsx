@@ -5,7 +5,7 @@ import { Bell, BellOff, Check, LoaderCircle, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { MAX_ALERT_NOTE } from '@/lib/camera-contract';
 import { formatElapsed, newestOpenAlert, seatNumber, shortcutMark } from '@/lib/camera-dashboard';
-import { alertTitle } from '@/lib/live-alerts';
+import { alertTitle, readFromHeadShape } from '@/lib/live-alerts';
 import type { AlertMark, LiveAlert } from '@/lib/live-alerts';
 import type { MovementEvent } from '@/lib/review-contract';
 
@@ -104,6 +104,7 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
             <div className="alert-main">
               <h3 id={`${alert.id}-title`}>{alertTitle(alert, events)}</h3>
               <p className="alert-time">Opened at {formatElapsed(alert.openedAt)}{alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''} into the session{open ? '' : ` · ${alert.mark}`}</p>
+              {readFromHeadShape(alert, events) && <p className="alert-time">Face turned away: read from the shape of the head.</p>}
               <div className="alert-still">
                 {alert.still && recordId
                   ? <img src={stillUrl(recordId, alert.id)} alt={`Seat ${seatNumber(alert.seatId)} when the alert opened`} />

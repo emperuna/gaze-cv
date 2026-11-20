@@ -134,3 +134,31 @@ class SeatProtocolTests(unittest.TestCase):
 
     def test_suggest_without_setup_frames_is_error(self):
         self.assertIn('error', run_protocol(Pipeline(), [{'type': 'suggest_seats'}])[0])
+
+
+class HeadTurnProtocolTests(unittest.TestCase):
+    def test_the_head_model_reads_seats_whose_face_is_lost(self):
+        class NoFaces(Pipeline):
+            def process(self, image):
+                h, w = image.shape[:2]
+                return ImageResult(w, h, [], 2., {})
+
+        class Heads(Pipeline):
+            def process(self, image):
+                self.calls += 1
+                h, w = image.shape[:2]
+                return ImageResult(w, h, [FaceObservation((5, 5, 30, 30), 'right', {}, {}, None, 'head_pose_fallback')], 2., {})
+
+        heads = Heads()
+        outgoing = io.StringIO()
+        messages = [{'type': 'configure', 'settings': SETTINGS}, frame(.1)]
+        serve(NoFaces(), io.StringIO(''.join(json.dumps(m) + '\n' for m in messages)), outgoing, fallback=heads)
+        out = [json.loads(line) for line in outgoing.getvalue().splitlines()]
+        self.assertTrue(out[0]['head_turns'])
+        self.assertEqual(out[2]['seats'], {'seat-1': {'direction': 'right', 'reason': None}})
+        self.assertEqual(heads.calls, 1)
+
+    def test_without_the_head_model_the_worker_says_so(self):
+        outgoing = io.StringIO()
+        serve(Pipeline(), io.StringIO(''), outgoing)
+        self.assertFalse(json.loads(outgoing.getvalue().splitlines()[0])['head_turns'])

@@ -135,6 +135,11 @@ const clock = (seconds: number) => {
   return `${String(Math.floor(whole / 60)).padStart(2, '0')}:${String(whole % 60).padStart(2, '0')}`;
 };
 
+/** True when any of the alert's events was read by the head-pose model because the face was turned away. */
+export function readFromHeadShape(alert: Pick<LiveAlert, 'eventIndexes'>, events: Pick<MovementEvent, 'estimation_source'>[]): boolean {
+  return alert.eventIndexes.some(i => events[i]?.estimation_source === 'head_pose_fallback');
+}
+
 export function alertTitle(alert: LiveAlert, events: MovementEvent[]): string {
   const seat = seatName(alert.seatId);
   const mine = alert.eventIndexes.map(i => events[i]).filter(Boolean);

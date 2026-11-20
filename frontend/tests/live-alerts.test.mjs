@@ -134,3 +134,10 @@ test('alertTitle', () => {
   applyFrame(rep, 10, seen, [ev(0, 10, { event_type: 'repeated_movement', repetition_count: 3 })]);
   assert.equal(alertTitle(rep.alerts[0], rep.events), 'Check seat 4: turned right 3 times in 10 s');
 });
+
+test('an alert says when its turn was read from the shape of the head', async () => {
+  const { readFromHeadShape } = await import('../src/lib/live-alerts.ts');
+  const events = [{ estimation_source: 'facial_landmarks' }, { estimation_source: 'head_pose_fallback' }, {}];
+  assert.equal(readFromHeadShape({ eventIndexes: [0, 2] }, events), false);
+  assert.equal(readFromHeadShape({ eventIndexes: [0, 1] }, events), true);
+});

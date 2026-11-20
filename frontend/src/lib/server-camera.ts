@@ -29,11 +29,17 @@ function remember(live: LiveCamera) {
   else if (shared.gazeCameraUnsaved===live) shared.gazeCameraUnsaved=undefined;
 }
 
+/** Worker arguments; strong head turns are read only when asked for and the head-pose model is installed. */
+export function workerArgs(settings: CameraSettings, headModelReady: boolean): string[] {
+  return [join(projectRoot,'scripts','camera_worker.py'),'--method','baseline',
+    ...(settings.mirrored ? ['--mirrored'] : []), '--tile-grid',String(settings.tileGrid),
+    ...(settings.headTurns && headModelReady ? ['--head-turns'] : [])];
+}
+
 async function launchWorker(settings: CameraSettings): Promise<ChildProcessWithoutNullStreams> {
   const status=await backendStatus();
   if (!status.methods.baseline.ready) throw new AnalysisError(status.methods.baseline.message,503);
-  return spawn(python,[join(projectRoot,'scripts','camera_worker.py'),'--method','baseline',
-    ...(settings.mirrored ? ['--mirrored'] : []), '--tile-grid',String(settings.tileGrid)],
+  return spawn(python,workerArgs(settings,status.methods.head.ready),
     {cwd:projectRoot,env:pythonEnvironment(),windowsHide:true,shell:false});
 }
 

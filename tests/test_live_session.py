@@ -125,3 +125,77 @@ class ShiftedStudentTests(unittest.TestCase):
         self.assertEqual([e['event_type'] for e in events], ['sustained_movement'])
         still = cv2.imdecode(np.frombuffer(base64.b64decode(events[0]['still']), np.uint8), cv2.IMREAD_GRAYSCALE)
         self.assertGreater(still.mean(), 128)
+
+
+class FakeHeadModel:
+    """Stands in for the head-pose model: finds the white square in the picture it is given."""
+    def __init__(self, direction='left'):
+        self.direction, self.calls = direction, []
+
+    def process(self, image):
+        self.calls.append(image.shape[:2])
+        ys, xs = np.nonzero(image[:, :, 0] > 200)
+        found = [] if not len(xs) else [FaceObservation(
+            (int(xs.min()), int(ys.min()), int(xs.max() - xs.min() + 1), int(ys.max() - ys.min() + 1)),
+            self.direction, {}, {'camera_yaw_degrees': 60.}, None if self.direction != 'unknown' else 'too_blurred',
+            'head_pose_fallback')]
+        return ImageResult(image.shape[1], image.shape[0], found, 1., {})
+
+
+def two_seats():
+    # 200x100 frame: seat-1 box x 10-30, seat-2 box x 140-160.
+    return {'seats': [{'id': 'seat-1', 'roi': [.05, .3, .15, .7]}, {'id': 'seat-2', 'roi': [.7, .3, .8, .7]}],
+            'movement': config()['movement']}
+
+
+def frame_with_head(x0, x1):
+    image = np.zeros((H, W, 3), np.uint8)
+    image[40:60, x0:x1] = 255
+    return image
+
+
+def face(x, direction='forward'):
+    return FaceObservation((x - 10, 40, 20, 20), direction, {}, {})
+
+
+class HeadTurnFallbackTests(unittest.TestCase):
+    def test_a_seat_whose_face_is_lost_is_read_by_the_head_model(self):
+        head = FakeHeadModel('left')
+        monitor = LiveSeatMonitor(two_seats(), False, fallback=head)
+        out = monitor.update(0, ImageResult(W, H, [face(150)], 1., {}), frame_with_head(12, 28), set())
+        self.assertEqual(out['seats']['seat-1'], {'direction': 'left', 'reason': None})
+        self.assertEqual(out['seats']['seat-2'], {'direction': 'forward', 'reason': None})
+
+    def test_the_head_model_only_sees_the_area_around_lost_seats(self):
+        head = FakeHeadModel('left')
+        monitor = LiveSeatMonitor(two_seats(), False, fallback=head)
+        monitor.update(0, ImageResult(W, H, [face(150)], 1., {}), frame_with_head(12, 28), set())
+        self.assertEqual(len(head.calls), 1)
+        self.assertLess(head.calls[0][1], W / 2)
+
+    def test_the_head_model_is_not_run_when_every_face_is_found(self):
+        head = FakeHeadModel()
+        LiveSeatMonitor(two_seats(), False, fallback=head).update(
+            0, ImageResult(W, H, [face(20), face(150)], 1., {}), frame_with_head(12, 28), set())
+        self.assertEqual(head.calls, [])
+
+    def test_a_turn_continues_when_the_face_is_lost_mid_turn(self):
+        monitor = LiveSeatMonitor(two_seats(), False, fallback=FakeHeadModel('left'))
+        events = []
+        for t in [round(.3 * i, 1) for i in range(8)]:
+            faces = [face(150)] + ([face(20, 'left')] if t < .9 else [])
+            events += monitor.update(t, ImageResult(W, H, faces, 1., {}), frame_with_head(12, 28), set())['events']
+        self.assertEqual([(e['seat_id'], e['event_type'], e['start_time']) for e in events], [('seat-1', 'sustained_movement', 0)])
+        self.assertEqual(events[0]['estimation_source'], 'head_pose_fallback')
+
+    def test_an_unreadable_head_leaves_the_seat_not_seen(self):
+        monitor = LiveSeatMonitor(two_seats(), False, fallback=FakeHeadModel('unknown'))
+        out = monitor.update(0, ImageResult(W, H, [face(150)], 1., {}), frame_with_head(12, 28), set())
+        self.assertEqual(out['seats']['seat-1'], {'direction': 'unknown', 'reason': 'missing'})
+
+    def test_mirrored_frames_map_the_head_back_to_the_right_seat(self):
+        # Mirrored: seat-1 (canonical x 10-30) appears at raw x 170-190.
+        head = FakeHeadModel('right')
+        monitor = LiveSeatMonitor(two_seats(), True, fallback=head)
+        out = monitor.update(0, ImageResult(W, H, [face(W - 150)], 1., {}), frame_with_head(172, 188), set())
+        self.assertEqual(out['seats']['seat-1']['direction'], 'right')
