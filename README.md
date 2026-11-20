@@ -23,8 +23,11 @@ press **Start**, and allow browser camera access; Ocular finds the seats, and
 left or right for a while or repeatedly. Looking down never alerts. Frames stay in
 memory; the session, its alerts and one cropped still per alert are saved on
 this computer, can be resumed, reopened from **Past sessions** and downloaded as
-a PDF. **Review a recording instead** opens the saved-video seat review; Image
-is no longer offered on the website. Alert accuracy has not been measured and the
+a PDF. **Review a recording instead** opens the recording review: upload a video,
+Ocular finds the seats from its first seconds, **Start review** raises the same
+alerts, each with **Play this moment**, and the faculty PDF includes video times.
+Old Saved video reviews under `outputs/runs/review/` are kept on disk but are no
+longer listed. Image is no longer offered on the website. Alert accuracy has not been measured and the
 physical-camera check is not performed. See
 [website setup and camera use](frontend/README.md#live-camera) and the
 [verification record](docs/superpowers/specs/2026-11-18-camera-alerts-verification.md).
@@ -83,12 +86,10 @@ coverage warnings. See [review workload tools](docs/review-workload.md).
 These additions support human review and do not establish examination-scale
 readiness or change the existing validation results.
 
-**Download PDF report** is available for the Saved video seat review and for a Camera
-session (the Image website workflow was removed on 18 November 2026; the PDF
+**Download PDF report** is available for a Camera session or a recording review (the Image website workflow was removed on 18 November 2026; the PDF
 route for earlier Image/directions-only runs remains in the code). PDFs list potential incident observations for human
 review, with timestamps where available, source/method details and coverage
-limitations. Saved-seat PDFs include saved statuses, notes and local sign-off.
-Camera PDFs include the session's alerts, their cropped stills, marks and notes; the
+limitations. Camera PDFs include the session's alerts, their cropped stills, marks and notes; the
 camera is never recorded, and stills are kept only in the local session folder
 until the session is deleted.
 Install the updated pinned `requirements.txt` for PDF generation. See
@@ -189,7 +190,7 @@ For configured fixed-seat histories and optional movement records, use:
 .\.venv\Scripts\python.exe scripts/process_video.py --input data/raw/video/FourPeople_1280x720_60.webm --output-dir outputs/runs/seat-example --tile-grid 2 --expected-faces 4 --seats data/annotations/fourpeople-seats.json --events
 ```
 
-Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input is optional. The website's Saved video → Seats & movement review now integrates playback, events and session reopening; team acceptance and labeled real-video validation remain separate from this implementation. Saved video is the required input workflow.
+Seat IDs identify regions, not people. Missing and ambiguous observations become gaps; they cannot accumulate continuous duration. Movement records describe sustained/repeated head movements only. Real event accuracy, ordinary-writing false alerts, and classroom generalization remain unvalidated. Live-camera input is optional. The website's recording review (alerts, Play this moment, faculty PDF) replaces the earlier Saved video seat review; team acceptance and labeled real-video validation remain separate from this implementation.
 
 ## Experimental head orientation without facial landmarks
 
@@ -222,15 +223,17 @@ It uses React, Next.js, TypeScript, Tailwind CSS, and a local shadcn/ui button
 component. Run `npm ci` and `npm run dev` from `frontend/` after the project-local
 cache setup in that README. The landing page contains an explicitly illustrative
 session example. The `/analyze` workspace opens the live camera and, through
-**Review a recording instead**, a saved video; it calls the existing Python code locally,
+**Review a recording instead**, an uploaded video; it calls the existing Python code locally,
 once the project `.venv` and selected models are installed. The earlier Image
 and directions-only upload workflows are no longer reachable from the website
-(code and routes kept). **Saved video → Seats & movement review**
-adds visual/numeric seat setup, configurable movement rules, synchronized browser
-playback, clickable events, per-seat histories, saved-session reopening and JSON
-downloads. It reuses the existing Python modules; directions remain camera-relative.
-The directions-only upload workflow is available from code and the command line only, and the calibrated CLI workflows remain available.
-See [saved-review use](frontend/README.md#saved-video-seat-and-movement-review),
+(code and routes kept). The recording review finds seats from the first seconds
+of the video, runs the same fixed rules as the live camera, and lists alerts
+with a **Play this moment** player and a faculty PDF. It reuses the existing
+Python modules; directions remain camera-relative. The old Saved video seat
+review was removed; its folders under `outputs/runs/review/` stay on disk but are
+no longer listed. The directions-only upload workflow is available from code and
+the command line only, and the calibrated CLI workflows remain available.
+See [recording review use](frontend/README.md#recording-review),
 the [CP4 checklist](docs/checkpoints/cp4-checklist.md), and the
 [before/after table](docs/checkpoints/cp4-before-after.md).
 The **Camera** workflow runs the Baseline model through a persistent local Python

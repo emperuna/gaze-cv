@@ -1,7 +1,7 @@
 # Review workload tools
 
 Scope: the user-requested grouped review queue, camera/coverage checks and editable
-session reports. These extend the existing saved-video review and optional camera
+session reports. These extended the Saved video review (since removed; see the note below) and optional camera
 interfaces; they do not add multi-room processing, identity recognition or
 misconduct decisions. Related backlog references are `cp4-export-review`
 ([Issue 26](https://github.com/emperuna/gaze-cv/issues/26)) and `cp4-camera`
@@ -17,9 +17,18 @@ paragraph below describe the earlier direction-only mode and are superseded wher
 they conflict with the [camera alerts design](superpowers/specs/2026-11-18-camera-alerts-design.md)
 and the [verification record](superpowers/specs/2026-11-18-camera-alerts-verification.md). See [Camera alerts](#camera-alerts) below.
 
-## Saved-video review
+## Saved-video review (removed)
 
-Open a completed session in **Saved video → Seats & movement review**.
+Dated note, 21 November 2026: the Saved video seat review was removed. Recordings
+are now reviewed through **Review a recording instead**: choose a file, Ocular
+finds the seats from the first seconds, **Start review** raises alerts like the
+live camera, **Play this moment** replays each one, and **Download PDF report**
+gives the faculty PDF. Existing folders under `outputs/runs/review/` (including
+`review-workflow.json`) are kept on disk but are no longer listed or opened, and
+the `/api/review` routes no longer exist. This section and the storage section
+below describe the removed review for the record.
+
+Previously, a completed session opened in **Saved video → Seats & movement review**.
 
 - **Seat coverage checks** show usable direction coverage and unavailable
   intervals for every configured seat. Expand a seat and select an interval to
@@ -154,8 +163,8 @@ until a report is ready, with nearby text explaining whether to analyze an input
 open a saved session, save review edits, or Stop the camera. On narrow screens the
 button spans the report bar's width.
 
-The 18 November extension adds **Download PDF report** to Image, Saved video
-(both workflows) and Camera. The Image and Saved video document is titled
+The 18 November extension added **Download PDF report** to Image, Saved video
+(both workflows) and Camera; Saved video has since been replaced by the recording review, whose PDF is the faculty report. The Image and Saved video document is titled
 **Potential incident review report**; the live camera session document is titled
 **Seat check review report** and lists the moments Ocular prompted a seat check.
 The Image and Saved video documents list observations to check; none of the
@@ -199,8 +208,7 @@ codepoint tokens instead of silent blank boxes. Existing UUID/path containment
 and local-origin guards protect all three routes:
 
 - `GET /api/analyze/<uuid>/report`: Image or directions-only saved video PDF.
-- `GET /api/review/<uuid>/report?format=pdf`: saved-seat PDF; the default route
-  continues to provide editable Markdown.
+- `GET /api/review/<uuid>/report?format=pdf`: saved-seat PDF (route removed 21 November 2026 with the Saved video review).
 - `GET /api/camera/<uuid>/report`: retained numeric camera summary PDF.
 
 ## Camera alerts

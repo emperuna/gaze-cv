@@ -2,10 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateReviewSettings, mirrorSeats, frameAtTime, DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { parseRange } from '../src/lib/media-range.ts';
-import { promises as fs } from 'node:fs';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { publishReview } from '../src/lib/server-review.ts';
 
 const config=() => ({method:'head',mirrored:false,tileGrid:1,seats:[{id:'A',roi:[.1,.2,.4,.8]}],movement:{...DEFAULT_MOVEMENT}});
 
@@ -45,14 +41,4 @@ test('single byte ranges support seeking, suffixes and bounded end positions', (
   assert.deepEqual(parseRange('bytes=90-999',100),{start:90,end:99});
   assert.equal(parseRange(null,100),null);
   for(const value of ['bytes=100-','bytes=20-10','bytes=-0','bytes=0-1,4-5','oops','bytes=999999999999999999999-']) assert.throws(() => parseRange(value,100));
-});
-
-test('cancellation during final rename removes the completed manifest', async context => {
-  const root=await fs.mkdtemp(join(tmpdir(),'gaze-review-'));
-  context.after(()=>fs.rm(root,{recursive:true,force:true}));
-  const controller=new AbortController();
-  const original=fs.rename;
-  context.mock.method(fs,'rename',async(...args)=>{await original(...args);controller.abort();});
-  await assert.rejects(publishReview(root,{id:'test'},controller.signal),/cancelled/);
-  await assert.rejects(fs.access(join(root,'session.json')));
 });

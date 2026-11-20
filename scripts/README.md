@@ -18,8 +18,7 @@ Run from the repository root using the project interpreter after [README setup](
 | download_head_models.py | Acquire only the selected, SHA256-verified CPU head-detector and full-rotation pose ONNX files from bounded upstream archive streams. |
 | calibrate_heads.py | Build source/model/seat-bound neutral rotations from manually selected forward reference frames for `process_video.py --method head`. |
 | camera_worker.py | Persistent JSONL worker for the website Camera source; reuses one head/baseline pipeline, validates bounded JPEG frames and elapsed capture times, and keeps frames in memory. Camera permission and capture are owned by the browser. |
-| review_video.py | Processes one saved review session from validated settings/seat JSON, using shared video/history/event modules; persists aligned raw and compact records. The web API supplies the stored source/settings and publishes completed sessions. |
-| prepare_review.py | Checks decoded video timestamp cadence and optionally suggests fixed regions from persistent head detections across sampled frames. Suggestions require faculty correction/confirmation; setup is not identity tracking. |
+| recording_worker.py | Local worker for the website recording review: suggests seats from a video's first seconds, then reviews the whole video (frames sampled every 0.1 s of video time) with the camera's movement rules; emits JSON lines and keeps nothing outside the session folder. |
 | render_incident_report.py | Reads bounded observation-report JSON from stdin and returns a PDF on stdout through the reusable ReportLab renderer. The website supplies completed image/video records or bounded numeric camera summaries; no model rerun, external assets or misconduct inference is involved. |
 
 The head mode requires optional dependencies in `requirements-head-pose.txt`.
