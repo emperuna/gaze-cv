@@ -40,10 +40,6 @@ function commandError(error: unknown): AnalysisError {
   return new AnalysisError(message, /already processing/.test(message) ? 409 : /stopped|exited|expired/.test(message) ? 404 : 422);
 }
 
-/**
- * One camera worker and, once monitoring starts, its session record. Before `monitor` (or without `resume`)
- * the worker only previews frames and has no record. Session time is `segment.offsetSeconds + timestamp_seconds`.
- */
 /** Applies one frame to a record and writes the stills of newly opened alerts; shared by live and recording review. */
 export async function recordFrame(record: LiveSessionRecord, time: number, seats: Record<string, LiveSeatState>, events: LiveEvent[],
   opts: { recordOptions: RecordOptions; groupWithinSeconds?: number }): Promise<ReturnType<typeof applyFrame>> {
@@ -58,6 +54,10 @@ export async function recordFrame(record: LiveSessionRecord, time: number, seats
   return { opened, updated };
 }
 
+/**
+ * One camera worker and, once monitoring starts, its session record. Before `monitor` (or without `resume`)
+ * the worker only previews frames and has no record. Session time is `segment.offsetSeconds + timestamp_seconds`.
+ */
 export class LiveCamera {
   record?: LiveSessionRecord;
   saveError: string | null = null;
