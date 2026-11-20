@@ -30,7 +30,14 @@ const line = (child, value) => child.stdout.write(`${JSON.stringify(value)}\n`);
 const event = (start, end, still) => ({ seat_id: 'seat-A', direction: 'left', start_time: start, end_time: end, observed_at: end,
   duration: end - start, review_required: true, ...(still ? { still: JPEG } : {}) });
 const job = () => globalThis.gazeRecordingJob;
-const settle = () => new Promise(resolve => setTimeout(resolve, 20));
+/** Waits until the running review has handled the frame at `t` (no fixed sleeps: slow machines just wait longer). */
+async function reached(t, timeoutMs = 5_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (job()?.record.lastTime !== t) {
+    if (Date.now() > deadline) throw new Error(`The review never reached ${t} s.`);
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+}
 
 /** A fake launcher: `suggest` answers at once; `review` hands out a controllable child. */
 function launcher() {
@@ -94,7 +101,7 @@ test('a review turns lines into grouped alerts with stills, ends on done and fre
   line(child, { t: 0.1, seats: { 'seat-A': { direction: 'left', reason: null } }, events: [event(0, 2, true)], duration: 120 });
   line(child, { t: 20.1, seats: {}, events: [event(20, 22, true)], duration: 120 });
   line(child, { t: 70.1, seats: {}, events: [event(70, 72, true)], duration: 120 });
-  await settle();
+  await reached(70.1);
   const live = await getCameraRecord(recordId, opts);
   assert.equal(live.state, 'monitoring');
   assert.equal(live.lastTime, 70.1);
@@ -128,7 +135,7 @@ test('a worker that stops before done leaves the recording interrupted with its 
   await startRecordingReview(draftId, body, opts);
   const child = fake.reviews()[0].child;
   line(child, { t: 5, seats: {}, events: [event(3, 5, true)], duration: 120 });
-  await settle();
+  await reached(5);
   child.stdout.end(); child.emit('close', 1);
   await job()?.finished;
   const record = await loadRecord(draftId, opts);
@@ -154,7 +161,7 @@ test('cancel stops the worker, deletes the folder and frees the slot', async () 
   await startRecordingReview(draftId, body, opts);
   const child = fake.reviews()[0].child;
   line(child, { t: 1, seats: {}, events: [event(0, 1, true)], duration: 120 });
-  await settle();
+  await reached(1);
   await cancelRecordingReview(draftId, opts);
   assert.ok(child.killed);
   await assert.rejects(fs.stat(dir), { code: 'ENOENT' });
@@ -173,7 +180,7 @@ test('review again clears results and restarts on the stored video', async () =>
   await startRecordingReview(draftId, body, opts);
   let child = fake.reviews()[0].child;
   line(child, { t: 5, seats: { 'seat-A': { direction: 'left', reason: null } }, events: [event(3, 5, true)], duration: 120 });
-  await settle();
+  await reached(5);
   child.stdout.end(); child.emit('close', 1);
   await job()?.finished;
   const before = await loadRecord(draftId, opts);
