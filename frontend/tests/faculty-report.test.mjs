@@ -73,7 +73,7 @@ test('seats with alerts not dismissed come first; dismissed-only seats follow', 
   assert.equal(rows[1].saw, '1 alert · looked left for 2.6 s');
   assert.equal(rows[1].when, '10:05 AM');
   assert.equal(rows[1].marks, 'Dismissed');
-  assert.equal(quietSeats, 'No alerts: Seats 1 and 3. Seat 6 was hidden 12% of the exam (see page 3).');
+  assert.equal(quietSeats, 'No alerts: Seats 1 and 3. Seat 6 was hidden 12% of the session (see page 3).');
   assert.deepEqual(reviewSeats, ['Seat 4', 'Seat 2', 'Seat 5']);
 });
 
@@ -126,8 +126,8 @@ test('a still missing from disk is reported as unavailable', () => {
 test('blind spots list the camera-off gap and hidden seats in plain words', () => {
   assert.deepEqual(build().blindSpots, [
     { what: 'Whole room not watched', when: '9:50–9:53 AM (3 min)', reason: 'Camera stopped; monitoring resumed' },
-    { what: 'Seat 6 hidden', when: '9:20–9:31 AM · 12% of the exam', reason: 'Face not visible' },
-    { what: 'Seat 1 hidden', when: 'Short moments · 3% of the exam', reason: 'Face not visible' },
+    { what: 'Seat 6 hidden', when: '9:20–9:31 AM · 12% of the session', reason: 'Face not visible' },
+    { what: 'Seat 1 hidden', when: 'Short moments · 3% of the session', reason: 'Face not visible' },
   ]);
 });
 
@@ -136,7 +136,7 @@ test('a session without alerts has no seats to look at again and no alert detail
   assert.deepEqual(report.seats, []);
   assert.deepEqual(report.alertGroups, []);
   assert.deepEqual(report.glance, { alerts: 0, lookAgain: 0, notReviewed: 0, notWatchedMinutes: 3 });
-  assert.equal(report.quietSeats, 'No alerts: Seats 1, 2, 3, 4 and 5. Seat 6 was hidden 12% of the exam (see page 3).');
+  assert.equal(report.quietSeats, 'No alerts: Seats 1, 2, 3, 4 and 5. Seat 6 was hidden 12% of the session (see page 3).');
 });
 
 test('the rules and session lines use the session settings', () => {
@@ -199,7 +199,7 @@ test('a mark made on a later day shows its date', () => {
 test('a quiet seat hidden most of the time is not reported as simply having no alerts', () => {
   const record = sample({ alerts: [], events: [] });
   record.coverage['seat-3'] = { ...record.coverage['seat-3'], observedFrames: 0 };
-  assert.equal(build(record).quietSeats, 'No alerts: Seats 1, 2, 4 and 5. Seat 3 was hidden 100% and Seat 6 12% of the exam (see page 3).');
+  assert.equal(build(record).quietSeats, 'No alerts: Seats 1, 2, 4 and 5. Seat 3 was hidden 100% and Seat 6 12% of the session (see page 3).');
 });
 
 test('an alert read from the shape of the head says so in the report', () => {

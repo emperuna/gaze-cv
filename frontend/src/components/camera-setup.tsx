@@ -38,17 +38,17 @@ export function SetupSteps({ phase, stoppedFrom = null }: { phase: CameraPhase; 
   return <StepList labels={STEPS} step={setupStep(phase, stoppedFrom)} />;
 }
 
-/** The optional, collapsible exam details printed at the top of the PDF report. */
+/** The optional, collapsible session details (title, room, person in charge) printed at the top of the PDF report. */
 export function AboutThisExam({ idPrefix, exam, onExam, disabled }: {
   idPrefix: string; exam: ExamDetails; onExam: (update: (current: ExamDetails) => ExamDetails) => void; disabled: boolean;
 }) {
   const field = (key: keyof ExamDetails, label: string) => <label htmlFor={`${idPrefix}-exam-${key}`}>{label}<input id={`${idPrefix}-exam-${key}`}
     value={exam[key]} maxLength={MAX_EXAM_TEXT} onChange={event => { const value = event.target.value; onExam(current => ({ ...current, [key]: value })); }} /></label>;
   return <details className="exam-details">
-    <summary>About this exam <span>(optional)</span><ChevronDown size={15} aria-hidden="true" /></summary>
+    <summary>Session details <span>(optional)</span><ChevronDown size={15} aria-hidden="true" /></summary>
     <fieldset disabled={disabled}>
-      <legend className="sr-only">About this exam</legend>
-      <div className="exam-details-fields">{field('title', 'Exam or class')}{field('room', 'Room')}{field('proctor', 'Proctor')}</div>
+      <legend className="sr-only">Session details</legend>
+      <div className="exam-details-fields">{field('title', 'Title')}{field('room', 'Room')}{field('proctor', 'In charge')}</div>
       <p>Printed on the PDF. Leave blank to fill in by hand.</p>
     </fieldset>
   </details>;

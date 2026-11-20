@@ -10,7 +10,7 @@ export const HEAD_SHAPE_NOTE = 'The face was turned away, so part of this turn w
 
 /**
  * The faculty seat check report: everything the PDF's camera layout prints, already in plain words and
- * clock times. Faculty read it after an exam to decide which seats to look at again; it never judges anyone.
+ * clock times. Faculty read it after a session to decide which seats to look at again; it never judges anyone.
  */
 type SeatStatus = 'look-again' | 'dismissed';
 type MarkKind = 'checked' | 'not-reviewed' | 'dismissed';
@@ -67,7 +67,7 @@ function clockDate(record: Pick<LiveSessionRecord, 'segments'>, seconds: number)
   return new Date(Date.parse(segment.startedAt) + (seconds - base(segment)) * 1000);
 }
 
-/** A calendar day in the report's time zone, to tell whether a mark was made on the day of the exam. */
+/** A calendar day in the report's time zone, to tell whether a mark was made on the day of the session. */
 function dayKey(date: Date, timeZone?: string) {
   return new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone }).format(date);
 }
@@ -182,7 +182,7 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
   const visibleQuiet = quietIds.filter(id => !isHidden(id)).map(seatNumber);
   const hiddenQuiet = quietIds.filter(isHidden).sort((a, b) => hiddenShare(b) - hiddenShare(a))
     .map((id, index) => `${seatName(id)}${index === 0 ? ' was hidden' : ''} ${Math.round(hiddenShare(id) * 100)}%`);
-  const hiddenText = hiddenQuiet.length ? `${hiddenQuiet.length === 1 ? hiddenQuiet[0] : `${hiddenQuiet.slice(0, -1).join(', ')} and ${hiddenQuiet.at(-1)}`} of the exam (see page 3).` : '';
+  const hiddenText = hiddenQuiet.length ? `${hiddenQuiet.length === 1 ? hiddenQuiet[0] : `${hiddenQuiet.slice(0, -1).join(', ')} and ${hiddenQuiet.at(-1)}`} of the session (see page 3).` : '';
   const quietSeats = !quietIds.length ? '' : !hiddenQuiet.length && !record.alerts.length ? 'No alerts on any seat.'
     : [visibleQuiet.length ? `No alerts: ${listSeats(visibleQuiet)}.` : hiddenText ? 'No alerts, but' : '', hiddenText].filter(Boolean).join(' ');
   const hiddenSpans = (seatId: string) => {
@@ -246,7 +246,7 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
       .sort((a, b) => b.share - a.share).map(({ seat, share }) => {
         const longest = hiddenSpans(seat.id).sort((a, b) => (b.end - b.start) - (a.end - a.start))[0];
         const when = longest && longest.end - longest.start >= 60 ? timesOf(longest.start, longest.end) : 'Short moments';
-        return { what: `${seatName(seat.id)} hidden`, when: `${when} · ${Math.round(share * 100)}% of the exam`, reason: 'Face not visible' };
+        return { what: `${seatName(seat.id)} hidden`, when: `${when} · ${Math.round(share * 100)}% of the session`, reason: 'Face not visible' };
       }),
   ];
   const blindSpots = allBlindSpots.length <= MAX_BLIND_SPOTS ? allBlindSpots

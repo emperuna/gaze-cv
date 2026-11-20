@@ -1,6 +1,6 @@
 """The faculty seat check layout for live camera reports.
 
-Faculty read this after an exam to decide which seats to look at again. Page 1 summarises (seats ranked by
+Faculty read this after a session to decide which seats to look at again. Page 1 summarises (seats ranked by
 alerts not dismissed, a seat map, a timeline), page 2 shows each alert with its photo, page 3 lists what Ocular
 could not see and leaves room for the faculty member's own decision. Nothing here judges a student.
 """
@@ -270,10 +270,10 @@ def build_story(fac, para, clean, resolve):
     story = []
 
     # Page 1 — summary.
-    title = clean(exam['title']) if exam['title'].strip() else 'Exam: ' + '_' * 30
+    title = clean(exam['title']) if exam['title'].strip() else 'Session: ' + '_' * 30
     header = [para('OCULAR · SEAT CHECK REVIEW', 'label'), para(title, 'h1'),
               para(f"{clean(fac['date'])} · {clean(fac['timeRange'])} · Room: {blank(exam['room'], 8)}", 'meta'),
-              para(f"Proctor: {blank(exam['proctor'])} · {fac['seatsWatched']} seats watched by one camera at the front", 'meta')]
+              para(f"In charge: {blank(exam['proctor'])} · {fac['seatsWatched']} seats watched by one camera at the front", 'meta')]
     tag = Table([[para('CONFIDENTIAL · CONTAINS STUDENT PHOTOS', 'tag')]], colWidths=[118])
     tag.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, -1), BUTTER), ('BOX', (0, 0), (-1, -1), .6, colors.HexColor('#b9b06a')),
                              ('TOPPADDING', (0, 0), (-1, -1), 4), ('BOTTOMPADDING', (0, 0), (-1, -1), 4)]))
@@ -284,7 +284,7 @@ def build_story(fac, para, clean, resolve):
     glance = fac['glance']
     off_label = fac.get('offLabel')
     seats_word = 'seat' if glance['lookAgain'] == 1 else 'seats'
-    cells = [[para(str(glance['alerts']), 'big'), para('alerts during the exam', 'glance')],
+    cells = [[para(str(glance['alerts']), 'big'), para('alerts during the session', 'glance')],
              [para(f"{glance['lookAgain']} {seats_word}", 'big'), para('to look at again', 'glance')],
              [para(str(glance['notReviewed']), 'big'), para('alert you did not review' if glance['notReviewed'] == 1 else 'alerts you did not review', 'glance')],
              [para(f"{glance['notWatchedMinutes']} min", 'big'), para(clean(off_label) if off_label else 'not watched (camera off)', 'glance')]]
@@ -316,7 +316,7 @@ def build_story(fac, para, clean, resolve):
 
     legend = _legend(para, clean, off_label)
     left = [para('Where the seats are', 'h3'), _seat_map(fac['map']),
-            para('Numbered left to right as the camera sees them. Highlighted: look again. Dashed: hidden 10% or more of the exam.', 'small')]
+            para('Numbered left to right as the camera sees them. Highlighted: look again. Dashed: hidden 10% or more of the session.', 'small')]
     right = [para('When alerts happened', 'h3'), _timeline(fac['timeline'], LEGEND_WIDTH), legend]
     pair = Table([[left, right]], colWidths=[205, WIDTH - 205])
     pair.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
@@ -359,7 +359,7 @@ def build_story(fac, para, clean, resolve):
                 if item['note']:
                     lines.append(para(f"<b>Your note:</b> “{clean(item['note'])}”", 'td'))
             else:
-                lines.append(para('<font color="#8a3c00"><b>Not reviewed during the exam. Look at the photo and decide.</b></font>', 'td'))
+                lines.append(para('<font color="#8a3c00"><b>Not reviewed during the session. Look at the photo and decide.</b></font>', 'td'))
                 choices = Table([[_checkbox(), para('Nothing to follow up', 'td'), _checkbox(), para('Follow up', 'td')]], colWidths=[12, 100, 12, 70])
                 choices.setStyle(TableStyle([('LEFTPADDING', (0, 0), (-1, -1), 0), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
                 lines.append(choices)
