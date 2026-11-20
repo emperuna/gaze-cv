@@ -19,7 +19,7 @@ import { EMPTY_EXAM } from '@/lib/exam-details';
 import type { ExamDetails } from '@/lib/exam-details';
 import type { AlertMark, LiveAlert, LiveSessionRecord } from '@/lib/live-alerts';
 import {
-  AGAIN_CONFIRM_TEXT, POLL_MS, RECORDING_DELETE_TEXT, RECORDING_EXTENSIONS, acceptedFile, progressText, recordingStep,
+  AGAIN_CONFIRM_TEXT, POLL_MS, RECORDING_DELETE_TEXT, RECORDING_EXTENSIONS, acceptedFile, pollChained, progressText, recordingStep,
   recordingUrl, recordingVideoUrl, reviewProgress, startReviewAgain, stoppedText,
 } from '@/lib/recording-flow';
 import type { RecordingStep } from '@/lib/recording-flow';
@@ -162,20 +162,19 @@ export function RecordingWorkspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [check, applyRecord]);
 
-  // While the review runs, the record is read every second; the review keeps going if the page is left.
+  // While the review runs, the record is read about every second; the review keeps going if the page is left.
   const reviewing = step === 'reviewing' ? recordId : null;
   useEffect(() => {
     if (!reviewing) return;
     let stopped = false;
-    const timer = setInterval(() => {
-      void fetchRecord(reviewing).then(next => { if (!stopped && mounted.current) { setPollProblem(false); applyRecord(next); } })
-        .catch(problem => {
-          if (stopped || !mounted.current) return;
-          if ((problem as { status?: number }).status === 404) { reset(); setError('This recording was deleted: choose another video.'); return; }
-          setPollProblem(true);
-        });
-    }, POLL_MS);
-    return () => { stopped = true; clearInterval(timer); };
+    // Each read waits for the previous one, so a slow server never gets stacked requests.
+    const stop = pollChained(() => fetchRecord(reviewing).then(next => { if (!stopped && mounted.current) { setPollProblem(false); applyRecord(next); } })
+      .catch(problem => {
+        if (stopped || !mounted.current) return;
+        if ((problem as { status?: number }).status === 404) { reset(); setError('This recording was deleted: choose another video.'); return; }
+        setPollProblem(true);
+      }), POLL_MS);
+    return () => { stopped = true; stop(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewing, applyRecord]);
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAY_MARGIN_SECONDS, acceptedFile, playWindow, progressText, recordingStep, recordingUrl, recordingVideoUrl, reviewProgress, startReviewAgain, stoppedText } from '../src/lib/recording-flow.ts';
+import { PLAY_MARGIN_SECONDS, acceptedFile, playWindow, pollChained, progressText, recordingStep, recordingUrl, recordingVideoUrl, reviewProgress, startReviewAgain, stoppedText } from '../src/lib/recording-flow.ts';
 
 test('the play window is the first event plus 3 s each side', () => {
   assert.equal(PLAY_MARGIN_SECONDS, 3);
@@ -75,4 +75,23 @@ test('a stopped review says how far it got, never past the end', () => {
   assert.equal(stoppedText(3725, 7200), 'Stopped at 1:02:05 of 2:00:00');
   assert.equal(stoppedText(130, 120), 'Stopped at 2:10 of 2:10');
   assert.equal(stoppedText(0, 95), 'Stopped at 0:00 of 1:35');
+});
+
+test('polling waits for each read to settle before scheduling the next, so requests never stack', async () => {
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  let calls = 0, finish;
+  const stop = pollChained(() => { calls++; return new Promise(resolve => { finish = resolve; }); }, 5);
+  await wait(60);
+  assert.equal(calls, 1, 'a slow read holds back the next one');
+  finish();
+  for (let i = 0; calls < 2 && i < 200; i++) await wait(5);
+  assert.equal(calls, 2);
+  finish(); stop();
+  await wait(40);
+  assert.equal(calls, 2, 'nothing runs after stop');
+  let failing = 0;
+  const stopFailing = pollChained(async () => { failing++; throw new Error('offline'); }, 5);
+  for (let i = 0; failing < 3 && i < 200; i++) await wait(5);
+  stopFailing();
+  assert.ok(failing >= 3, 'a failed read does not end polling');
 });
