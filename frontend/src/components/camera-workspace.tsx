@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Camera, Check, ChevronDown, CircleHelp, LoaderCircle, Play, RefreshCw, Square, Trash2, X } from 'lucide-react';
+import { AlertCircle, Camera, Check, CircleHelp, LoaderCircle, Play, RefreshCw, Square, Trash2, X } from 'lucide-react';
 import { Button } from './ui/button';
 import type { BackendStatus } from '@/lib/analysis-contract';
 import { cameraWarnings, lowDetailImage } from '@/lib/camera-health';
@@ -17,7 +17,7 @@ import type { AlertMap, RunningStatus } from '@/lib/camera-dashboard';
 import { validateReviewSettings } from '@/lib/review-contract';
 import type { MovementEvent, ReviewSeat } from '@/lib/review-contract';
 import { cameraMovement, cameraRules, movementProblem, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice, seatsForMonitor, setupStep, writeGuideSeen, writeSavedDevice } from '@/lib/camera-setup';
-import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
+import { AboutThisExam, CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
 import { interruptSession, newRun, runCaptureLoop, stopSession } from './camera-run';
 import { CameraPastSessions, InlineConfirm } from './camera-past-sessions';
 import { useSessionRecovery } from './camera-recovery';
@@ -29,7 +29,7 @@ import {
 import type { MonitorFrame, Run } from './camera-run';
 import { CameraAlertsPanel, Chime } from './camera-alerts-panel';
 import { CameraGuide } from './camera-guide';
-import { EMPTY_EXAM, MAX_EXAM_TEXT } from '@/lib/exam-details';
+import { EMPTY_EXAM } from '@/lib/exam-details';
 import type { ExamDetails } from '@/lib/exam-details';
 import { CameraSeatGrid, SeatStatusLine } from './camera-seat-grid';
 import type { CameraPhase, MeasuredSpeed, MovementRules } from './camera-setup';
@@ -627,18 +627,7 @@ export function CameraWorkspace() {
         {(phase === 'idle' || phase === 'permission' || phase === 'loading') && <>
           <div className="analysis-settings"><label htmlFor="camera-device">Camera</label><div className="select-wrap"><select id="camera-device" value={device} disabled={busy} onChange={event => { setDevice(event.target.value); writeSavedDevice(event.target.value); }}><option value="">Default camera</option>{devices.filter(item => item.deviceId).map((item, index) => <option key={item.deviceId} value={item.deviceId}>{cameraName(item, index)}</option>)}</select></div>
             <p>Choose the phone or classroom camera. Ocular remembers it for next time.</p></div>
-          <details className="exam-details">
-            <summary>About this exam <span>(optional)</span><ChevronDown size={15} aria-hidden="true" /></summary>
-            <fieldset disabled={busy}>
-              <legend className="sr-only">About this exam</legend>
-              <div className="exam-details-fields">
-                <label htmlFor="camera-exam-title">Exam or class<input id="camera-exam-title" value={exam.title} maxLength={MAX_EXAM_TEXT} onChange={event => setExam(current => ({ ...current, title: event.target.value }))} /></label>
-                <label htmlFor="camera-exam-room">Room<input id="camera-exam-room" value={exam.room} maxLength={MAX_EXAM_TEXT} onChange={event => setExam(current => ({ ...current, room: event.target.value }))} /></label>
-                <label htmlFor="camera-exam-proctor">Proctor<input id="camera-exam-proctor" value={exam.proctor} maxLength={MAX_EXAM_TEXT} onChange={event => setExam(current => ({ ...current, proctor: event.target.value }))} /></label>
-              </div>
-              <p>Printed at the top of the PDF report. Leave blank to write it in by hand.</p>
-            </fieldset>
-          </details>
+          <AboutThisExam idPrefix="camera" exam={exam} onExam={setExam} disabled={busy} />
           <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={start} disabled={busy || !ready} aria-describedby={!busy && notReadyText ? 'camera-start-blocked' : undefined}>{busy ? <LoaderCircle size={16} className="spin" /> : <Play size={16} />}Start</Button></div>
           {!busy && notReadyText && <p className="setup-blocked" id="camera-start-blocked">{notReadyText}</p>}
         </>}

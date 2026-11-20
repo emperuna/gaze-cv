@@ -475,3 +475,16 @@
 .exam-details input:focus-visible { outline:3px solid #5b6879; outline-offset:2px; }
 .exam-details fieldset p { font-size:12px; color:#545e69; }
 @media (max-width: 640px) { .exam-details-fields { grid-template-columns:minmax(0, 1fr); } }
+/* Recording screen: progress bar, file name, and Play this moment on alert cards. */
+.recording-file { overflow-wrap:anywhere; }
+.recording-progress { display:block; width:100%; height:12px; margin-top:16px; border:0; border-radius:99px; overflow:hidden; background:#e9edf2; accent-color:#263b2e; }
+.recording-progress::-webkit-progress-bar { background:#e9edf2; border-radius:99px; }
+.recording-progress::-webkit-progress-value { background:#263b2e; border-radius:99px; transition:width .4s ease; }
+.recording-progress::-moz-progress-bar { background:#263b2e; border-radius:99px; }
+.alert-play { margin-top:10px; min-height:44px; font-size:13px; }
+.moment-player { margin-top:10px; }
+.moment-player video { display:block; width:100%; max-height:320px; border-radius:10px; background:#242d39; }
+.moment-player-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.moment-player-actions button { min-height:40px; font-size:13px; }
+.alert-play:focus-visible, .moment-player button:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
+@media (prefers-reduced-motion: reduce) { .recording-progress::-webkit-progress-value { transition:none; } }

@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { ComponentProps } from 'react';
-import { Check } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { SeatEditor } from './seat-editor';
 import { MOVEMENT_LABELS, SETUP_FRAMES, seatLabel, setupStep } from '@/lib/camera-setup';
 import type { ReviewSeat } from '@/lib/review-contract';
 import type { LiveSeatState } from '@/lib/camera-contract';
 import type { DEFAULT_MOVEMENT } from '@/lib/review-contract';
+import { MAX_EXAM_TEXT } from '@/lib/exam-details';
+import type { ExamDetails } from '@/lib/exam-details';
 import '@/app/analyze/saved-review.css';
 
 /**
@@ -21,15 +23,35 @@ export interface MeasuredSpeed { maxGap: number; tooSlow: boolean; medianInterva
 
 const STEPS = ['Connect camera', 'Find seats', 'Monitor'] as const;
 
-/** `stoppedFrom`: the step shown when Stop was pressed, kept while stopping. */
-export function SetupSteps({ phase, stoppedFrom = null }: { phase: CameraPhase; stoppedFrom?: number | null }) {
-  const step = setupStep(phase, stoppedFrom);
+/** The numbered step header; steps before `step` show a check mark. */
+export function StepList({ labels, step }: { labels: readonly string[]; step: number }) {
   return <ol className="setup-steps" aria-label="Setup steps">
-    {STEPS.map((label, index) => <li key={label} aria-current={index === step ? 'step' : undefined} className={index < step ? 'setup-step-done' : undefined}>
+    {labels.map((label, index) => <li key={label} aria-current={index === step ? 'step' : undefined} className={index < step ? 'setup-step-done' : undefined}>
       <span aria-hidden="true">{index < step ? <Check size={12} /> : index + 1}</span>{label}
       {index < step && <span className="sr-only"> (done)</span>}
     </li>)}
   </ol>;
+}
+
+/** `stoppedFrom`: the step shown when Stop was pressed, kept while stopping. */
+export function SetupSteps({ phase, stoppedFrom = null }: { phase: CameraPhase; stoppedFrom?: number | null }) {
+  return <StepList labels={STEPS} step={setupStep(phase, stoppedFrom)} />;
+}
+
+/** The optional, collapsible exam details printed at the top of the PDF report. */
+export function AboutThisExam({ idPrefix, exam, onExam, disabled }: {
+  idPrefix: string; exam: ExamDetails; onExam: (update: (current: ExamDetails) => ExamDetails) => void; disabled: boolean;
+}) {
+  const field = (key: keyof ExamDetails, label: string) => <label htmlFor={`${idPrefix}-exam-${key}`}>{label}<input id={`${idPrefix}-exam-${key}`}
+    value={exam[key]} maxLength={MAX_EXAM_TEXT} onChange={event => { const value = event.target.value; onExam(current => ({ ...current, [key]: value })); }} /></label>;
+  return <details className="exam-details">
+    <summary>About this exam <span>(optional)</span><ChevronDown size={15} aria-hidden="true" /></summary>
+    <fieldset disabled={disabled}>
+      <legend className="sr-only">About this exam</legend>
+      <div className="exam-details-fields">{field('title', 'Exam or class')}{field('room', 'Room')}{field('proctor', 'Proctor')}</div>
+      <p>Printed at the top of the PDF report. Leave blank to write it in by hand.</p>
+    </fieldset>
+  </details>;
 }
 
 export function preparingText(received: number) {
@@ -110,17 +132,23 @@ const RULE_FIELDS = [
   { key: 'repeat_min_duration', label: `${MOVEMENT_LABELS.repeat_min_duration} (s)`, max: 300, step: .05, help: 'How long each turn must last.' },
 ] as const;
 
-export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onMirrored, tileGrid, onTileGrid, headTurns, onHeadTurns, rules, onRules, gapOverride, onGapOverride, measured }: {
+/**
+ * `fixedMaxGap` (recordings): the maximum gap is fixed, so its field is read-only and the speed lines are hidden.
+ * `intro` replaces the opening help line.
+ */
+export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onMirrored, tileGrid, onTileGrid, headTurns, onHeadTurns, rules, onRules, gapOverride, onGapOverride, measured, fixedMaxGap, intro }: {
   inputLocked: boolean; rulesLocked: boolean;
   mirrored: boolean; onMirrored: (value: boolean) => void; tileGrid: number; onTileGrid: (value: number) => void;
   headTurns: boolean; onHeadTurns: (value: boolean) => void;
   rules: MovementRules; onRules: (rules: MovementRules) => void;
   gapOverride: number | null; onGapOverride: (value: number | null) => void; measured: MeasuredSpeed | null;
+  fixedMaxGap?: number; intro?: string;
 }) {
+  const fixed = fixedMaxGap !== undefined;
   const fps = measured && measured.medianInterval > 0 ? 1 / measured.medianInterval : null;
   return <details className="advanced-settings camera-advanced">
     <summary>Advanced settings</summary>
-    <p>You do not need to change these. Camera input settings apply when you press Start; movement rules apply when you press Start monitoring.</p>
+    <p>{intro ?? 'You do not need to change these. Camera input settings apply when you press Start; movement rules apply when you press Start monitoring.'}</p>
     <fieldset disabled={inputLocked} className="camera-advanced-group"><legend>Camera input</legend>
       <label className="checkbox-label"><input type="checkbox" checked={mirrored} onChange={event => onMirrored(event.target.checked)} />The camera pixels are already mirrored</label>
       <p>Turn this on only if the camera app flips the picture like a mirror. Left and right describe the student.</p>
@@ -136,15 +164,17 @@ export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onM
             onValue={next => onRules({ ...rules, [key]: next ?? Number.NaN })} />
           <small id={`camera-rule-${key}`}>{help}</small></label>)}
         <label>{MOVEMENT_LABELS.max_gap} (s)
-          <NumberField min={.05} max={5} step={.05} value={gapOverride ?? measured?.maxGap ?? null} placeholder="Automatic" aria-describedby="camera-rule-max-gap camera-max-gap-help"
-            onValue={onGapOverride} />
-          <small id="camera-rule-max-gap">{gapOverride === null ? 'Set automatically.' : 'Set by you.'}</small></label>
+          <NumberField min={.05} max={5} step={.05} value={fixed ? fixedMaxGap : gapOverride ?? measured?.maxGap ?? null} placeholder="Automatic" readOnly={fixed}
+            aria-describedby={fixed ? 'camera-rule-max-gap' : 'camera-rule-max-gap camera-max-gap-help'} onValue={fixed ? () => {} : onGapOverride} />
+          <small id="camera-rule-max-gap">{fixed ? 'Fixed for videos.' : gapOverride === null ? 'Set automatically.' : 'Set by you.'}</small></label>
       </div>
-      <p id="camera-max-gap-help">A larger maximum gap lets unseen moments between processed frames count as one continuous movement. Ocular sets it from the speed measured during Getting ready.</p>
-      {measured && fps !== null && <p>Measured speed: {fps.toFixed(1)} frames per second ({measured.medianInterval.toFixed(2)} s between processed frames). Automatic maximum gap: {measured.maxGap} s.</p>}
-      {measured?.tooSlow && fps !== null && <p role="note">Processing is too slow for movement alerts ({fps.toFixed(1)} FPS). Use fewer detector tiles.</p>}
-      {gapOverride !== null && <button type="button" className="review-secondary-action" onClick={() => onGapOverride(null)}>Use the automatic maximum gap</button>}
-      <p>Defaults are experimental movement rules, not validated indicators of misconduct. Seats and rules are fixed once monitoring starts.</p>
+      {!fixed && <>
+        <p id="camera-max-gap-help">A larger maximum gap lets unseen moments between processed frames count as one continuous movement. Ocular sets it from the speed measured during Getting ready.</p>
+        {measured && fps !== null && <p>Measured speed: {fps.toFixed(1)} frames per second ({measured.medianInterval.toFixed(2)} s between processed frames). Automatic maximum gap: {measured.maxGap} s.</p>}
+        {measured?.tooSlow && fps !== null && <p role="note">Processing is too slow for movement alerts ({fps.toFixed(1)} FPS). Use fewer detector tiles.</p>}
+        {gapOverride !== null && <button type="button" className="review-secondary-action" onClick={() => onGapOverride(null)}>Use the automatic maximum gap</button>}
+      </>}
+      {!fixed && <p>Defaults are experimental movement rules, not validated indicators of misconduct. Seats and rules are fixed once monitoring starts.</p>}
     </fieldset>
   </details>;
 }
