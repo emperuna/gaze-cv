@@ -124,6 +124,12 @@ class FacultyLayoutTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_report(camera_report(fac))
 
+    def test_legend_fits_the_timeline_column_for_live_and_recording(self):
+        para = lambda text, style: text
+        for label in (None, 'not reviewed'):
+            table = module_faculty._legend(para, lambda text: text, label)
+            self.assertLessEqual(sum(table._colWidths), module_faculty.LEGEND_WIDTH, label)
+
     def test_no_banned_words_are_drawn(self):
         _, text = rendered_text(camera_report())
         for word in ['suspicious', 'incident', 'violation', 'catch']:
