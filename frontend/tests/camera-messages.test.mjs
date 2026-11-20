@@ -14,7 +14,7 @@ test('plain errors keep their words; anything else gets the plain fallback with 
 });
 
 test('camera errors name the button to press, and never show raw browser text', () => {
-  assert.match(cameraProblem(dom('NotAllowedError')).text, /^Allow camera access in the browser, then press Start again\.$/);
+  assert.match(cameraProblem(dom('NotAllowedError')).text, /^Allow camera access in the browser and computer settings, then press Start again\.$/);
   assert.match(cameraProblem(dom('NotFoundError'), 'Resume').text, /connect it, then press Resume again\./);
   assert.match(cameraProblem(dom('NotReadableError')).text, /close other apps using it, then press Start again\./);
   assert.equal(cameraProblem(dom('OverconstrainedError')).text, 'That camera is unavailable: choose another, then press Start again.');
@@ -31,4 +31,8 @@ test('a missing camera while interrupted points to Back to past sessions, which 
     assert.match(text, /Back to past sessions/);
     assert.doesNotMatch(text, /choose another, then press/);
   }
+  assert.equal(cameraProblem(dom('NotFoundError'), 'Resume', 'interrupted').text,
+    'No camera found: reconnect it and press Resume, or press Back to past sessions to pick another.');
+  assert.equal(cameraProblem(dom('NotAllowedError'), 'Resume', 'interrupted').text,
+    'Allow camera access in the browser and computer settings, then press Resume again.');
 });
