@@ -35,6 +35,20 @@ export function acceptedFile(file: { name: string; size: number }): string | nul
 /** The video's length is an estimate for phone videos, so the time reached so far can exceed it. */
 const lengthSoFar = (lastTime: number, duration: number) => Math.max(Number.isFinite(duration) ? duration : 0, lastTime);
 
+/**
+ * Calls `read` every `intervalMs`, timing each wait from when the previous read settled, so a slow server never gets
+ * stacked requests. A failed read does not end polling. Returns a function that stops it.
+ */
+export function pollChained(read: () => Promise<unknown>, intervalMs: number): () => void {
+  let stopped = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const schedule = () => {
+    timer = setTimeout(() => { void read().catch(() => {}).finally(() => { if (!stopped) schedule(); }); }, intervalMs);
+  };
+  schedule();
+  return () => { stopped = true; clearTimeout(timer); };
+}
+
 /** 0 to 1, never past the end. */
 export function reviewProgress(lastTime: number, duration: number): number {
   if (!Number.isFinite(lastTime) || lastTime <= 0) return 0;
