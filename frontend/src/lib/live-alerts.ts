@@ -1,3 +1,4 @@
+import type { ExamDetails } from './exam-details.ts';
 import type { LiveEvent, LiveSeatState } from './camera-contract.ts';
 import type { DEFAULT_MOVEMENT, MovementEvent, ReviewSeat } from './review-contract.ts';
 
@@ -15,7 +16,9 @@ export interface SeatCoverage {
 export interface LiveSessionRecord {
   schemaVersion: 1; id: string; state: 'monitoring' | 'interrupted' | 'ended'; revision: number;
   createdAt: string; endedAt: string | null;
-  settings: { mirrored: boolean; tileGrid: number; seats: ReviewSeat[]; movement: typeof DEFAULT_MOVEMENT; maxGapAuto: boolean };
+  settings: { mirrored: boolean; tileGrid: number; seats: ReviewSeat[]; movement: typeof DEFAULT_MOVEMENT; maxGapAuto: boolean;
+    /** Optional exam details for the faculty report; records made before they existed have none. */
+    exam?: ExamDetails };
   segments: { startedAt: string; offsetSeconds: number; endSeconds: number | null }[];
   events: (MovementEvent & { segment: number })[]; alerts: LiveAlert[];
   coverage: Record<string, SeatCoverage>; minutes: { minute: number; counts: Record<string, number> }[];

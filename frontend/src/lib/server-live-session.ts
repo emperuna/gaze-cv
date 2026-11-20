@@ -8,6 +8,7 @@ import type { ReviewSeat } from './review-contract.ts';
 import { saveNewRecord, saveRecord, takeRecord, writeStill } from './server-camera-record.ts';
 import type { RecordOptions } from './server-camera-record.ts';
 import { AnalysisError } from './server-analysis.ts';
+import { validateExamDetails } from './exam-details.ts';
 
 export const SESSION_LIMIT_SECONDS = 10_800;
 export const SESSION_WARNING_SECONDS = 9_900;
@@ -98,12 +99,15 @@ export class LiveCamera {
   async monitor(value: unknown): Promise<{ recordId: string; record: LiveSessionRecord }> {
     this.requirePreview();
     if (!value || typeof value !== 'object') throw new AnalysisError('Send seats and movement settings.', 400);
-    const { seats, movement, maxGapAuto } = value as { seats?: unknown; movement?: unknown; maxGapAuto?: unknown };
+    const { seats, movement, maxGapAuto, exam: examInput } = value as { seats?: unknown; movement?: unknown; maxGapAuto?: unknown; exam?: unknown };
     if (typeof maxGapAuto !== 'boolean') throw new AnalysisError('Choose whether the maximum gap is automatic.', 400);
+    let exam;
+    try { exam = validateExamDetails(examInput); }
+    catch (error) { throw new AnalysisError((error as Error).message, 400); }
     let review;
     try { review = validateReviewSettings({ method: 'baseline', ...this.settings, seats, movement }); }
     catch (error) { throw new AnalysisError((error as Error).message, 400); }
-    const settings = { mirrored: this.settings.mirrored, tileGrid: this.settings.tileGrid, seats: review.seats, movement: review.movement, maxGapAuto };
+    const settings = { mirrored: this.settings.mirrored, tileGrid: this.settings.tileGrid, seats: review.seats, movement: review.movement, maxGapAuto, exam };
     await this.configure(settings);
     this.requirePreview();
     const record = newRecord(randomUUID(), settings, this.now());

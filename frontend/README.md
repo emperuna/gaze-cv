@@ -93,7 +93,12 @@ turns open a "Check seat N" alert with a chime, a cropped still and **Checked**
 / **Dismiss** (keys `C` / `D` on the newest open alert). Down (writing) never
 alerts. The session, its alerts and stills are saved on this computer;
 interrupted sessions can be resumed, ended ones reopened from **Past
-sessions**, and each session downloads as a PDF. Movement rules, mirroring and
+sessions**, and each session downloads as a PDF report for faculty: seats to
+look at again (ranked), a seat map, an alert timeline, each alert with its photo
+and your mark, what Ocular could not see, and space for your own decision. The
+collapsible **About this exam** section (exam, room, proctor) fills its header;
+left closed or blank, the PDF prints lines to fill in by hand.
+Movement rules, mirroring and
 detector tiling sit under **Advanced settings**. See the
 [camera alerts design](../docs/superpowers/specs/2026-11-18-camera-alerts-design.md)
 for the routes, storage and limits and the

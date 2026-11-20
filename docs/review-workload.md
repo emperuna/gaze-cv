@@ -158,8 +158,8 @@ The 18 November extension adds **Download PDF report** to Image, Saved video
 (both workflows) and Camera. The Image and Saved video document is titled
 **Potential incident review report**; the live camera session document is titled
 **Seat check review report** and lists the moments Ocular prompted a seat check.
-It lists observations to check for possible examination irregularities;
-it does not identify cheating or assign misconduct scores.
+The Image and Saved video documents list observations to check; none of the
+reports identifies cheating or assigns misconduct scores.
 
 | Source | Report evidence and limits |
 | --- | --- |
@@ -217,9 +217,17 @@ so a stale second tab cannot silently overwrite a mark. A session left in
 resumed, or ended; an active session cannot be deleted. Deleting a session removes
 its folder, including its stills. A session ends at three hours.
 
-The Camera PDF (`GET /api/camera/sessions/<id>/report`) lists alerts with their
-stills, marks and notes, "Not monitored from A to B" intervals, per-seat coverage,
-and a confidential marking. It reads only `.jpg` files inside the session folder,
+The Camera PDF (`GET /api/camera/sessions/<id>/report`) is written for faculty
+(20 November 2026, [design](superpowers/specs/2026-11-20-faculty-report-design.md)).
+Page 1: exam, date, clock-time range, room and proctor (from the collapsible
+About this exam section at setup; blank lines when left empty), four at-a-glance numbers, **Seats to look at again** (seats with
+alerts not dismissed first, a blank Student column to fill in by hand, since
+Ocular stores no names), a seat map as seen from the camera and an alert
+timeline. Page 2: each alert with its photo, clock time, plain description and
+the faculty member's mark and note; unreviewed alerts carry tick boxes. Page 3:
+what Ocular could not see (camera-off gaps, hidden seats), a **Your review**
+section with per-seat decisions and sign-off lines, and how to read the report.
+Every page carries the confidential marking and "Page N of M". It reads only `.jpg` files inside the session folder,
 and has at most 200 stills; the PDF output cap is 48 MB. Wording describes
 movement to look at, not misconduct, and omitted detail is disclosed. Stills may
 show students' faces: consent and a retention period must be agreed before use with

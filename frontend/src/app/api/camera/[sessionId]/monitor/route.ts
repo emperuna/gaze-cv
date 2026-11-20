@@ -8,7 +8,7 @@ export const dynamic='force-dynamic';
 type Context={params:Promise<{sessionId:string}>};
 const headers={'Cache-Control':'no-store'};
 
-/** Body `{seats, movement, maxGapAuto}` → `{recordId, record}`. Configures the worker and creates the session record. */
+/** Body `{seats, movement, maxGapAuto, exam?}` (exam: optional `{title, room, proctor}`) → `{recordId, record}`. Configures the worker and creates the session record. */
 export async function POST(request:Request,context:Context) {
   if (!allowLocalRequest(request)) return Response.json({error:'Camera analysis is local only.'},{status:403});
   try {
