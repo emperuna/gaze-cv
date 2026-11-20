@@ -598,7 +598,7 @@ export function CameraWorkspace() {
         <CameraAdvancedSettings inputLocked={busy} rulesLocked={phase === 'monitoring' || phase === 'stopping' || phase === 'ended' || !!requesting}
           mirrored={mirrored} onMirrored={setMirrored} tileGrid={tileGrid} onTileGrid={setTileGrid} headTurns={headTurns} onHeadTurns={setHeadTurns}
           rules={rules} onRules={setRules} gapOverride={gapOverride} onGapOverride={setGapOverride} measured={measured} />
-        <p className="camera-note">No video is recorded; each alert keeps one photo on this computer.</p>
+        <p className="camera-note">No video is recorded; alerts keep one photo. Keep this tab in front.</p>
   </>;
   const cameraName = (item: MediaDeviceInfo, index: number) => item.label || `Camera ${index + 1}`;
   const seatCount = countText(seats.length, 'seat');
@@ -660,7 +660,7 @@ export function CameraWorkspace() {
           <div className="monitor-bar-text">
             <h3 className="setup-title" id="camera-monitor-title" tabIndex={-1}>Monitoring {seats.length} seat{seats.length === 1 ? '' : 's'}</h3>
             <SeatStatusLine status={running} observed={seatsObserved(seats.map(seat => seat.id), seatStates)} total={seats.length} sessionTime={sessionTime} />
-            <p className="setup-lead">Keep this tab open. Press Stop when the exam ends.</p>
+            <p className="setup-lead">Keep this tab open and in front. Press Stop when the exam ends.</p>
           </div>
           <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={() => void stop()}><Square size={16} />Stop</Button></div>
           {(notice || longSession || saveError || warnings.length > 0) && <div className="monitor-banners">
