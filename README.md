@@ -23,7 +23,7 @@ press **Start**, and allow browser camera access; Ocular finds the seats, and
 left or right for a while or repeatedly. Looking down never alerts. Frames stay in
 memory; the session, its alerts and one cropped still per alert are saved on
 this computer, can be resumed, reopened from **Past sessions** and downloaded as
-a PDF. **Review a recording instead** opens the recording review: upload a video,
+a PDF. **Review a recording** opens the recording review: upload a video,
 Ocular finds the seats from its first seconds, **Start review** raises the same
 alerts, each with **Play this moment**, and the faculty PDF includes video times.
 Old Saved video reviews under `outputs/runs/review/` are kept on disk but are no
@@ -223,7 +223,7 @@ It uses React, Next.js, TypeScript, Tailwind CSS, and a local shadcn/ui button
 component. Run `npm ci` and `npm run dev` from `frontend/` after the project-local
 cache setup in that README. The landing page contains an explicitly illustrative
 session example. The `/analyze` workspace opens the live camera and, through
-**Review a recording instead**, an uploaded video; it calls the existing Python code locally,
+**Review a recording**, an uploaded video; it calls the existing Python code locally,
 once the project `.venv` and selected models are installed. The earlier Image
 and directions-only upload workflows are no longer reachable from the website
 (code and routes kept). The recording review finds seats from the first seconds

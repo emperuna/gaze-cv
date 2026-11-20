@@ -7,7 +7,7 @@ import { RecordingWorkspace } from './recording-workspace';
 type Mode = 'camera' | 'recording';
 
 /**
- * `/analyze` opens the live camera. `?mode=video` (the "Review a recording instead" link) and `?recording=<id>`
+ * `/analyze` opens the live camera. `?mode=video` (the "Review a recording" link) and `?recording=<id>`
  * (a recording from Past sessions) open the recording screen. Every other value, including an old
  * `?session=<id>` bookmark from the removed Saved video review, opens the camera.
  */
