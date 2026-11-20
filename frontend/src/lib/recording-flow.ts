@@ -41,9 +41,19 @@ export function reviewProgress(lastTime: number, duration: number): number {
   return Math.min(1, lastTime / lengthSoFar(lastTime, duration));
 }
 
-export function progressText(lastTime: number, duration: number): string {
+/** "12:30 of 45:00": the video time reached and the video's length (never less than the time reached). */
+function reachedOf(lastTime: number, duration: number): string {
   const reached = Number.isFinite(lastTime) ? Math.max(0, lastTime) : 0;
-  return `Reviewing… ${formatElapsed(reached)} of ${formatElapsed(lengthSoFar(reached, duration))}`;
+  return `${formatElapsed(reached)} of ${formatElapsed(lengthSoFar(reached, duration))}`;
+}
+
+export function progressText(lastTime: number, duration: number): string {
+  return `Reviewing… ${reachedOf(lastTime, duration)}`;
+}
+
+/** How far an interrupted review got, so its partial alerts and PDF are read with that in mind. */
+export function stoppedText(lastTime: number, duration: number): string {
+  return `Stopped at ${reachedOf(lastTime, duration)}`;
 }
 
 /** The alert's first event, 3 s before to 3 s after, clamped to the video; an unknown length leaves the end open. */

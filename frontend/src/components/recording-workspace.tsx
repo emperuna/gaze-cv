@@ -20,7 +20,7 @@ import type { ExamDetails } from '@/lib/exam-details';
 import type { AlertMark, LiveAlert, LiveSessionRecord } from '@/lib/live-alerts';
 import {
   AGAIN_CONFIRM_TEXT, POLL_MS, RECORDING_DELETE_TEXT, RECORDING_EXTENSIONS, acceptedFile, progressText, recordingStep,
-  recordingUrl, recordingVideoUrl, reviewProgress, startReviewAgain,
+  recordingUrl, recordingVideoUrl, reviewProgress, startReviewAgain, stoppedText,
 } from '@/lib/recording-flow';
 import type { RecordingStep } from '@/lib/recording-flow';
 import { validateReviewSettings } from '@/lib/review-contract';
@@ -366,6 +366,7 @@ export function RecordingWorkspace() {
 
           {step === 'stopped' && <div className="setup-panel">
             <h3 className="setup-title">Review stopped</h3>
+            {record && <p className="setup-lead" role="status">{stoppedText(record.lastTime, lengthOf(record))}</p>}
             <p className="setup-lead">Alerts found so far are kept. Review again to start over.</p>
             <p className="session-line">{name} · {countText(alertList.length, 'alert')} · {unmarkedText(alertList.length, unmarked)}</p>
             {confirm === 'again'
