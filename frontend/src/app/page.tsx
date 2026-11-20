@@ -14,7 +14,7 @@ const workflow = [
 const questions = [
   { question: "What does Ocular see?", answer: "Head direction only: forward, left, right, down or unknown. Not eyes, names or intent." },
   { question: "What do I need?", answer: "A laptop, a phone on a stand, and a webcam app like Camo. Or a recorded video." },
-  { question: "Where does my footage go?", answer: "It stays on your laptop. Each alert keeps one photo; delete sessions when done." },
+  { question: "Where does my footage go?", answer: "It stays on your laptop. Alerts keep one photo; reviewed videos stay. Delete sessions when done." },
   { question: "Is it proven in classrooms?", answer: "No. It is a research prototype; real-classroom accuracy is not yet measured." },
 ];
 
@@ -50,7 +50,7 @@ export default function Home() {
               <strong className="feature-number">4<span>directions.</span></strong>
               <p>Forward. Left. Right. Down. <br />And room for the unknown.</p>
             </article>
-            <article className="feature-card privacy-feature cursor-target"><div className="privacy-icon"><LockKeyhole size={26} strokeWidth={1.5} /></div><div><h2>Your footage. <br />Your control.</h2><p>Stays on your laptop. Only alert photos are kept.</p></div></article>
+            <article className="feature-card privacy-feature cursor-target"><div className="privacy-icon"><LockKeyhole size={26} strokeWidth={1.5} /></div><div><h2>Your footage. <br />Your control.</h2><p>Stays on your laptop. Camera keeps alert photos only; reviewed videos stay until deleted.</p></div></article>
             <article className="feature-card local-feature cursor-target"><HardDrive size={23} strokeWidth={1.5} /><div><h2>Made for <br />a closer look.</h2><p>Alerts are prompts, not proof. <br />Each names one seat.</p></div></article>
             <article className="feature-card human-feature cursor-target"><span className="card-overline">AIDING OBSERVATION. SUPPORTING PEOPLE.</span><h2>Human judgment. <br />Always at the center.</h2><div className="human-card-bottom"><p>Ocular points. <br />You decide.</p><ShieldCheck size={39} strokeWidth={1.2} /></div></article>
           </section>
