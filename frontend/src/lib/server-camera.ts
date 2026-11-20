@@ -12,6 +12,7 @@ import type { LiveAlert, LiveSessionRecord } from './live-alerts.ts';
 import { deleteRecord, endSavedRecord, listRecords, loadRecord, removeStaleLock, stillFile, updateAlertMark } from './server-camera-record.ts';
 import type { RecordOptions, RecordSummary } from './server-camera-record.ts';
 import { LiveCamera } from './server-live-session.ts';
+import { recordingActive, runningRecording } from './server-recording.ts';
 import type { LiveOptions } from './server-live-session.ts';
 
 /** Production defaults apply when omitted; tests inject a record root, clock and fake worker. */
@@ -43,12 +44,15 @@ async function launchWorker(settings: CameraSettings): Promise<ChildProcessWitho
     {cwd:projectRoot,env:pythonEnvironment(),windowsHide:true,shell:false});
 }
 
-/** True only while that record's worker is alive and monitoring. */
+/** True only while that record's worker is alive and monitoring, or its recording is being reviewed. */
 export function isActive(recordId: string): boolean {
   const live=shared.gazeCameraSession;
-  return !!live && live.monitoring && live.record?.id===recordId;
+  return (!!live && live.monitoring && live.record?.id===recordId) || recordingActive(recordId);
 }
-const activeFor=(recordId:string) => isActive(recordId) ? shared.gazeCameraSession : undefined;
+const activeFor=(recordId:string) => {
+  const live=shared.gazeCameraSession;
+  return live && live.monitoring && live.record?.id===recordId ? live : undefined;
+};
 /** The live object that owns a record in memory: the active session, or a stopped one whose final save failed. */
 const ownerFor=(recordId:string) => activeFor(recordId) ??
   (shared.gazeCameraUnsaved?.unsaved && shared.gazeCameraUnsaved.record?.id===recordId ? shared.gazeCameraUnsaved : undefined);
@@ -130,9 +134,9 @@ export async function interruptCamera(id:string): Promise<{ recordId: string | n
 
 export function listCameraRecords(options:LiveOptions={}): Promise<RecordSummary[]> {return listRecords(recordOptions(options));}
 
-/** The live in-memory record for the active session (disk may lag by a few seconds), otherwise the saved one. */
+/** The in-memory record for the active session or recording review (disk may lag by a few seconds), otherwise the saved one. */
 export async function getCameraRecord(recordId:string,options:LiveOptions={}): Promise<LiveSessionRecord> {
-  return ownerFor(recordId)?.record ?? loadRecord(recordId,recordOptions(options));
+  return ownerFor(recordId)?.record ?? runningRecording(recordId) ?? loadRecord(recordId,recordOptions(options));
 }
 
 export async function deleteCameraRecord(recordId:string,options:LiveOptions={}): Promise<void> {
