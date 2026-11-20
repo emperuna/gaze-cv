@@ -16,7 +16,7 @@ import type { Chime } from './camera-alerts-panel';
 export type RecordMeta = { createdAt: string; state: LiveSessionRecord['state']; seats: number };
 export type ResumeStep = '' | 'loading' | 'camera' | 'ask' | 'starting';
 type Ref<T> = { current: T };
-const RESUME_FAILED = 'Monitoring could not resume. Press Yes, resume again.';
+const RESUME_FAILED = 'Monitoring could not resume: press Yes, resume to retry.';
 
 /** What the session-recovery handlers need from the camera workspace; read when a handler runs. */
 export interface RecoveryHost {
