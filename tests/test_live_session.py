@@ -106,3 +106,22 @@ class LivePipelineTests(unittest.TestCase):
     def test_the_live_baseline_counts_down_and_sideways_glances_as_sideways(self):
         from gaze.live_session import live_thresholds
         self.assertTrue(live_thresholds().side_over_down)
+
+
+class ShiftedStudentTests(unittest.TestCase):
+    def test_a_student_who_shifts_out_of_the_box_still_alerts_with_their_photo(self):
+        seats = {'seats': [{'id': 'seat-1', 'roi': [.1, .2, .3, .8]}],
+                 'movement': config()['movement']}
+        monitor = LiveSeatMonitor(seats, False)
+        image = np.zeros((H, W, 3), np.uint8)
+        image[:, 50:90] = 255  # where the shifted face is; the seat box (x 20-60) is mostly dark
+        shifted = ImageResult(W, H, [FaceObservation((60, 40, 20, 20), 'right', {}, {})], 1., {})
+        events, states = [], []
+        for t in [round(.3 * i, 1) for i in range(8)]:
+            out = monitor.update(t, shifted, image, set())
+            events += out['events']
+            states.append(out['seats']['seat-1']['reason'])
+        self.assertEqual(set(states), {None})
+        self.assertEqual([e['event_type'] for e in events], ['sustained_movement'])
+        still = cv2.imdecode(np.frombuffer(base64.b64decode(events[0]['still']), np.uint8), cv2.IMREAD_GRAYSCALE)
+        self.assertGreater(still.mean(), 128)

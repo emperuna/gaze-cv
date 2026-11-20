@@ -38,9 +38,15 @@ class SeatAssociator:
     right/bottom edges are excluded except at the image's outer edge. A shared
     border therefore belongs to the ROI starting at that border. Positive-area
     overlap is rejected; a crowded ROI produces no assignment for that seat.
+
+    With ``nearest=True`` (live camera) a seat also takes a face whose centre lies
+    within its reach of the seat's centre: half the distance to the nearest other
+    seat centre, at most the seat's box width (pixels). A face goes to its closest
+    candidate seat, and when several faces fall to one seat the closest one counts.
     """
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, nearest: bool = False):
+        self.nearest = nearest
         if not isinstance(config, dict) or config.get("schema_version") != 1:
             raise ValueError("Seat configuration requires schema_version 1.")
         definitions = config.get("seats")
@@ -69,6 +75,17 @@ class SeatAssociator:
             identifiers.add(identifier)
             self.seats.append(seat)
 
+    def _reach(self, width, height):
+        """Seat centres in pixels, each seat's reach, and an empty map for face distances."""
+        points = {seat.id: ((seat.roi[0] + seat.roi[2]) / 2 * width, (seat.roi[1] + seat.roi[3]) / 2 * height)
+                  for seat in self.seats}
+        reach = {}
+        for seat in self.seats:
+            x, y = points[seat.id]
+            neighbours = [math.hypot(x - ox, y - oy) / 2 for other, (ox, oy) in points.items() if other != seat.id]
+            reach[seat.id] = min([(seat.roi[2] - seat.roi[0]) * width, *neighbours])
+        return points, reach, {}
+
     @classmethod
     def from_file(cls, path: str | Path):
         return cls(json.loads(Path(path).read_text(encoding="utf-8")))
@@ -86,6 +103,7 @@ class SeatAssociator:
         if any(isinstance(v, bool) or not isinstance(v, int) or v <= 0 for v in (width, height)):
             raise ValueError("Image width and height must be positive integer pixels.")
         candidates = {seat.id: [] for seat in self.seats}
+        points, reach, distance = self._reach(width, height) if self.nearest else ({}, {}, {})
         detections = list(detections)
         unassigned = []
         for index, detection in enumerate(detections):
@@ -112,6 +130,20 @@ class SeatAssociator:
                     top <= center_y and (center_y < bottom or bottom == center_y == 1)
                 ):
                     matches.append(seat.id)
+            if self.nearest:
+                near = []
+                for seat in self.seats:
+                    seat_x, seat_y = points[seat.id]
+                    gap = math.hypot(center_x * width - seat_x, center_y * height - seat_y)
+                    if seat.id in matches or gap <= reach[seat.id]:
+                        near.append((gap, seat.id))
+                if near:
+                    gap, chosen = min(near)
+                    distance[index] = gap
+                    candidates[chosen].append(index)
+                else:
+                    unassigned.append({"detection_index": index, "reason": "outside_seat_regions"})
+                continue
             if not matches:
                 unassigned.append({"detection_index": index, "reason": "outside_seat_regions"})
             elif len(matches) != 1:
@@ -122,6 +154,11 @@ class SeatAssociator:
                 candidates[matches[0]].append(index)
         assignments, reasons, indices = {}, {}, {}
         for seat_id, possible in candidates.items():
+            if self.nearest and len(possible) > 1:
+                closest = min(possible, key=lambda item: distance[item])
+                unassigned.extend({"detection_index": index, "reason": "crowded_seat_region", "seat_id": seat_id}
+                                  for index in possible if index != closest)
+                possible = [closest]
             if len(possible) == 1:
                 index = possible[0]
                 assignments[seat_id] = detections[index]
