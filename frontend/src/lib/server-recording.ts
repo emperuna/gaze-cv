@@ -15,7 +15,7 @@ import { acquireProcessingSlot } from './processing-slot.ts';
 import { validateReviewSettings } from './review-contract.ts';
 import type { ReviewSeat } from './review-contract.ts';
 import { AnalysisError, backendStatus, projectRoot, python, pythonEnvironment } from './server-analysis.ts';
-import { cameraRecordRoot, deleteRecord, loadRecord, saveNewRecord, saveRecord } from './server-camera-record.ts';
+import { cameraRecordRoot, deleteRecord, loadRecord, removeStaleLock, saveNewRecord, saveRecord } from './server-camera-record.ts';
 import type { RecordOptions } from './server-camera-record.ts';
 import { discardDraft, draftVideo } from './server-recording-files.ts';
 import { recordFrame } from './server-live-session.ts';
@@ -246,7 +246,7 @@ export async function startRecordingReview(draftId: string, body: unknown, opts:
   return { recordId: record.id };
 }
 
-/** Clears an ended or interrupted recording's results and reviews its stored video again from the start. */
+/** Clears an ended or interrupted recording's results and reviews its stored video again from the start (a stale lock is removed first). */
 export async function reviewAgain(recordId: string, opts: RecordingOptions = {}): Promise<{ recordId: string }> {
   const dir = folder(recordId, opts);
   const release = reserve();
@@ -255,6 +255,8 @@ export async function reviewAgain(recordId: string, opts: RecordingOptions = {})
     record = await loadRecord(recordId, recordOptions(opts));
     if (!record.source || record.source.kind !== 'recording') throw new AnalysisError('Only a recording can be reviewed again.', 409);
     if (record.state === 'monitoring') throw new AnalysisError('This recording is still being reviewed.', 409);
+    // A lock left by a crash mid-save would make every save below answer "busy".
+    await removeStaleLock(recordId, { root: opts.root });
   } catch (error) { release(); throw error; }
   const now = opts.now?.() ?? new Date();
   Object.assign(record, {
