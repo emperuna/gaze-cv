@@ -26,12 +26,12 @@ export function describeProblem(error: unknown, fallback: string): Problem {
 /** Opening or running the camera failed. */
 export function cameraProblem(error: unknown, action: CameraAction = 'Start', screen: CameraScreen = 'setup'): Problem {
   const name = typeof error === 'object' && error !== null && 'name' in error ? String((error as { name: unknown }).name) : '';
-  const choose = screen === 'interrupted'
-    ? 'Reconnect it and press Resume, or press Back to past sessions to choose another camera and resume from there.'
-    : `Choose another camera, then press ${action} again.`;
-  if (name === 'NotAllowedError') return { text: `Camera access was denied. Allow the camera in your browser and system settings, then press ${action} again.`, detail: '' };
-  if (name === 'NotFoundError') return { text: screen === 'interrupted' ? `No camera was found. ${choose}` : `No camera was found. Connect the camera, then press ${action} again.`, detail: '' };
-  if (name === 'NotReadableError') return { text: `The camera could not open. Close other apps using it, then press ${action} again.`, detail: '' };
-  if (name === 'OverconstrainedError') return { text: `The selected camera is unavailable. ${choose}`, detail: '' };
-  return describeProblem(error, `The camera stopped unexpectedly. Press ${action} again.`);
+  const interrupted = screen === 'interrupted';
+  if (name === 'NotAllowedError') return { text: `Allow camera access in the browser, then press ${action} again.`, detail: '' };
+  if (name === 'NotFoundError') return { text: interrupted ? 'No camera found: reconnect it, or press Back to past sessions to pick another.'
+    : `No camera found: connect it, then press ${action} again.`, detail: '' };
+  if (name === 'NotReadableError') return { text: `The camera is busy: close other apps using it, then press ${action} again.`, detail: '' };
+  if (name === 'OverconstrainedError') return { text: interrupted ? 'That camera is unavailable: reconnect it, or press Back to past sessions to pick another.'
+    : `That camera is unavailable: choose another, then press ${action} again.`, detail: '' };
+  return describeProblem(error, `The camera stopped. Press ${action} again.`);
 }

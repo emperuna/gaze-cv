@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   DELETE_CONFIRM_TEXT, countText, displaySeats, leaveAction, formatClock, formatDuration, formatSessionDate, interruptedAt, interruptionText,
-  reportFilename, reportUrl, stateLabel, unmarkedText,
+  reportFilename, reportUrl, stateLabel, alertSummary,
 } from '../src/lib/camera-sessions.ts';
 
 test('session states read in plain words', () => {
@@ -14,7 +14,7 @@ test('session states read in plain words', () => {
 test('the interruption text uses the local hh:mm clock', () => {
   const at = new Date(2026, 10, 18, 9, 5, 42);
   assert.equal(formatClock(at), '09:05');
-  assert.equal(interruptionText(at), 'Monitoring stopped at 09:05. Seats and alerts are saved.');
+  assert.equal(interruptionText(at), 'Stopped at 09:05 · seats and alerts saved');
   assert.equal(formatClock(new Date(2026, 10, 18, 22, 58)), '22:58');
 });
 
@@ -29,9 +29,9 @@ test('durations, counts and unmarked text are plain words', () => {
   assert.equal(formatDuration(NaN), '0 s');
   assert.equal(countText(1, 'seat'), '1 seat');
   assert.equal(countText(3, 'alert'), '3 alerts');
-  assert.equal(unmarkedText(0, 0), 'no alerts to mark');
-  assert.equal(unmarkedText(4, 2), '2 not marked yet');
-  assert.equal(unmarkedText(4, 0), 'all marked');
+  assert.equal(alertSummary(0, 0), 'No alerts');
+  assert.equal(alertSummary(4, 2), '4 alerts · 2 to check');
+  assert.equal(alertSummary(1, 0), '1 alert · all marked');
 });
 
 test('the interruption time comes from the record, or is estimated for a crashed server', () => {
@@ -82,7 +82,7 @@ test('report links, file names and dates', () => {
   assert.equal(reportFilename('nope'), 'ocular-camera-session.pdf');
   assert.match(formatSessionDate(new Date(2026, 10, 18, 9, 5).toISOString()), /2026, 09:05$/);
   assert.equal(formatSessionDate('nope'), 'Unknown date');
-  assert.equal(DELETE_CONFIRM_TEXT, 'Delete this session and its alert images? This cannot be undone.');
+  assert.equal(DELETE_CONFIRM_TEXT, 'Delete this session and its photos? This cannot be undone.');
 });
 
 import { stopSession } from '../src/lib/camera-sessions.ts';

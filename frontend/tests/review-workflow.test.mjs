@@ -85,8 +85,8 @@ test('camera warnings cover stale output, interrupted preview and unreliable vis
   Object.assign(health, { lastResultCaptureAt: 5000, previewAdvancedAt: 5000 });
   assert.equal(cameraWarnings(health, 5000).length, 2);
   health.lastResultCaptureAt = 100; health.muted = true;
-  assert.ok(cameraWarnings(health, 6000).some(warning => warning.includes('annotations do not describe')));
-  assert.ok(cameraWarnings(health, 6000).some(warning => warning.includes('track is interrupted')));
+  assert.ok(cameraWarnings(health, 6000).some(warning => warning === 'Processing is over 5 s behind.'));
+  assert.ok(cameraWarnings(health, 6000).some(warning => warning === 'Connection interrupted: check the cable or app.'));
   Object.assign(health, { lastResultCaptureAt: 6000, previewAdvancedAt: 6000, muted: false, lowCoverageSince: null, lowDetailSince: null });
   assert.deepEqual(cameraWarnings(health, 6000), []);
 });

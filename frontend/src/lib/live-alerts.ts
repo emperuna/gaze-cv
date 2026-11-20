@@ -135,7 +135,7 @@ export function chooseMaxGap(intervalsSeconds: number[]): { maxGap: number; tooS
 export function rateWarning(intervalsSeconds: number[], maxGap: number): string | null {
   const m = median(intervalsSeconds);
   if (m <= maxGap) return null;
-  return `Processing is too slow for movement alerts (${(1 / m).toFixed(1)} frames per second). Use fewer detector tiles.`;
+  return `Too slow for alerts (${(1 / m).toFixed(1)} frames/s): use fewer detector tiles.`;
 }
 
 const seatName = (id: string) => id.startsWith('seat-') ? id.slice(5) : id;

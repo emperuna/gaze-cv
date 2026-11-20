@@ -14,21 +14,21 @@ test('plain errors keep their words; anything else gets the plain fallback with 
 });
 
 test('camera errors name the button to press, and never show raw browser text', () => {
-  assert.match(cameraProblem(dom('NotAllowedError')).text, /^Camera access was denied\..*press Start again\.$/);
-  assert.match(cameraProblem(dom('NotFoundError'), 'Resume').text, /Connect the camera, then press Resume again\./);
-  assert.match(cameraProblem(dom('NotReadableError')).text, /Close other apps using it/);
-  assert.equal(cameraProblem(dom('OverconstrainedError')).text, 'The selected camera is unavailable. Choose another camera, then press Start again.');
+  assert.match(cameraProblem(dom('NotAllowedError')).text, /^Allow camera access in the browser, then press Start again\.$/);
+  assert.match(cameraProblem(dom('NotFoundError'), 'Resume').text, /connect it, then press Resume again\./);
+  assert.match(cameraProblem(dom('NotReadableError')).text, /close other apps using it, then press Start again\./);
+  assert.equal(cameraProblem(dom('OverconstrainedError')).text, 'That camera is unavailable: choose another, then press Start again.');
   for (const name of ['NotAllowedError', 'NotFoundError', 'NotReadableError', 'OverconstrainedError']) {
     assert.doesNotMatch(cameraProblem(dom(name)).text, /raw browser text/);
   }
   const lost = cameraProblem(new TypeError('Failed to fetch'));
-  assert.deepEqual(lost, { text: 'The camera stopped unexpectedly. Press Start again.', detail: 'Failed to fetch' });
+  assert.deepEqual(lost, { text: 'The camera stopped. Press Start again.', detail: 'Failed to fetch' });
 });
 
 test('a missing camera while interrupted points to Back to past sessions, which has the camera list', () => {
   for (const name of ['OverconstrainedError', 'NotFoundError']) {
     const text = cameraProblem(dom(name), 'Resume', 'interrupted').text;
     assert.match(text, /Back to past sessions/);
-    assert.doesNotMatch(text, /Choose another camera, then press/);
+    assert.doesNotMatch(text, /choose another, then press/);
   }
 });

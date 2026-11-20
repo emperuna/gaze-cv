@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 import { Button } from './ui/button';
 
 /**
- * The How to use Ocular guide (the same text is in frontend/README.md under "Using the live camera").
+ * The How to use Ocular guide, kept to short steps (a longer version is in frontend/README.md under "Using the live camera").
  * It is a modal dialog: the page behind it is inert, Tab stays inside, Escape or Close closes it, and focus
  * returns to the How to use button (`returnFocus`). Monitoring keeps running underneath; because the page's
  * own alert announcements are inert while the dialog is open, a new alert is announced and shown inside it.
@@ -55,29 +55,30 @@ export function CameraGuide({ open, onClose, returnFocus, announcement }: {
       </p>
       <div className="camera-guide-body">
         <ol className="camera-guide-steps">
-          <li><strong>Before the exam:</strong> install Camo on the phone and on this laptop; connect them over USB or the same Wi-Fi.</li>
-          <li><strong>Place the phone:</strong> mount it high at the front so every desk and face is visible; landscape; good lighting; do not move it after setup.</li>
-          <li><strong>Start:</strong> choose the phone in the camera list and press <strong>Start</strong>.</li>
-          <li><strong>Seats:</strong> Ocular finds the students and numbers the seats left to right. Use <strong>Adjust seats</strong> only if a seat is missing or wrong.</li>
-          <li><strong>Monitor:</strong> press <strong>Start monitoring</strong>. An alert tells you which seat to look at. Look up, decide, then press <strong>Checked</strong> or <strong>Dismiss</strong> (or the C and D keys).</li>
-          <li><strong>If it stops:</strong> reconnect the phone and press <strong>Resume</strong>. Your seats and alerts are kept.</li>
-          <li><strong>After the exam:</strong> press <strong>Stop</strong>, download the PDF, and delete the session when your institution’s retention period ends.</li>
+          <li><strong>Connect:</strong> install Camo on the phone and laptop, then connect them.</li>
+          <li><strong>Place:</strong> mount the phone high at the front, seeing every desk.</li>
+          <li><strong>Start:</strong> pick the phone in the camera list, then press <strong>Start</strong>.</li>
+          <li><strong>Seats:</strong> check the numbers. Press <strong>Adjust seats</strong> if one is wrong.</li>
+          <li><strong>Monitor:</strong> press <strong>Start monitoring</strong>. An alert names a seat to look at.</li>
+          <li><strong>Decide:</strong> press <strong>Checked</strong> or <strong>Dismiss</strong> (keys C and D).</li>
+          <li><strong>If it stops:</strong> reconnect, keep this tab open, press <strong>Resume</strong>.</li>
+          <li><strong>After:</strong> press <strong>Stop</strong>, download the PDF, delete the session when done.</li>
         </ol>
-        <h3>Troubleshooting</h3>
+        <h3>If something goes wrong</h3>
         <dl className="camera-guide-help">
-          <dt>The phone is not in the camera list</dt>
-          <dd>Open Camo on the phone and on this laptop and check that they are connected. Then reload this page and choose the phone.</dd>
+          <dt>Phone not in the camera list</dt>
+          <dd>Open Camo on both, then reload this page.</dd>
           <dt>“No students found”</dt>
-          <dd>Check that the phone sees every desk and that faces are lit, then press <strong>Try again</strong>. You can also draw the seats yourself.</dd>
+          <dd>Show every desk, light the faces, then press <strong>Try again</strong>.</dd>
           <dt>“Running slowly”</dt>
-          <dd>Close other programs on this laptop. If it stays slow, press <strong>Stop</strong>, choose fewer detector tiles under Advanced settings, and start again.</dd>
-          <dt>The alert sound does not play</dt>
-          <dd>Click the page once, and check that <strong>Mute alerts</strong> is off and the laptop volume is up.</dd>
-          <dt>The seats no longer line up</dt>
-          <dd>The phone has moved. End the session and start a new one, so Ocular can find the seats again.</dd>
+          <dd>Close other programs, or pick fewer tiles in Advanced settings.</dd>
+          <dt>No alert sound</dt>
+          <dd>Click the page once; check <strong>Mute alerts</strong> and the volume.</dd>
+          <dt>Seats no longer line up</dt>
+          <dd>The phone moved: end the session and start a new one.</dd>
         </dl>
         <h3>What alerts mean</h3>
-        <p>An alert is a prompt to look, not a finding. It means a head in that seat turned left or right for a while, or several times. Looking down (writing) never alerts. Seats are positions in the room, not people: Ocular does not recognise anyone. You decide what, if anything, needs attention.</p>
+        <p>Alerts are prompts, not proof. Seats are places, not people. Writing never alerts.</p>
         <div className="camera-actions"><Button variant="outline" onClick={onClose}>Close the guide</Button></div>
       </div>
     </div>

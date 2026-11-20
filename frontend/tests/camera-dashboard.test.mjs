@@ -62,7 +62,7 @@ test('slow recent frames give the plain warning and keep the exact text for deta
   const status = runningStatus(times, 5, 0.75);
   assert.equal(status.slow, true);
   assert.equal(status.text, 'Running slowly: alerts may be missed');
-  assert.equal(status.detail, 'Processing is too slow for movement alerts (1.0 frames per second). Use fewer detector tiles.');
+  assert.equal(status.detail, 'Too slow for alerts (1.0 frames/s): use fewer detector tiles.');
   assert.equal(runningStatus([], 0, 0.75).text, 'Running smoothly');
   assert.equal(runningStatus([], 0, 0.75).fps, null);
 });
@@ -80,7 +80,7 @@ test('elapsed time, the 2 h 45 min banner and observed seats', () => {
   assert.equal(formatElapsed(3600 + 61), '1:01:01');
   assert.equal(longSessionWarning(9899.9), null);
   assert.equal(longSessionWarning(9900), LONG_SESSION_TEXT);
-  assert.equal(LONG_SESSION_TEXT, 'Monitoring stops automatically at 3 hours. Stop and start a new session to continue.');
+  assert.equal(LONG_SESSION_TEXT, 'Monitoring stops at 3 hours: press Stop, then start a new session.');
   const states = { 'seat-1': { direction: 'forward', reason: null }, 'seat-2': { direction: 'unknown', reason: 'no head' } };
   assert.equal(seatsObserved(['seat-1', 'seat-2', 'seat-3'], states), 1);
   assert.equal(seatsObserved(['seat-1'], undefined), 0);

@@ -4,11 +4,11 @@ import type { AlertMark, LiveAlert } from './live-alerts.ts';
 
 /** Session time at which the "stops at 3 hours" banner appears (2 h 45 min). */
 export const LONG_SESSION_SECONDS = 9900;
-export const LONG_SESSION_TEXT = 'Monitoring stops automatically at 3 hours. Stop and start a new session to continue.';
+export const LONG_SESSION_TEXT = 'Monitoring stops at 3 hours: press Stop, then start a new session.';
 export const RATE_WINDOW_SECONDS = 10;
 export const MUTE_KEY = 'ocular.camera.muted';
 export const CONFLICT_TEXT = 'This alert changed in another tab. Check it again.';
-export const SAVE_WARNING_TEXT = 'Changes could not be saved yet. Ocular will keep trying.';
+export const SAVE_WARNING_TEXT = 'Not saved yet. Still trying…';
 
 export type AlertMap = Record<string, LiveAlert>;
 
