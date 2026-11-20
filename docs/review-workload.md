@@ -20,7 +20,7 @@ and the [verification record](superpowers/specs/2026-11-18-camera-alerts-verific
 ## Saved-video review (removed)
 
 Dated note, 21 November 2026: the Saved video seat review was removed. Recordings
-are now reviewed through **Review a recording instead**: choose a file, Ocular
+are now reviewed through **Review a recording**: choose a file, Ocular
 finds the seats from the first seconds, **Start review** raises alerts like the
 live camera, **Play this moment** replays each one, and **Download PDF report**
 gives the faculty PDF. Existing folders under `outputs/runs/review/` (including

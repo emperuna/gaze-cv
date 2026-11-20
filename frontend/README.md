@@ -80,7 +80,7 @@ saved-file workflow offered is the recording review below.
 ## Live camera
 
 `/analyze` opens the live camera; it is the only main screen. There is no
-source switcher: **Review a recording instead** (below the setup panel) opens
+source switcher: **Review a recording** (below the setup panel) opens
 `/analyze?mode=video`, the recording review, which has a **Back to live
 camera** link. `?recording=<uuid>` reopens a recording from Past sessions. The
 old `?session=<uuid>` bookmarks of the removed Saved video review open the
@@ -175,7 +175,7 @@ port failure observed in the agent environment.
 
 ## Recording review
 
-From the camera screen choose **Review a recording instead**
+From the camera screen choose **Review a recording**
 (`/analyze?mode=video`). Pick a video from one fixed camera (`.mp4`, `.mov`,
 `.webm` or `.m4v`, up to 2 GB and 3 hours); it is stored only on this computer.
 Ocular finds the seats from the first seconds of the video and shows them on
