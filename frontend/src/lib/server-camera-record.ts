@@ -12,7 +12,8 @@ export const MAX_STILL_BYTES = 200_000;
 
 /** Every function takes an optional last argument: `root` overrides the storage folder (tests), `isActive` says whether the live worker owns a session. */
 export interface RecordOptions { root?: string; isActive?: (id: string) => boolean; lockTimeoutMs?: number }
-export interface RecordSummary { id: string; createdAt: string; endedAt: string | null; state: LiveSessionRecord['state']; seconds: number; seats: number; alerts: number; unmarked: number }
+export interface RecordSummary { id: string; createdAt: string; endedAt: string | null; state: LiveSessionRecord['state']; seconds: number; seats: number; alerts: number; unmarked: number;
+  recording: { filename: string; durationSeconds: number } | null }
 
 /** The 409 when the record lock stays held; a lock left by a crashed save is cleared after 30 s by marks, End and Resume. */
 export const BUSY_MESSAGE = 'This session is busy saving. Try again in a moment.';
@@ -168,7 +169,8 @@ export async function listRecords(options: RecordOptions = {}): Promise<RecordSu
     let record: LiveSessionRecord;
     try { record = await loadRecord(name, options); } catch { continue; }
     summaries.push({ id: record.id, createdAt: record.createdAt, endedAt: record.endedAt, state: record.state, seconds: record.lastTime,
-      seats: record.settings.seats.length, alerts: record.alerts.length, unmarked: record.alerts.filter(a => a.mark === null).length });
+      seats: record.settings.seats.length, alerts: record.alerts.length, unmarked: record.alerts.filter(a => a.mark === null).length,
+      recording: record.source ? { filename: record.source.filename, durationSeconds: record.source.durationSeconds } : null });
   }
   return summaries.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }

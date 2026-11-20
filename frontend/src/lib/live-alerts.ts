@@ -25,6 +25,8 @@ export interface LiveSessionRecord {
   framesProcessed: number; stillsSaved: number; lastTime: number;
   /** Wall time the live worker stopped without Stop; the resume offset is measured from it. */
   interruptedAt?: string | null;
+  /** Set for a session made from a video file; absent for a live camera. `video` is the file name inside the session folder. */
+  source?: { kind: 'recording'; filename: string; durationSeconds: number; video: string };
 }
 
 export class RevisionError extends Error {}
