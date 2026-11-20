@@ -5,7 +5,7 @@ import { FolderOpen, LoaderCircle, Play, RefreshCw, RotateCcw, Trash2 } from 'lu
 import { Button } from './ui/button';
 import { DELETE_CONFIRM_TEXT, countText, formatDuration, formatSessionDate, stateLabel, unmarkedText } from '@/lib/camera-sessions';
 import type { RecordSummary } from '@/lib/server-camera-record';
-import { AGAIN_CONFIRM_TEXT, RECORDING_DELETE_TEXT, recordingUrl, startReviewAgain } from '@/lib/recording-flow';
+import { AGAIN_CONFIRM_TEXT, RECORDING_DELETE_TEXT, recordingUrl, startReviewAgain, stoppedText } from '@/lib/recording-flow';
 
 /**
  * An in-page confirmation for destructive actions (no browser `confirm()`). The safe choice gets focus
@@ -118,7 +118,7 @@ export function CameraPastSessions({ refreshKey, onOpen, onResume, disabled = fa
           return <li key={item.id} className="camera-past-item">
             <div className="camera-past-text">
               <h3>{recording ? `Recording · ${recording.filename}` : date} <span className={`camera-past-state camera-past-${item.state}`}>{label}</span></h3>
-              <p>{recording ? `${date} · ` : ''}{formatDuration(item.seconds)} · {countText(item.seats, 'seat')} · {countText(item.alerts, 'alert')} · {unmarkedText(item.alerts, item.unmarked)}</p>
+              <p>{recording ? `${date} · ` : ''}{recording && item.state === 'interrupted' ? stoppedText(item.seconds, recording.durationSeconds) : formatDuration(item.seconds)} · {countText(item.seats, 'seat')} · {countText(item.alerts, 'alert')} · {unmarkedText(item.alerts, item.unmarked)}</p>
             </div>
             {confirming?.id === item.id && confirming.kind === 'delete' ? <InlineConfirm text={recording ? RECORDING_DELETE_TEXT : DELETE_CONFIRM_TEXT} confirmLabel="Delete" cancelLabel="Keep" busy={deleting === item.id} busyLabel="Deleting…"
               onConfirm={() => void remove(item.id)} onCancel={() => { setConfirming(null); setDeleteError(null); focusNext.current = `[data-delete="${item.id}"]`; }} />

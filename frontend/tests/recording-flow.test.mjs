@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAY_MARGIN_SECONDS, acceptedFile, playWindow, progressText, recordingStep, recordingUrl, recordingVideoUrl, reviewProgress, startReviewAgain } from '../src/lib/recording-flow.ts';
+import { PLAY_MARGIN_SECONDS, acceptedFile, playWindow, progressText, recordingStep, recordingUrl, recordingVideoUrl, reviewProgress, startReviewAgain, stoppedText } from '../src/lib/recording-flow.ts';
 
 test('the play window is the first event plus 3 s each side', () => {
   assert.equal(PLAY_MARGIN_SECONDS, 3);
@@ -68,4 +68,11 @@ test('Review again posts to the again route and explains a refusal in one senten
   assert.equal(await startReviewAgain('rec-1', answer(409, { error: 'Another analysis is running.' })), 'Another analysis is running.');
   assert.equal(await startReviewAgain('rec-1', answer(500, { error: 'Traceback…' })), 'The review could not start. Press Review again.');
   assert.equal(await startReviewAgain('rec-1', async () => { throw new TypeError('fetch failed'); }), 'Ocular could not be reached. Press Review again.');
+});
+
+test('a stopped review says how far it got, never past the end', () => {
+  assert.equal(stoppedText(750, 2700), 'Stopped at 12:30 of 45:00');
+  assert.equal(stoppedText(3725, 7200), 'Stopped at 1:02:05 of 2:00:00');
+  assert.equal(stoppedText(130, 120), 'Stopped at 2:10 of 2:10');
+  assert.equal(stoppedText(0, 95), 'Stopped at 0:00 of 1:35');
 });
