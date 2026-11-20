@@ -23,7 +23,8 @@ export async function POST(request:Request) {
         headTurns:query.get('headTurns')!=='false'});
     } catch (error) {throw new AnalysisError((error as Error).message,400);}
     if (!request.body) throw new AnalysisError('Choose a video to upload.',400);
-    await pruneDrafts();
+    // Tidying old uploads must never block a new one.
+    await pruneDrafts().catch(error => console.error(`Old uploads could not be tidied: ${(error as Error).message}`));
     const length=request.headers.get('content-length');
     const declaredBytes=length!==null && /^\d+$/.test(length) ? Number(length) : undefined;
     ({draftId}=await saveUpload(request.body,query.get('name') ?? '',{declaredBytes}));

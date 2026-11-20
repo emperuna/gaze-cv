@@ -104,3 +104,26 @@ test('deleting a record removes its video too', async () => withRoot(async (root
   await deleteRecord(made.id, { root });
   assert.ok(await emptyRoot(root));
 }));
+
+test('prune carries on past a folder it cannot read or remove', async () => withRoot(async (root) => {
+  const past = new Date(Date.now() - 2 * 86_400_000);
+  const stuck = await saveUpload(stream([[1]]), 'a.mp4', { root, freeBytes: plenty });
+  const old = await saveUpload(stream([[1]]), 'b.mp4', { root, freeBytes: plenty });
+  for (const { draftId } of [stuck, old]) await fs.utimes(join(root, draftId, 'draft.json'), past, past);
+  // A plain file with a session-like name cannot be read as a folder (ENOTDIR).
+  const blocker = '00000000-0000-4000-8000-000000000000';
+  await fs.writeFile(join(root, blocker), 'x');
+  // A folder whose files cannot be deleted (EACCES/EPERM; like a file held open on Windows).
+  const lockable = process.platform !== 'win32' && process.getuid?.() !== 0;
+  if (lockable) await fs.chmod(join(root, stuck.draftId), 0o500);
+  const logged = [];
+  const error = console.error;
+  console.error = (...args) => logged.push(args.join(' '));
+  try { await pruneDrafts({ root }); }
+  finally { console.error = error; if (lockable) await fs.chmod(join(root, stuck.draftId), 0o700); }
+  const left = await fs.readdir(root);
+  assert.ok(!left.includes(old.draftId));
+  assert.ok(left.includes(blocker));
+  if (lockable) assert.ok(left.includes(stuck.draftId));
+  assert.ok(logged.length >= 1);
+}));

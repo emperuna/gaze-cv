@@ -81,7 +81,10 @@ export async function discardDraft(draftId: string, { root = cameraRecordRoot }:
   if (await isDraft(dir)) await rm(dir, { recursive: true, force: true });
 }
 
-/** Removes drafts whose marker is older than `maxAgeMs`; folders with a session record are left alone. */
+/**
+ * Removes drafts whose marker is older than `maxAgeMs`; folders with a session record are left alone. A folder that
+ * cannot be read or removed (for example a file held open on Windows) is logged and skipped, so it never blocks uploads.
+ */
 export async function pruneDrafts({ root = cameraRecordRoot }: DraftOptions = {}, maxAgeMs = 86_400_000): Promise<void> {
   let names: string[];
   try { names = await readdir(root); } catch (error) { if (missing(error)) return; throw error; }
@@ -90,6 +93,6 @@ export async function pruneDrafts({ root = cameraRecordRoot }: DraftOptions = {}
     const dir = join(root, name);
     try {
       if (await isDraft(dir) && Date.now() - (await stat(join(dir, 'draft.json'))).mtimeMs > maxAgeMs) await rm(dir, { recursive: true, force: true });
-    } catch (error) { if (!missing(error)) throw error; }
+    } catch (error) { if (!missing(error)) console.error(`Old upload ${name} could not be removed: ${(error as Error).message}`); }
   }
 }
