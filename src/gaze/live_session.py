@@ -47,12 +47,26 @@ def live_thresholds():
 class LiveSeatMonitor:
     def __init__(self, config, mirrored):
         self.mirrored = mirrored
-        self.associator = SeatAssociator({'schema_version': 1, 'seats': config['seats']})
+        # Nearest seat wins, so a student who shifts in their chair keeps their seat.
+        self.associator = SeatAssociator({'schema_version': 1, 'seats': config['seats']}, nearest=True)
         seat_ids = self.associator.seat_ids
         movement = config['movement']
         self.history = HistoryTracker(seat_ids, movement['max_gap'])
         self.monitor = MovementMonitor(seat_ids, MovementSettings(**movement))
         self.rois = {seat.id: seat.roi for seat in self.associator.seats}
+
+    def _still_region(self, seat_id, face, width, height):
+        """The seat box, moved to centre on the seat's face this frame (canonical coordinates)."""
+        left, top, right, bottom = self.rois[seat_id]
+        if face is None:
+            return left, top, right, bottom
+        x, y, w, h = face.bbox
+        cx, cy = (x + w / 2) / width, (y + h / 2) / height
+        if self.mirrored:
+            cx = 1 - cx
+        half_w, half_h = (right - left) / 2, (bottom - top) / 2
+        cx, cy = min(max(cx, half_w), 1 - half_w), min(max(cy, half_h), 1 - half_h)
+        return cx - half_w, cy - half_h, cx + half_w, cy + half_h
 
     def update(self, timestamp, result, image, open_alerts):
         association = self.associator.associate(result.detections, result.width, result.height, self.mirrored)
@@ -66,7 +80,9 @@ class LiveSeatMonitor:
         events = []
         for event in new:
             if event['review_required'] and (event['seat_id'], event['direction']) not in open_alerts:
-                still = crop_still(image, self.rois[event['seat_id']], self.mirrored)
+                region = self._still_region(event['seat_id'], association.assignments.get(event['seat_id']),
+                                            result.width, result.height)
+                still = crop_still(image, region, self.mirrored)
                 if still is not None:
                     event = {**event, 'still': base64.b64encode(still).decode('ascii')}
             events.append(event)

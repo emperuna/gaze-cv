@@ -95,3 +95,59 @@ class SeatTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def face_at(cx, cy, size=40):
+    return FakeFace((cx - size / 2, cy - size / 2, size, size))
+
+
+def row(**kwargs):
+    # 1000x500 frame. Seat a centre (150,250), seat b centre (350,250): 100 px wide boxes, reach 100 px.
+    return SeatAssociator({"schema_version": 1, "seats": [
+        {"id": "a", "roi": [.1, .4, .2, .6]},
+        {"id": "b", "roi": [.3, .4, .4, .6]},
+        {"id": "back", "roi": [.7, .1, .74, .18]},
+    ]}, **kwargs)
+
+
+class NearestSeatTests(unittest.TestCase):
+    def assigned(self, associator, faces, mirrored=False):
+        result = associator.associate(faces, 1000, 500, mirrored)
+        return {seat: (faces.index(face) if face is not None else result.seat_reasons[seat])
+                for seat, face in result.assignments.items()}
+
+    def test_a_student_who_shifts_out_of_the_box_keeps_their_seat(self):
+        self.assertEqual(self.assigned(row(nearest=True), [face_at(240, 250)])["a"], 0)
+
+    def test_the_default_still_needs_the_face_inside_the_box(self):
+        self.assertEqual(self.assigned(row(), [face_at(240, 250)])["a"], "missing")
+
+    def test_past_halfway_the_face_belongs_to_the_neighbour(self):
+        seats = self.assigned(row(nearest=True), [face_at(270, 250)])
+        self.assertEqual((seats["a"], seats["b"]), ("missing", 0))
+
+    def test_a_face_far_from_every_seat_is_ignored(self):
+        result = row(nearest=True).associate([face_at(550, 400)], 1000, 500)
+        self.assertTrue(all(face is None for face in result.assignments.values()))
+        self.assertEqual(result.unassigned, [{"detection_index": 0, "reason": "outside_seat_regions"}])
+
+    def test_two_faces_near_one_seat_the_closer_one_counts(self):
+        associator = row(nearest=True)
+        faces = [face_at(230, 250), face_at(160, 250)]
+        result = associator.associate(faces, 1000, 500)
+        self.assertIs(result.assignments["a"], faces[1])
+        self.assertIsNone(result.seat_reasons["a"])
+        self.assertEqual(result.unassigned, [{"detection_index": 0, "reason": "crowded_seat_region", "seat_id": "a"}])
+
+    def test_a_small_back_row_seat_has_a_small_reach(self):
+        associator = row(nearest=True)
+        self.assertEqual(self.assigned(associator, [face_at(750, 70)])["back"], 0)
+        self.assertEqual(self.assigned(associator, [face_at(770, 70)])["back"], "missing")
+
+    def test_a_single_seat_reaches_one_box_width(self):
+        associator = SeatAssociator({"schema_version": 1, "seats": [{"id": "only", "roi": [.1, .4, .2, .6]}]}, nearest=True)
+        self.assertEqual(self.assigned(associator, [face_at(240, 250)])["only"], 0)
+        self.assertEqual(self.assigned(associator, [face_at(260, 250)])["only"], "missing")
+
+    def test_mirrored_frames_use_the_canonical_seat_points(self):
+        self.assertEqual(self.assigned(row(nearest=True), [face_at(760, 250)], mirrored=True)["a"], 0)
