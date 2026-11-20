@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 
 from gaze.live_session import LiveSeatMonitor
-from gaze.review_setup import suggest_seats
+from gaze.review_setup import FacesAndHeads, suggest_seats
 from gaze.session_review import validate_settings
 
 MAX_JPEG_BYTES = 1_000_000
@@ -41,7 +41,8 @@ class CameraProcessor:
     def suggest(self):
         if not self.setup_samples:
             raise ValueError('Send setup frames before suggesting seats')
-        return {'suggested': True, **suggest_seats(self.setup_samples, self.pipeline)}
+        finder = self.pipeline if self.fallback is None else FacesAndHeads(self.pipeline, self.fallback)
+        return {'suggested': True, **suggest_seats(self.setup_samples, finder)}
 
     def process(self, message):
         if not isinstance(message, dict):

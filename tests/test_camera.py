@@ -162,3 +162,16 @@ class HeadTurnProtocolTests(unittest.TestCase):
         outgoing = io.StringIO()
         serve(Pipeline(), io.StringIO(''), outgoing)
         self.assertFalse(json.loads(outgoing.getvalue().splitlines()[0])['head_turns'])
+
+
+class SetupWithHeadsTests(unittest.TestCase):
+    def test_setup_finds_people_the_face_model_misses(self):
+        class NoFaces(Pipeline):
+            def process(self, image):
+                h, w = image.shape[:2]
+                return ImageResult(w, h, [], 2., {})
+        outgoing = io.StringIO()
+        messages = [{**frame(i * .2), 'id': i + 1, 'setup': True} for i in range(3)] + [{'type': 'suggest_seats'}]
+        serve(NoFaces(), io.StringIO(''.join(json.dumps(m) + '\n' for m in messages)), outgoing, fallback=Pipeline())
+        suggestion = json.loads(outgoing.getvalue().splitlines()[-1])
+        self.assertEqual([s['id'] for s in suggestion['seats']], ['seat-1'])
