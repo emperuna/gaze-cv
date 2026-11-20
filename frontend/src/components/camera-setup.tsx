@@ -157,7 +157,7 @@ export function CameraAdvancedSettings({ source = 'camera', inputLocked, rulesLo
   const fps = measured && measured.medianInterval > 0 ? 1 / measured.medianInterval : null;
   const text = ADVANCED_TEXT[source];
   return <details className="advanced-settings camera-advanced">
-    <summary>Advanced settings</summary>
+    <summary>Advanced settings <span>(optional)</span><ChevronDown size={15} aria-hidden="true" /></summary>
     <p>{text.intro}</p>
     <fieldset disabled={inputLocked} className="camera-advanced-group"><legend>{text.input}</legend>
       <label className="checkbox-label"><input type="checkbox" checked={mirrored} onChange={event => onMirrored(event.target.checked)} aria-describedby="camera-mirrored-help" />{text.mirrored}</label>
