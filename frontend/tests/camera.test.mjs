@@ -327,6 +327,15 @@ test('only an interrupted record can be resumed', async () => withLive(async ({ 
   acquireProcessingSlot()();
 }));
 
+test('a recording record cannot be resumed as a live camera session', async () => withLive(async ({ root, start }) => {
+  const video = newRecord('33333333-3333-4333-8333-333333333333', { ...INPUT, seats: SEATS, movement: DEFAULT_MOVEMENT, maxGapAuto: false }, new Date());
+  video.state = 'interrupted';
+  video.source = { kind: 'recording', filename: 'Exam.mp4', durationSeconds: 120, video: 'recording.mp4' };
+  await saveNewRecord(video, { root });
+  await assert.rejects(start(undefined, {}, video.id), error => error.status === 409 && error.message === 'Use Review again for a recording.');
+  acquireProcessingSlot()();
+}));
+
 test('still write failure keeps the alert', async () => withLive(async ({ start }) => {
   const { live } = await start(m => m.id === 1 ? { events: [turn('right', 0, 2, { still: PNG64 })] } : {});
   await live.monitor(MONITOR);
