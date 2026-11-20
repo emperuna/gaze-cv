@@ -48,8 +48,18 @@ export function setupComplete(progress: SetupProgress): boolean {
 }
 
 /** The saved-video movement rules (`MovementSettings`) with the camera's own maximum gap. */
+/** Live glances at a neighbour measured on an iPhone test clip lasted about 1.3–1.7 s, so the camera's sustained
+ * rule is 1.5 s (saved video keeps 2 s). Still adjustable under Advanced settings. */
+export const CAMERA_MIN_DURATION = 1.5;
+
 export function cameraMovement(maxGap: number): typeof DEFAULT_MOVEMENT {
-  return { ...DEFAULT_MOVEMENT, max_gap: maxGap };
+  return { ...DEFAULT_MOVEMENT, min_duration: CAMERA_MIN_DURATION, max_gap: maxGap };
+}
+
+/** The camera screen's editable movement rules before setup measures the maximum gap. */
+export function cameraRules(): Omit<typeof DEFAULT_MOVEMENT, 'max_gap'> {
+  const { max_gap: _gap, ...rules } = cameraMovement(1);
+  return rules;
 }
 
 type MovementKey = keyof typeof DEFAULT_MOVEMENT;

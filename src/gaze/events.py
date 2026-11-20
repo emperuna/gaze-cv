@@ -43,17 +43,24 @@ class MovementMonitor:
         self.events = []
         self.last_timestamp = None
 
-    def update(self, timestamp, directions, sources=None):
+    def update(self, timestamp, directions, sources=None, unobserved=()):
+        """`unobserved` seats were not seen this frame (no face in their region): their state is left as is,
+        so a later observation continues the movement only if it comes within `max_gap`."""
         if not math.isfinite(timestamp) or timestamp < 0 or (self.last_timestamp is not None and timestamp <= self.last_timestamp):
             raise ValueError("Source timestamps must be finite, nonnegative, and strictly increasing")
         if any(s not in self.states or d not in DIRECTIONS for s, d in directions.items()):
             raise ValueError("Unknown seat or direction")
+        unobserved = set(unobserved)
+        if any(s not in self.states or s in directions for s in unobserved):
+            raise ValueError("Unobserved seats must be configured seats without a direction this frame")
         sources = sources if sources is not None else {}
         if any(s not in self.states or not isinstance(v, str) or not v for s, v in sources.items()):
             raise ValueError("Estimation sources must identify configured seats and be nonempty strings")
         self.last_timestamp = timestamp
         new = []
         for seat, state in self.states.items():
+            if seat in unobserved:
+                continue
             direction = directions.get(seat, "unknown")
             source = sources.get(seat, "facial_landmarks")
             gap = state["last"] is not None and timestamp - state["last"] > self.settings.max_gap + TIME_EPSILON

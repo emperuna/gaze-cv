@@ -3,6 +3,7 @@ import base64
 
 import cv2
 
+from gaze.baseline import Thresholds
 from gaze.events import MovementMonitor, MovementSettings
 from gaze.history import HistoryTracker
 from gaze.seats import SeatAssociator
@@ -37,6 +38,12 @@ def crop_still(image, roi, mirrored):
     return None
 
 
+def live_thresholds():
+    """Baseline thresholds for the live camera and recording review: a glance down and to one side (towards a
+    neighbour's desk) counts as that side instead of unknown."""
+    return Thresholds(side_over_down=True)
+
+
 class LiveSeatMonitor:
     def __init__(self, config, mirrored):
         self.mirrored = mirrored
@@ -50,8 +57,12 @@ class LiveSeatMonitor:
     def update(self, timestamp, result, image, open_alerts):
         association = self.associator.associate(result.detections, result.width, result.height, self.mirrored)
         entries = self.history.update(timestamp, association)
-        new = self.monitor.update(timestamp, {e.seat_id: e.direction for e in entries},
-                                  {e.seat_id: e.estimation_source for e in entries})
+        # A seat with no face in its region this frame is "not seen", not a reading: a face that drops out for a
+        # moment keeps its movement going if it is seen again within max_gap. Its seat state still reads unknown.
+        unseen = {e.seat_id for e in entries if e.reason == 'missing'}
+        seen = [e for e in entries if e.seat_id not in unseen]
+        new = self.monitor.update(timestamp, {e.seat_id: e.direction for e in seen},
+                                  {e.seat_id: e.estimation_source for e in seen}, unobserved=unseen)
         events = []
         for event in new:
             if event['review_required'] and (event['seat_id'], event['direction']) not in open_alerts:

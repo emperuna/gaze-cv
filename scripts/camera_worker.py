@@ -23,7 +23,8 @@ def main():
             pipeline = HeadImagePipeline(mirrored=args.mirrored)
         else:
             from gaze.pipeline import ImagePipeline
-            pipeline = ImagePipeline(mirrored=args.mirrored, tile_grid=args.tile_grid)
+            from gaze.live_session import live_thresholds
+            pipeline = ImagePipeline(mirrored=args.mirrored, tile_grid=args.tile_grid, thresholds=live_thresholds())
     with pipeline:
         serve(pipeline, sys.stdin, sys.stdout)
 

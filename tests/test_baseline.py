@@ -38,3 +38,14 @@ class BaselineTests(unittest.TestCase):
         for kwargs in ({"yaw":0},{"down":1},{"down":math.nan},{"min_eye_span":-1}):
             with self.subTest(kwargs=kwargs),self.assertRaises(ValueError):
                 Thresholds(**kwargs)
+
+
+class SideOverDownTests(unittest.TestCase):
+    def test_a_glance_down_and_sideways_counts_as_sideways_when_asked(self):
+        direction, scores, reason = classify_direction(face((.56, .64)), Thresholds(side_over_down=True))
+        self.assertEqual((direction, reason), ("left", None))
+        self.assertEqual(classify_direction(face((.44, .64)), Thresholds(side_over_down=True))[0], "right")
+
+    def test_the_default_still_reports_mixed_as_unknown(self):
+        self.assertEqual(classify_direction(face((.56, .64)))[2], "mixed_down_and_sideways")
+        self.assertFalse(Thresholds().side_over_down)

@@ -83,3 +83,26 @@ class LiveSeatMonitorTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class BriefDropoutTests(unittest.TestCase):
+    def test_a_face_missing_for_one_frame_does_not_reset_the_movement(self):
+        monitor = LiveSeatMonitor(config(), False)
+        image = np.full((H, W, 3), 128, np.uint8)
+        empty = ImageResult(W, H, [], 1., {})
+        events = []
+        for t in [0, .3, .6, .9, 1.2, 1.5, 1.8, 2.1]:
+            events += monitor.update(t, empty if t == .9 else result('right'), image, set())['events']
+        self.assertEqual([e['event_type'] for e in events], ['sustained_movement'])
+        self.assertEqual(events[0]['start_time'], 0)
+
+    def test_the_seat_state_still_reports_the_missing_frame(self):
+        monitor = LiveSeatMonitor(config(), False)
+        out = monitor.update(0, ImageResult(W, H, [], 1., {}), np.full((H, W, 3), 128, np.uint8), set())
+        self.assertEqual(out['seats']['seat-1'], {'direction': 'unknown', 'reason': 'missing'})
+
+
+class LivePipelineTests(unittest.TestCase):
+    def test_the_live_baseline_counts_down_and_sideways_glances_as_sideways(self):
+        from gaze.live_session import live_thresholds
+        self.assertTrue(live_thresholds().side_over_down)

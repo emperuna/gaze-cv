@@ -14,9 +14,9 @@ import {
   pruneFrameTimes, readMuted, runningStatus, seatsObserved, sortAlerts, withAlert, writeMuted,
 } from '@/lib/camera-dashboard';
 import type { AlertMap, RunningStatus } from '@/lib/camera-dashboard';
-import { DEFAULT_MOVEMENT, validateReviewSettings } from '@/lib/review-contract';
+import { validateReviewSettings } from '@/lib/review-contract';
 import type { MovementEvent, ReviewSeat } from '@/lib/review-contract';
-import { cameraMovement, movementProblem, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice, seatsForMonitor, setupStep, writeGuideSeen, writeSavedDevice } from '@/lib/camera-setup';
+import { cameraMovement, cameraRules, movementProblem, newSetupProgress, numberSeats, pickDevice, readGuideSeen, readSavedDevice, seatsForMonitor, setupStep, writeGuideSeen, writeSavedDevice } from '@/lib/camera-setup';
 import { CameraAdvancedSettings, SeatAdjuster, SetupSteps, drawSeatBoxes, preparingText } from './camera-setup';
 import { interruptSession, newRun, runCaptureLoop, stopSession } from './camera-run';
 import { CameraPastSessions, InlineConfirm } from './camera-past-sessions';
@@ -40,7 +40,7 @@ const HIDDEN_REASON = 'This tab was hidden or closed, so Ocular released the cam
 const LOST_REASON = 'Live processing stopped unexpectedly. Press Resume to continue.';
 const MONITOR_FAILED = 'Monitoring could not start. Check the seats, then press Start monitoring again.';
 
-const initialRules = (): MovementRules => { const { max_gap: _gap, ...rules } = DEFAULT_MOVEMENT; return rules; };
+const initialRules = (): MovementRules => cameraRules();
 
 export function CameraWorkspace() {
   const [mirrored, setMirrored] = useState(false);

@@ -10,6 +10,8 @@ class Thresholds:
     yaw: float = 0.18
     down: float = 0.40
     min_eye_span: float = 0.015
+    # A glance down and to one side reports the side (live camera); the default keeps it unknown for evaluation.
+    side_over_down: bool = False
     def __post_init__(self):
         if not all(math.isfinite(value) for value in asdict(self).values()):
             raise ValueError("Thresholds must be finite.")
@@ -56,6 +58,8 @@ common units. This baseline does not distinguish upward poses reliably.
     side = "left" if yaw > thresholds.yaw else "right" if yaw < -thresholds.yaw else None
     if down > thresholds.down:
         if side:
+            if thresholds.side_over_down:
+                return side, scores, None
             return "unknown", scores, "mixed_down_and_sideways"
         return "down", scores, None
     return side or "forward", scores, None
