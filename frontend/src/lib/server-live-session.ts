@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { CameraSession } from './camera-session.ts';
-import type { CameraFrame, CameraResult, CameraSettings, LiveEvent } from './camera-contract.ts';
+import type { CameraFrame, CameraResult, CameraSettings, LiveEvent, LiveSeatState } from './camera-contract.ts';
 import { RevisionError, applyFrame, markAlert, newRecord, openAlertKeys } from './live-alerts.ts';
 import type { AlertMark, LiveAlert, LiveSessionRecord } from './live-alerts.ts';
 import { validateReviewSettings } from './review-contract.ts';
@@ -44,6 +44,20 @@ function commandError(error: unknown): AnalysisError {
  * One camera worker and, once monitoring starts, its session record. Before `monitor` (or without `resume`)
  * the worker only previews frames and has no record. Session time is `segment.offsetSeconds + timestamp_seconds`.
  */
+/** Applies one frame to a record and writes the stills of newly opened alerts; shared by live and recording review. */
+export async function recordFrame(record: LiveSessionRecord, time: number, seats: Record<string, LiveSeatState>, events: LiveEvent[],
+  opts: { recordOptions: RecordOptions; groupWithinSeconds?: number }): Promise<ReturnType<typeof applyFrame>> {
+  const { opened, updated } = applyFrame(record, time, seats, events, { groupWithinSeconds: opts.groupWithinSeconds });
+  const stills = opened.filter(o => o.still !== undefined);
+  // Never let base64 bytes reach the saved record, even if another save runs while a still is written.
+  for (const { alert } of stills) alert.still = null;
+  for (const { alert, still } of stills) {
+    try { alert.still = await writeStill(record.id, alert.id, Buffer.from(still!, 'base64'), opts.recordOptions); }
+    catch { alert.stillError = 'Still could not be saved'; record.stillsSaved--; }
+  }
+  return { opened, updated };
+}
+
 export class LiveCamera {
   record?: LiveSessionRecord;
   saveError: string | null = null;
@@ -185,14 +199,7 @@ export class LiveCamera {
     const offset = record.segments.at(-1)!.offsetSeconds;
     const time = offset + result.timestamp_seconds;
     const events = (result.events ?? []).map(e => ({ ...e, start_time: e.start_time + offset, end_time: e.end_time + offset, observed_at: e.observed_at + offset }));
-    const { opened, updated } = applyFrame(record, time, result.seats ?? {}, events);
-    const stills = opened.filter(o => o.still !== undefined);
-    // Never let base64 bytes reach the saved record, even if another save runs while a still is written.
-    for (const { alert } of stills) alert.still = null;
-    for (const { alert, still } of stills) {
-      try { alert.still = await writeStill(record.id, alert.id, Buffer.from(still!, 'base64'), this.recordOptions()); }
-      catch { alert.stillError = 'Still could not be saved'; record.stillsSaved--; }
-    }
+    const { opened, updated } = await recordFrame(record, time, result.seats ?? {}, events, { recordOptions: this.recordOptions() });
     let notice: string | null = null;
     if (time >= SESSION_LIMIT_SECONDS && record.state === 'monitoring') {
       this.end(record); notice = LIMIT_MESSAGE;

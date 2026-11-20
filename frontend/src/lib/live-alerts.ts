@@ -65,7 +65,8 @@ function updateCoverage(record: LiveSessionRecord, time: number, seats: Record<s
   }
 }
 
-export function applyFrame(record: LiveSessionRecord, time: number, seats: Record<string, LiveSeatState>, events: LiveEvent[]):
+export function applyFrame(record: LiveSessionRecord, time: number, seats: Record<string, LiveSeatState>, events: LiveEvent[],
+  options: { groupWithinSeconds?: number } = {}):
   { opened: { alert: LiveAlert; still: string | undefined }[]; updated: LiveAlert[] } {
   record.lastTime = time;
   record.framesProcessed++;
@@ -77,7 +78,11 @@ export function applyFrame(record: LiveSessionRecord, time: number, seats: Recor
     record.events.push({ ...event, segment: Math.max(record.segments.length - 1, 0) });
     if (!event.review_required || (event.direction !== 'left' && event.direction !== 'right')) continue;
     const direction: AlertDirection = event.direction;
-    const open = record.alerts.find(a => a.mark === null && a.seatId === event.seat_id && a.direction === direction);
+    const { groupWithinSeconds } = options;
+    const matches = (a: LiveAlert) => a.mark === null && a.seatId === event.seat_id && a.direction === direction;
+    // Live: any unmarked alert of the seat and direction. Recording: the latest one, only if it was recent enough.
+    const open = groupWithinSeconds === undefined ? record.alerts.find(matches)
+      : record.alerts.findLast(a => matches(a) && event.start_time - a.lastAt <= groupWithinSeconds);
     if (open) {
       open.eventIndexes.push(index);
       open.lastAt = Math.max(open.lastAt, event.end_time);

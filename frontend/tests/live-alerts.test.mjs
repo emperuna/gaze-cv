@@ -141,3 +141,22 @@ test('an alert says when its turn was read from the shape of the head', async ()
   assert.equal(readFromHeadShape({ eventIndexes: [0, 2] }, events), false);
   assert.equal(readFromHeadShape({ eventIndexes: [0, 1] }, events), true);
 });
+
+test('applyFrame groups recording events within 30 s and opens a new alert after a longer pause', () => {
+  const r = fresh();
+  const opts = { groupWithinSeconds: 30 };
+  applyFrame(r, 1, seen, [ev(0, 1)], opts);
+  applyFrame(r, 21, seen, [ev(20, 21)], opts);
+  applyFrame(r, 71, seen, [ev(70, 71)], opts);
+  assert.equal(r.alerts.length, 2);
+  assert.equal(r.alerts[0].eventIndexes.length, 2);
+  assert.equal(r.alerts[1].openedAt, 70);
+});
+
+test('without the option live grouping is unchanged', () => {
+  const r = fresh();
+  applyFrame(r, 1, seen, [ev(0, 1)]);
+  applyFrame(r, 71, seen, [ev(70, 71)]);
+  assert.equal(r.alerts.length, 1);
+  assert.equal(r.alerts[0].eventIndexes.length, 2);
+});
