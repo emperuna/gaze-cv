@@ -48,7 +48,7 @@ def faculty(seat_count=6):
             {'seat': 'Seat 2', 'status': 'dismissed', 'alerts': [alert('10:05 AM', 'Looked left for 2.6 seconds', 'Dismissed', note='Dropped a pencil.')]},
         ],
         'blindSpots': [{'what': 'Whole room not watched', 'when': '9:50–9:53 AM (3 min)', 'reason': 'Camera stopped; monitoring resumed'},
-                       {'what': 'Seat 6 hidden', 'when': '9:20–9:31 AM · 12% of the exam', 'reason': 'Face not visible'}],
+                       {'what': 'Seat 6 hidden', 'when': '9:20–9:31 AM · 12% of the session', 'reason': 'Face not visible'}],
         'reviewSeats': ['Seat 4', 'Seat 2'],
         'rules': 'An alert means a head in that seat turned left or right for 2 seconds or more, or 3 times within 10 seconds.',
         'sessionLine': 'Session details for your records: session 3f2a9c1e · camera started 9:00 AM · alert rules: 2 s, 3 turns in 10 s.',
@@ -139,9 +139,9 @@ class FacultyLayoutTests(unittest.TestCase):
         fac = faculty()
         fac['exam'] = {'title': '', 'room': '', 'proctor': ''}
         _, text = rendered_text(camera_report(fac))
-        self.assertIn('Exam: ____', text)
+        self.assertIn('Session: ____', text)
         self.assertIn('Room: ____', text)
-        self.assertIn('Proctor: ____', text)
+        self.assertIn('In charge: ____', text)
 
     def test_session_without_alerts(self):
         fac = faculty()
@@ -203,3 +203,11 @@ class FacultyLayoutTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class GeneralWordingTests(unittest.TestCase):
+    def test_the_report_speaks_of_a_session_not_an_exam(self):
+        _, text = rendered_text(camera_report())
+        for phrase in ['alerts during the session', 'hidden 10% or more of the session']:
+            self.assertIn(phrase, text)
+        self.assertNotIn('the exam', text)

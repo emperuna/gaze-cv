@@ -48,7 +48,7 @@ export function CameraWorkspace() {
   const [headTurns, setHeadTurns] = useState(true);
   const [rules, setRules] = useState<MovementRules>(initialRules);
   const [gapOverride, setGapOverride] = useState<number | null>(null);
-  /** Optional exam details printed at the top of the PDF report; blank ones print as lines to fill in by hand. */
+  /** Optional session details printed at the top of the PDF report; blank ones print as lines to fill in by hand. */
   const [exam, setExam] = useState<ExamDetails>(EMPTY_EXAM);
   const [measured, setMeasured] = useState<MeasuredSpeed | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
@@ -660,7 +660,7 @@ export function CameraWorkspace() {
           <div className="monitor-bar-text">
             <h3 className="setup-title" id="camera-monitor-title" tabIndex={-1}>Monitoring {seats.length} seat{seats.length === 1 ? '' : 's'}</h3>
             <SeatStatusLine status={running} observed={seatsObserved(seats.map(seat => seat.id), seatStates)} total={seats.length} sessionTime={sessionTime} />
-            <p className="setup-lead">Keep this tab open and in front. Press Stop when the exam ends.</p>
+            <p className="setup-lead">Keep this tab open and in front. Press Stop when the session ends.</p>
           </div>
           <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={() => void stop()}><Square size={16} />Stop</Button></div>
           {(notice || longSession || saveError || warnings.length > 0) && <div className="monitor-banners">
