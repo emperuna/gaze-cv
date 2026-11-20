@@ -13,7 +13,7 @@ import { CONFLICT_TEXT, alertsFromRecord, sortAlerts, withAlert } from '@/lib/ca
 import type { AlertMap } from '@/lib/camera-dashboard';
 import { PlainError, describeProblem } from '@/lib/camera-messages';
 import type { Problem } from '@/lib/camera-messages';
-import { countText, displaySeats, reportFilename, reportUrl, unmarkedText } from '@/lib/camera-sessions';
+import { alertSummary, countText, displaySeats, reportFilename, reportUrl } from '@/lib/camera-sessions';
 import { cameraMovement, cameraRules, movementProblem, numberSeats, seatsForMonitor } from '@/lib/camera-setup';
 import { EMPTY_EXAM } from '@/lib/exam-details';
 import type { ExamDetails } from '@/lib/exam-details';
@@ -149,11 +149,11 @@ export function RecordingWorkspace() {
       setAction('open');
       void fetchRecord(id).then(next => {
         if (!mounted.current) return;
-        if (!next.source || next.source.kind !== 'recording') throw new PlainError('This session is not a recording.');
+        if (!next.source || next.source.kind !== 'recording') throw new PlainError('This is a live session: open it from the camera screen.');
         applyRecord(next);
       }).catch(problem => {
         if (!mounted.current) return;
-        showProblem(problem, 'This recording could not be opened. Open it again from Past sessions.');
+        showProblem(problem, 'This recording could not open: open it again from Past sessions.');
         window.history.replaceState(null, '', '/analyze?mode=video');
       }).finally(() => { if (mounted.current) setAction(''); });
     }
@@ -171,7 +171,7 @@ export function RecordingWorkspace() {
       void fetchRecord(reviewing).then(next => { if (!stopped && mounted.current) { setPollProblem(false); applyRecord(next); } })
         .catch(problem => {
           if (stopped || !mounted.current) return;
-          if ((problem as { status?: number }).status === 404) { reset(); setError('This recording was deleted.'); return; }
+          if ((problem as { status?: number }).status === 404) { reset(); setError('This recording was deleted: choose another video.'); return; }
           setPollProblem(true);
         });
     }, POLL_MS);
@@ -307,8 +307,8 @@ export function RecordingWorkspace() {
         onConfirm={() => void deleteRecording()} onCancel={() => setConfirm('')} />
     : null;
   const seatCount = countText(seats.length, 'seat');
-  const statusText = action === 'open' ? 'Opening the recording…' : step === 'finding' ? 'Finding seats…' : action === 'start' ? 'Starting the review…'
-    : step === 'reviewing' && record ? progressText(record.lastTime, lengthOf(record)) : action === 'again' ? 'Starting the review…' : '';
+  const statusText = action === 'open' ? 'Opening…' : step === 'finding' ? 'Finding seats…' : action === 'start' ? 'Starting review…'
+    : step === 'reviewing' && record ? progressText(record.lastTime, lengthOf(record)) : action === 'again' ? 'Starting review…' : '';
   const waiting = action === 'open' || step === 'finding' || action === 'start' || action === 'again';
 
   return <>
@@ -343,13 +343,13 @@ export function RecordingWorkspace() {
             <button type="button" className="setup-link" onClick={chooseAnother} disabled={!!action}>Choose another video</button>
           </div>}
 
-          {step === 'seats' && editing && <p className="setup-lead">Adjust the seats on the picture, then press Use these seats.</p>}
+          {step === 'seats' && editing && <p className="setup-lead">Fix the boxes, then press Use these seats.</p>}
 
           {step === 'reviewing' && record && <div className="setup-panel">
             <h3 className="setup-title recording-file">{name}</h3>
             <progress className="recording-progress" max={1} value={reviewProgress(record.lastTime, lengthOf(record))} aria-label="Review progress" />
-            <p className="setup-lead">You can leave this page. The review keeps running on this computer.</p>
-            {pollProblem && <p className="setup-warning" role="status">Ocular can’t be reached right now. Still trying.</p>}
+            <p className="setup-lead">You can leave this page; the review keeps going.</p>
+            {pollProblem && <p className="setup-warning" role="status">Can’t reach Ocular. Still trying…</p>}
             {confirm === 'cancel'
               ? <InlineConfirm text={CANCEL_CONFIRM_TEXT} confirmLabel="Stop and delete" cancelLabel="Keep reviewing" busy={action === 'cancel'} busyLabel="Cancelling…"
                   onConfirm={() => void cancelReview()} onCancel={() => setConfirm('')} />
@@ -358,7 +358,7 @@ export function RecordingWorkspace() {
 
           {step === 'done' && <div className="setup-panel">
             <h3 className="setup-title">Review finished</h3>
-            <p className="session-line">{name} · {countText(alertList.length, 'alert')} · {unmarkedText(alertList.length, unmarked)}</p>
+            <p className="session-line">{name} · {alertSummary(alertList.length, unmarked)}</p>
             <div className="camera-actions">{pdf(true)}</div>
             {deleteControls ?? <div className="setup-secondary"><Button variant="outline" onClick={() => { reset(); setError(''); }} disabled={!!action}><FileVideo size={15} />Review another</Button>
               <Button variant="outline" onClick={() => setConfirm('delete')} disabled={!!action}><Trash2 size={15} />Delete</Button></div>}
@@ -367,8 +367,8 @@ export function RecordingWorkspace() {
           {step === 'stopped' && <div className="setup-panel">
             <h3 className="setup-title">Review stopped</h3>
             {record && <p className="setup-lead" role="status">{stoppedText(record.lastTime, lengthOf(record))}</p>}
-            <p className="setup-lead">Alerts found so far are kept. Review again to start over.</p>
-            <p className="session-line">{name} · {countText(alertList.length, 'alert')} · {unmarkedText(alertList.length, unmarked)}</p>
+            <p className="setup-lead">Alerts so far are kept.</p>
+            <p className="session-line">{name} · {alertSummary(alertList.length, unmarked)}</p>
             {confirm === 'again'
               ? <InlineConfirm text={AGAIN_CONFIRM_TEXT} confirmLabel="Review again" cancelLabel="Keep" busy={action === 'again'} busyLabel="Starting…"
                   onConfirm={() => void reviewAgain()} onCancel={() => setConfirm('')} />
@@ -382,8 +382,7 @@ export function RecordingWorkspace() {
             {error.detail && <details className="error-detail"><summary>More information</summary><p>{error.detail}</p></details>}</div></div>}
           {(step === 'choose' || step === 'seats') && <CameraAdvancedSettings inputLocked={step !== 'choose'} rulesLocked={!!action}
             mirrored={mirrored} onMirrored={setMirrored} tileGrid={tileGrid} onTileGrid={setTileGrid} headTurns={headTurns} onHeadTurns={setHeadTurns}
-            rules={rules} onRules={setRules} gapOverride={null} onGapOverride={() => {}} measured={null} fixedMaxGap={RECORDING_MAX_GAP}
-            intro="Video settings apply when you choose the file; rules when you start." />}
+            rules={rules} onRules={setRules} gapOverride={null} onGapOverride={() => {}} measured={null} fixedMaxGap={RECORDING_MAX_GAP} source="recording" />}
           <p className="result-disclaimer">Alerts are prompts, not proof.</p>
         </div></section>
 
@@ -392,7 +391,7 @@ export function RecordingWorkspace() {
           onSave={next => { setSeats(numberSeats(next)); setSeatsEdited(true); setEditing(false); }} onCancel={() => setEditing(false)} />}
         {!editing && (draft || recordId)
           ? <SeatPreview src={previewUrl((draft?.id ?? recordId)!)} seats={seats} />
-          : !editing && <div className="camera-processed"><div className="camera-placeholder"><FileVideo size={32} aria-hidden="true" /><p>{step === 'finding' ? 'Finding seats…' : 'The first frame appears here.'}</p></div></div>}
+          : !editing && <div className="camera-processed"><div className="camera-placeholder"><FileVideo size={32} aria-hidden="true" /><p>The first frame appears here.</p></div></div>}
       </div></section>}
 
       {finished && record && <CameraAlertsPanel recordId={recordId} alerts={sortAlerts(alerts)} events={record.events} muted={false} onMuted={() => {}}

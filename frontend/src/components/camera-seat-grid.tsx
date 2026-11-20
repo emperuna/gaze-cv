@@ -8,7 +8,7 @@ import type { ReviewSeat } from '@/lib/review-contract';
 /** "Running smoothly · 5/6 seats observed · 12:05"; shown in the monitoring header so it stays in sight. */
 export function SeatStatusLine({ status, observed, total, sessionTime }: { status: RunningStatus; observed: number; total: number; sessionTime: number }) {
   return <p className={`seat-grid-status${status.slow ? ' seat-grid-slow' : ''}`}>
-    <span>{status.text}</span> · <span>{observed}/{total} seats observed</span> · <span><span className="sr-only">Elapsed </span>{formatElapsed(sessionTime)}</span>
+    <span>{status.text}</span> · <span>{observed}/{total} seats seen</span> · <span><span className="sr-only">Elapsed </span>{formatElapsed(sessionTime)}</span>
   </p>;
 }
 
@@ -33,7 +33,7 @@ export function CameraSeatGrid({ seats, states, openSeats, status }: {
     </ul>
     <details className="seat-grid-details">
       <summary>Details</summary>
-      <p>{status.fps === null ? 'Processing speed: measuring.' : `Processing speed over the last 10 s: ${status.fps.toFixed(1)} frames per second.`}</p>
+      <p>{status.fps === null ? 'Speed: measuring…' : `Speed: ${status.fps.toFixed(1)} frames/s (last 10 s)`}</p>
       {status.detail && <p>{status.detail}</p>}
     </details>
   </section>;

@@ -16,7 +16,7 @@ import type { Chime } from './camera-alerts-panel';
 export type RecordMeta = { createdAt: string; state: LiveSessionRecord['state']; seats: number };
 export type ResumeStep = '' | 'loading' | 'camera' | 'ask' | 'starting';
 type Ref<T> = { current: T };
-const RESUME_FAILED = 'Monitoring could not resume. Press Yes, resume to try again, or No, end this session.';
+const RESUME_FAILED = 'Monitoring could not resume. Press Yes, resume again.';
 
 /** What the session-recovery handlers need from the camera workspace; read when a handler runs. */
 export interface RecoveryHost {
@@ -69,7 +69,7 @@ export function useSessionRecovery(host: () => RecoveryHost) {
   async function beginResume(id: string) {
     const h = hostRef.current();
     if (h.run.current) return;
-    if (!h.ready) { h.setError('The local processor is not ready. Press Recheck, then press Resume again.'); return; }
+    if (!h.ready) { h.setError('Ocular is not ready: press Recheck, then Resume.'); return; }
     h.setError(''); h.setNotice(''); h.setSaveError(''); h.setWarnings([]); setConfirm(''); h.setStopRetry(null); h.setEditing(null); h.setHasFrame(false);
     setResumeStep('loading'); h.go('confirming');
     const current = newRun(); current.resumeOf = id;
@@ -81,10 +81,10 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       const record = await h.fetchRecord(id, current.controller.signal);
       if (!valid()) return;
       // A recording has no camera to resume; it is reviewed again from its own screen.
-      if (record.source?.kind === 'recording') throw new PlainError('This is a recording. Open it from Past sessions, then press Review again.');
+      if (record.source?.kind === 'recording') throw new PlainError('This is a recording: open it from Past sessions to review it again.');
       if (record.state !== 'interrupted') {
-        throw new PlainError(record.state === 'ended' ? 'This session has ended, so it cannot be resumed. Open it from Past sessions to mark alerts or download the PDF.'
-          : 'This session is live in another tab or window. Use that tab to continue.');
+        throw new PlainError(record.state === 'ended' ? 'This session has ended: open it from Past sessions to see its alerts.'
+          : 'This session is live in another tab: continue there.');
       }
       h.resetDashboard(); h.showRecord(id, record);
       setStoppedAt(interruptedAt(record)); h.setSessionTime(record.lastTime); setResumeStep('camera');
@@ -157,7 +157,7 @@ export function useSessionRecovery(host: () => RecoveryHost) {
       if (!h.mounted.current || h.recordIdRef.current !== id) return;
       if (latest.state === 'monitoring') {
         h.applyRecord(latest); setConfirm(''); setPauseReason(''); setStoppedAt(null);
-        h.setError('The session was not ended here, because it is live in another tab or window. Use that tab to stop it.');
+        h.setError('This session is live in another tab: stop it there.');
         h.go('ended');
         return;
       }

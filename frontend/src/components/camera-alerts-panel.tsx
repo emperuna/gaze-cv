@@ -102,7 +102,7 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
     <p className="sr-only" aria-live="assertive" aria-atomic="true">{announcement}</p>
     <div className="alerts-body">
       {message && <p className="setup-warning" role="alert">{message}</p>}
-      {!alerts.length && <p className="alerts-empty">{live ? 'No alerts yet. When a seat needs a look, it appears here with a picture and a sound.' : 'No alerts in this session.'}</p>}
+      {!alerts.length && <p className="alerts-empty">{live ? 'No alerts yet.' : 'No alerts.'}</p>}
       <ol className="alerts-list">
         {alerts.map(alert => {
           const open = alert.mark === null;
@@ -113,14 +113,12 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
             <div className="alert-seat" aria-hidden="true"><small>Seat</small>{seatNumber(alert.seatId)}</div>
             <div className="alert-main">
               <h3 id={`${alert.id}-title`}>{alertTitle(alert, events)}</h3>
-              <p className="alert-time">{videoUrl
-                ? `At ${formatElapsed(alert.openedAt)}${alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''}`
-                : `Opened at ${formatElapsed(alert.openedAt)}${alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''} into the session`}{open ? '' : ` · ${alert.mark}`}</p>
-              {readFromHeadShape(alert, events) && <p className="alert-time">Face turned away: read from the shape of the head.</p>}
+              <p className="alert-time">{`At ${formatElapsed(alert.openedAt)}${alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''}`}{open ? '' : ` · ${alert.mark}`}</p>
+              {readFromHeadShape(alert, events) && <p className="alert-time">Face hidden: read from head shape</p>}
               <div className="alert-still">
                 {alert.still && recordId
                   ? <img src={stillUrl(recordId, alert.id)} alt={`Seat ${seatNumber(alert.seatId)} when the alert opened`} />
-                  : <p>{alert.stillError ? 'The picture for this alert could not be saved.' : 'No picture for this alert.'}</p>}
+                  : <p>{alert.stillError ? 'Photo not saved' : 'No photo'}</p>}
               </div>
               {videoUrl && (playing === alert.id
                 ? <MomentPlayer src={videoUrl} {...momentOf(alert)} label={`Video of seat ${seatNumber(alert.seatId)} at ${formatElapsed(alert.openedAt)}`} onClose={() => setPlaying(null)} />

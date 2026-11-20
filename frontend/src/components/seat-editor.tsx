@@ -23,7 +23,7 @@ export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:S
   function nextId(){let number=1;while(seats.some(s=>s.id===`seat-${number}`))number++;return `seat-${number}`;}
   function add(roi:ReviewSeat['roi'],replace:number|null=editing) {
     if(replace===null&&seats.length>=20){setError('Use at most 20 seats.');return;}
-    if(seats.some((s,index)=>index!==replace&&Math.min(roi[2],s.roi[2])>Math.max(roi[0],s.roi[0]) && Math.min(roi[3],s.roi[3])>Math.max(roi[1],s.roi[1]))){setError('That region overlaps another seat. Draw separate head regions.');return;}
+    if(seats.some((s,index)=>index!==replace&&Math.min(roi[2],s.roi[2])>Math.max(roi[0],s.roi[0]) && Math.min(roi[3],s.roi[3])>Math.max(roi[1],s.roi[1]))){setError('Boxes overlap: draw them apart.');return;}
     onChange(replace===null?[...seats,{id:nextId(),roi}]:seats.map((seat,index)=>index===replace?{...seat,roi}:seat));setError('');setEditing(null);setDrawing(false);
   }
   function point(event:React.PointerEvent<SVGSVGElement>):[number,number] {
@@ -33,7 +33,7 @@ export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:S
   function rectangle(a:[number,number],b:[number,number]):ReviewSeat['roi'] {return [Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])];}
   return <div className="seat-editor">
     <div className="review-video-stage">
-      {image?<img src={source.url} alt="Captured camera frame for seat setup" onLoad={()=>{onPlayable(true);setError('');}} onError={()=>{setError('The captured camera frame could not be shown. Cancel and try again.');onPlayable(false);}}/>:
+      {image?<img src={source.url} alt="Captured camera frame for seat setup" onLoad={()=>{onPlayable(true);setError('');}} onError={()=>{setError('The picture could not load. Press Cancel and try again.');onPlayable(false);}}/>:
       <video ref={video} src={source.url} muted playsInline preload="auto" onLoadedMetadata={event=>{
         const v=event.currentTarget;setDuration(v.duration);setPosition(0);
         if(!Number.isFinite(v.duration)||v.duration>300){setError('Choose a clip of at most 5 minutes.');onPlayable(false);}
@@ -44,13 +44,13 @@ export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:S
         onPointerDown={event=>{if(disabled||!drawing)return;start.current=point(event);event.currentTarget.setPointerCapture(event.pointerId);setDraft(null);}}
         onPointerMove={event=>{if(start.current)setDraft(rectangle(start.current,point(event)));}}
         onPointerCancel={()=>{start.current=null;setDraft(null);}}
-        onPointerUp={event=>{if(!start.current)return;const roi=rectangle(start.current,point(event));start.current=null;setDraft(null);if(roi[2]-roi[0]<.01||roi[3]-roi[1]<.01){setError('Draw a region with visible width and height.');return;}add(roi);}}>
+        onPointerUp={event=>{if(!start.current)return;const roi=rectangle(start.current,point(event));start.current=null;setDraft(null);if(roi[2]-roi[0]<.01||roi[3]-roi[1]<.01){setError('Draw a bigger box.');return;}add(roi);}}>
         {seats.map((seat,index)=><g key={index}><rect className={editing===index?'seat-draft':''} x={seat.roi[0]*1000} y={seat.roi[1]*1000} width={(seat.roi[2]-seat.roi[0])*1000} height={(seat.roi[3]-seat.roi[1])*1000}/><text x={seat.roi[0]*1000+8} y={Math.max(36,seat.roi[1]*1000+36)}>{name(seat.id)}</text></g>)}
         {draft&&<rect className="seat-draft" x={draft[0]*1000} y={draft[1]*1000} width={(draft[2]-draft[0])*1000} height={(draft[3]-draft[1])*1000}/>}
       </svg>
     </div>
     {!image&&<label className="review-scrubber">Setup frame: {position.toFixed(1)} s<input aria-label="Seat setup frame time" type="range" min="0" max={Number.isFinite(duration)?Math.max(0,duration-.01):0} step="0.1" value={position} disabled={disabled} onChange={event=>{const time=Number(event.target.value);setPosition(time);if(video.current)video.current.currentTime=time;}}/></label>}
-    <p className="review-help" role="status">{drawing?(editing===null?'Drag a box around a missed seat’s head area.':`Draw a new box for ${seats[editing]?name(seats[editing].id):'this seat'}.`):'Review the boxes. Use Edit region to redraw a seat, or Add seat for someone missed.'} Seats identify fixed positions, not people.</p>
+    <p className="review-help" role="status">{drawing?(editing===null?'Drag a box around the missed head.':`Draw a new box for ${seats[editing]?name(seats[editing].id):'this seat'}.`):'Fix a box with Edit region, or press Add seat.'}</p>
     <Button variant="outline" type="button" disabled={disabled||seats.length>=20} onClick={()=>{setEditing(null);setDrawing(true);setError('');}}><Plus size={15}/>Add seat</Button>
     <fieldset disabled={disabled} className="seat-fields"><legend>{seats.length?`${seats.length} seat${seats.length===1?'':'s'} to review`:'No seats added yet'}</legend>
       {seats.map((seat,index)=><div className="simple-seat-row" key={index}>
@@ -60,12 +60,12 @@ export function SeatEditor({source,seats,onChange,disabled,onPlayable}:{source:S
       </div>)}
     </fieldset>
     <details className="review-details advanced-seat-editing"><summary>Advanced seat editing</summary>
-    <p className="review-help">Optional exact coordinates, in percentages of the {image?'camera frame':'video frame'}. Visual boxes above are enough for normal setup.</p>
+    <p className="review-help">Optional: exact box edges in percent.</p>
     <Button variant="outline" type="button" disabled={disabled||seats.length>=20} onClick={()=>{
       for(let row=0;row<5;row++)for(let col=0;col<4;col++){
         const roi:ReviewSeat['roi']=[col*.25+.01,row*.2+.01,col*.25+.2,row*.2+.18];
         if(!seats.some(s=>Math.min(roi[2],s.roi[2])>Math.max(roi[0],s.roi[0])&&Math.min(roi[3],s.roi[3])>Math.max(roi[1],s.roi[1]))){add(roi,null);return;}
-      }setError('No free preset region remains. Draw a smaller region in an empty area.');
+      }setError('No room left: draw a box in an empty area.');
     }}><Plus size={15}/>Add seat with numeric controls</Button>
     <fieldset disabled={disabled} className="seat-fields"><legend>Exact seat coordinates</legend>
       {seats.map((seat,index)=><div className="seat-field-row" key={index}>

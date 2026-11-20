@@ -6,8 +6,8 @@ import type { LiveSessionRecord } from './live-alerts.ts';
 
 export type SessionState = LiveSessionRecord['state'];
 
-export const DELETE_CONFIRM_TEXT = 'Delete this session and its alert images? This cannot be undone.';
-export const END_CONFIRM_TEXT = 'End this session? It cannot be resumed afterwards. You can still mark alerts and download the PDF.';
+export const DELETE_CONFIRM_TEXT = 'Delete this session and its photos? This cannot be undone.';
+export const END_CONFIRM_TEXT = 'End this session? It cannot be resumed.';
 export const SEATS_QUESTION = 'Do the seats still line up?';
 
 /** "Ended", "Interrupted" or "Live now" (a `monitoring` record is only reported while its worker is live). */
@@ -21,7 +21,7 @@ export function formatClock(date: Date): string {
 }
 
 export function interruptionText(at: Date): string {
-  return `Monitoring stopped at ${formatClock(at)}. Seats and alerts are saved.`;
+  return `Stopped at ${formatClock(at)} · seats and alerts saved`;
 }
 
 /** Plain-words length: "45 s", "12 min", "1 h 5 min". */
@@ -35,9 +35,10 @@ export function formatDuration(seconds: number): string {
 
 export const countText = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-export function unmarkedText(alerts: number, unmarked: number): string {
-  if (!alerts) return 'no alerts to mark';
-  return unmarked ? `${unmarked} not marked yet` : 'all marked';
+/** "No alerts", or "3 alerts · 2 to check" / "3 alerts · all marked". */
+export function alertSummary(alerts: number, unmarked: number): string {
+  if (!alerts) return 'No alerts';
+  return `${countText(alerts, 'alert')} · ${unmarked ? `${unmarked} to check` : 'all marked'}`;
 }
 
 /**
@@ -114,6 +115,6 @@ export async function stopSession(id: string, recordId?: string, request: typeof
     if (response.ok && !data.saveError) return { ok: true };
     return notSaved(response.ok ? data.saveError : data.error);
   } catch {
-    return { ok: false, message: 'Ocular could not be reached to save the session. Press Stop again.', detail: '' };
+    return { ok: false, message: 'Ocular could not be reached. Press Stop again.', detail: '' };
   }
 }

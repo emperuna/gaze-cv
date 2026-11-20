@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FolderOpen, LoaderCircle, Play, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { DELETE_CONFIRM_TEXT, countText, formatDuration, formatSessionDate, stateLabel, unmarkedText } from '@/lib/camera-sessions';
+import { DELETE_CONFIRM_TEXT, alertSummary, countText, formatDuration, formatSessionDate, stateLabel } from '@/lib/camera-sessions';
 import type { RecordSummary } from '@/lib/server-camera-record';
 import { AGAIN_CONFIRM_TEXT, RECORDING_DELETE_TEXT, recordingUrl, startReviewAgain, stoppedText } from '@/lib/recording-flow';
 
@@ -34,7 +34,7 @@ export async function deleteSession(recordId: string): Promise<string | null> {
     if (response.ok || response.status === 404) return null;
     return 'The session could not be deleted. Press Delete again.';
   } catch {
-    return 'Ocular could not be reached to delete the session. Press Delete again.';
+    return 'Ocular could not be reached. Press Delete again.';
   }
 }
 
@@ -105,10 +105,10 @@ export function CameraPastSessions({ refreshKey, onOpen, onResume, disabled = fa
       <button type="button" className="setup-link camera-past-refresh" onClick={() => void load()} disabled={loading}><RefreshCw size={13} />Refresh</button>
     </div>
     <div className="camera-past-body" ref={list}>
-      {loading && !sessions && <p className="camera-status" role="status"><LoaderCircle size={14} className="spin" />Loading past sessions…</p>}
+      {loading && !sessions && <p className="camera-status" role="status"><LoaderCircle size={14} className="spin" />Loading…</p>}
       {loadError && <div className="analysis-error" role="alert"><span>{loadError}</span>
         <Button variant="outline" onClick={() => void load()}>Try again</Button></div>}
-      {sessions && !sessions.length && <p className="alerts-empty">No saved sessions yet. A session is saved here when you start monitoring.</p>}
+      {sessions && !sessions.length && <p className="alerts-empty">No sessions yet.</p>}
       {sessions && sessions.length > 0 && <ul className="camera-past-list">
         {sessions.map(item => {
           const recording = item.recording;
@@ -118,7 +118,7 @@ export function CameraPastSessions({ refreshKey, onOpen, onResume, disabled = fa
           return <li key={item.id} className="camera-past-item">
             <div className="camera-past-text">
               <h3>{recording ? `Recording · ${recording.filename}` : date} <span className={`camera-past-state camera-past-${item.state}`}>{label}</span></h3>
-              <p>{recording ? `${date} · ` : ''}{recording && item.state === 'interrupted' ? stoppedText(item.seconds, recording.durationSeconds) : formatDuration(item.seconds)} · {countText(item.seats, 'seat')} · {countText(item.alerts, 'alert')} · {unmarkedText(item.alerts, item.unmarked)}</p>
+              <p>{recording ? `${date} · ` : ''}{recording && item.state === 'interrupted' ? stoppedText(item.seconds, recording.durationSeconds) : formatDuration(item.seconds)} · {countText(item.seats, 'seat')} · {alertSummary(item.alerts, item.unmarked)}</p>
             </div>
             {confirming?.id === item.id && confirming.kind === 'delete' ? <InlineConfirm text={recording ? RECORDING_DELETE_TEXT : DELETE_CONFIRM_TEXT} confirmLabel="Delete" cancelLabel="Keep" busy={deleting === item.id} busyLabel="Deleting…"
               onConfirm={() => void remove(item.id)} onCancel={() => { setConfirming(null); setDeleteError(null); focusNext.current = `[data-delete="${item.id}"]`; }} />

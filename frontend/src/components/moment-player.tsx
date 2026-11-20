@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { RotateCcw, X } from 'lucide-react';
 import { Button } from './ui/button';
 
-export const CANNOT_PLAY_TEXT = 'This video can’t play in this browser.';
+export const CANNOT_PLAY_TEXT = 'This browser can’t play it: open the video file in a player.';
 
 /** Plays one window of the session's video (`start` to `end`, in seconds) and pauses at its end. */
 export function MomentPlayer({ src, start, end, label, onClose }: { src: string; start: number; end: number; label: string; onClose: () => void }) {

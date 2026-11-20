@@ -49,13 +49,13 @@ export function AboutThisExam({ idPrefix, exam, onExam, disabled }: {
     <fieldset disabled={disabled}>
       <legend className="sr-only">About this exam</legend>
       <div className="exam-details-fields">{field('title', 'Exam or class')}{field('room', 'Room')}{field('proctor', 'Proctor')}</div>
-      <p>Printed at the top of the PDF report. Leave blank to write it in by hand.</p>
+      <p>Printed on the PDF. Leave blank to fill in by hand.</p>
     </fieldset>
   </details>;
 }
 
 export function preparingText(received: number) {
-  return `Getting ready: looking for students… (${Math.min(received, SETUP_FRAMES)} of ${SETUP_FRAMES})`;
+  return `Finding students… ${Math.min(received, SETUP_FRAMES)} of ${SETUP_FRAMES}`;
 }
 
 export interface SeatOverlay { directions?: Record<string, LiveSeatState>; highlighted?: Set<string> }
@@ -97,7 +97,7 @@ export function SeatAdjuster({ image, initial, onSave, onCancel }: {
   useEffect(() => { heading.current?.focus(); }, []);
   return <div className="seat-adjuster">
     <h3 ref={heading} tabIndex={-1}>{initial.length ? 'Adjust seats' : 'Draw seats'}</h3>
-    <p className="review-help">This is a still picture from the camera. Drag a box around each student’s head area. Seats are numbered left to right when you save them.</p>
+    <p className="review-help">Drag a box around each student’s head.</p>
     <SeatEditor source={{ kind: 'image', url: image }} seats={draft} onChange={setDraft} disabled={false} onPlayable={setReady} />
     <div className="camera-actions">
       <Button size="lg" className="camera-primary" onClick={() => onSave(draft)} disabled={!ready || !draft.length}>Use these seats</Button>
@@ -132,30 +132,40 @@ const RULE_FIELDS = [
   { key: 'repeat_min_duration', label: `${MOVEMENT_LABELS.repeat_min_duration} (s)`, max: 300, step: .05, help: 'How long each turn must last.' },
 ] as const;
 
+/** Short wording per screen: a recording has no live camera, so its panel never mentions one. */
+const ADVANCED_TEXT = {
+  camera: { intro: 'Optional. Camera settings apply at Start; rules at Start monitoring.', input: 'Camera input', mirrored: 'Picture is mirrored',
+    headTurns: 'Reads turns when the face is hidden. Turn off if running slowly.' },
+  recording: { intro: 'Optional. Video settings apply when you choose it; rules at Start review.', input: 'Video', mirrored: 'Video is mirrored',
+    headTurns: 'Reads turns when the face is hidden. Off is faster.' },
+} as const;
+
 /**
- * `fixedMaxGap` (recordings): the maximum gap is fixed, so its field is read-only and the speed lines are hidden.
- * `intro` replaces the opening help line.
+ * `source` picks the wording. `fixedMaxGap` (recordings): the maximum gap is fixed, so its field is read-only and
+ * the speed lines are hidden.
  */
-export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onMirrored, tileGrid, onTileGrid, headTurns, onHeadTurns, rules, onRules, gapOverride, onGapOverride, measured, fixedMaxGap, intro }: {
+export function CameraAdvancedSettings({ source = 'camera', inputLocked, rulesLocked, mirrored, onMirrored, tileGrid, onTileGrid, headTurns, onHeadTurns, rules, onRules, gapOverride, onGapOverride, measured, fixedMaxGap }: {
+  source?: keyof typeof ADVANCED_TEXT;
   inputLocked: boolean; rulesLocked: boolean;
   mirrored: boolean; onMirrored: (value: boolean) => void; tileGrid: number; onTileGrid: (value: number) => void;
   headTurns: boolean; onHeadTurns: (value: boolean) => void;
   rules: MovementRules; onRules: (rules: MovementRules) => void;
   gapOverride: number | null; onGapOverride: (value: number | null) => void; measured: MeasuredSpeed | null;
-  fixedMaxGap?: number; intro?: string;
+  fixedMaxGap?: number;
 }) {
   const fixed = fixedMaxGap !== undefined;
   const fps = measured && measured.medianInterval > 0 ? 1 / measured.medianInterval : null;
+  const text = ADVANCED_TEXT[source];
   return <details className="advanced-settings camera-advanced">
     <summary>Advanced settings</summary>
-    <p>{intro ?? 'You do not need to change these. Camera input settings apply when you press Start; movement rules apply when you press Start monitoring.'}</p>
-    <fieldset disabled={inputLocked} className="camera-advanced-group"><legend>Camera input</legend>
-      <label className="checkbox-label"><input type="checkbox" checked={mirrored} onChange={event => onMirrored(event.target.checked)} />The camera pixels are already mirrored</label>
-      <p>Turn this on only if the camera app flips the picture like a mirror. Left and right describe the student.</p>
-      <label className="tiling-label" htmlFor="camera-tiling">Detector tiling<select id="camera-tiling" value={tileGrid} onChange={event => onTileGrid(Number(event.target.value))}>{[1, 2, 3, 4].map(value => <option key={value} value={value}>{value === 1 ? '1 — full frame' : `${value} — more tiles, slower processing`}</option>)}</select></label>
-      <p>More tiles help find small faces at the back of the room but process more slowly.</p>
-      <label className="checkbox-label"><input type="checkbox" checked={headTurns} onChange={event => onHeadTurns(event.target.checked)} />Read strong head turns</label>
-      <p>When a student turns so far that their face is hidden, Ocular reads the turn from the shape of the head. Turn this off if the laptop shows “Running slowly”.</p>
+    <p>{text.intro}</p>
+    <fieldset disabled={inputLocked} className="camera-advanced-group"><legend>{text.input}</legend>
+      <label className="checkbox-label"><input type="checkbox" checked={mirrored} onChange={event => onMirrored(event.target.checked)} aria-describedby="camera-mirrored-help" />{text.mirrored}</label>
+      <p id="camera-mirrored-help">Only if left and right are flipped.</p>
+      <label className="tiling-label" htmlFor="camera-tiling">Detector tiles<select id="camera-tiling" value={tileGrid} aria-describedby="camera-tiling-help" onChange={event => onTileGrid(Number(event.target.value))}>{[1, 2, 3, 4].map(value => <option key={value} value={value}>{value === 1 ? '1 — full frame' : `${value} — slower`}</option>)}</select></label>
+      <p id="camera-tiling-help">More tiles find small faces at the back, but run slower.</p>
+      <label className="checkbox-label"><input type="checkbox" checked={headTurns} onChange={event => onHeadTurns(event.target.checked)} aria-describedby="camera-head-turns-help" />Read strong head turns</label>
+      <p id="camera-head-turns-help">{text.headTurns}</p>
     </fieldset>
     <fieldset disabled={rulesLocked} className="camera-advanced-group"><legend>Movement rules</legend>
       <div className="review-setting-grid">
@@ -166,15 +176,14 @@ export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onM
         <label>{MOVEMENT_LABELS.max_gap} (s)
           <NumberField min={.05} max={5} step={.05} value={fixed ? fixedMaxGap : gapOverride ?? measured?.maxGap ?? null} placeholder="Automatic" readOnly={fixed}
             aria-describedby={fixed ? 'camera-rule-max-gap' : 'camera-rule-max-gap camera-max-gap-help'} onValue={fixed ? () => {} : onGapOverride} />
-          <small id="camera-rule-max-gap">{fixed ? 'Fixed for videos.' : gapOverride === null ? 'Set automatically.' : 'Set by you.'}</small></label>
+          <small id="camera-rule-max-gap">{fixed ? 'Fixed for videos.' : gapOverride === null ? 'Automatic.' : 'Set by you.'}</small></label>
       </div>
       {!fixed && <>
-        <p id="camera-max-gap-help">A larger maximum gap lets unseen moments between processed frames count as one continuous movement. Ocular sets it from the speed measured during Getting ready.</p>
-        {measured && fps !== null && <p>Measured speed: {fps.toFixed(1)} frames per second ({measured.medianInterval.toFixed(2)} s between processed frames). Automatic maximum gap: {measured.maxGap} s.</p>}
-        {measured?.tooSlow && fps !== null && <p role="note">Processing is too slow for movement alerts ({fps.toFixed(1)} FPS). Use fewer detector tiles.</p>}
-        {gapOverride !== null && <button type="button" className="review-secondary-action" onClick={() => onGapOverride(null)}>Use the automatic maximum gap</button>}
+        <p id="camera-max-gap-help">Joins short unseen moments into one movement; set from the measured speed.</p>
+        {measured && fps !== null && <p>Measured: {fps.toFixed(1)} frames/s · automatic gap {measured.maxGap} s</p>}
+        {measured?.tooSlow && fps !== null && <p role="note">Too slow for alerts ({fps.toFixed(1)} frames/s): use fewer detector tiles.</p>}
+        {gapOverride !== null && <button type="button" className="review-secondary-action" onClick={() => onGapOverride(null)}>Use automatic gap</button>}
       </>}
-      {!fixed && <p>Defaults are experimental movement rules, not validated indicators of misconduct. Seats and rules are fixed once monitoring starts.</p>}
     </fieldset>
   </details>;
 }
