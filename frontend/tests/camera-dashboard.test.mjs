@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CONFLICT_TEXT, LONG_SESSION_TEXT, MUTE_KEY, alertsFromRecord, announceAlerts, formatElapsed, longSessionWarning,
+  CONFLICT_TEXT, LONG_SESSION_TEXT, MUTE_KEY, alertTimeText, alertsFromRecord, announceAlerts, formatElapsed, longSessionWarning,
   mergeAlerts, newestOpenAlert, openAlertSeats, pruneFrameTimes, readMuted, recentIntervals, runningStatus,
   seatsObserved, shortcutMark, sortAlerts, withAlert, writeMuted,
 } from '../src/lib/camera-dashboard.ts';
@@ -113,4 +113,12 @@ test('mute is remembered and blocked storage is tolerated', () => {
   assert.equal(readMuted(blocked), false);
   assert.doesNotThrow(() => writeMuted(true, blocked));
   assert.equal(readMuted(null), false);
+});
+
+test('alert card times read as elapsed for a camera session and as video times for a recording', () => {
+  const alert = { openedAt: 725, lastAt: 725 };
+  assert.equal(alertTimeText(alert, false), '12:05 in');
+  assert.equal(alertTimeText({ openedAt: 725, lastAt: 790 }, false), '12:05 in · latest 13:10 in');
+  assert.equal(alertTimeText(alert, true), 'At 12:05');
+  assert.equal(alertTimeText({ openedAt: 725, lastAt: 790 }, true), 'At 12:05 · latest 13:10');
 });

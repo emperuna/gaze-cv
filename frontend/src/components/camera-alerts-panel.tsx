@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Bell, BellOff, Check, LoaderCircle, Play, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { MAX_ALERT_NOTE } from '@/lib/camera-contract';
-import { formatElapsed, newestOpenAlert, seatNumber, shortcutMark } from '@/lib/camera-dashboard';
+import { alertTimeText, formatElapsed, newestOpenAlert, seatNumber, shortcutMark } from '@/lib/camera-dashboard';
 import { alertTitle, readFromHeadShape } from '@/lib/live-alerts';
 import type { AlertMark, LiveAlert } from '@/lib/live-alerts';
 import type { MovementEvent } from '@/lib/review-contract';
@@ -113,7 +113,7 @@ export function CameraAlertsPanel({ recordId, alerts, events, muted, onMuted, on
             <div className="alert-seat" aria-hidden="true"><small>Seat</small>{seatNumber(alert.seatId)}</div>
             <div className="alert-main">
               <h3 id={`${alert.id}-title`}>{alertTitle(alert, events)}</h3>
-              <p className="alert-time">{`At ${formatElapsed(alert.openedAt)}${alert.lastAt > alert.openedAt ? ` · latest ${formatElapsed(alert.lastAt)}` : ''}`}{open ? '' : ` · ${alert.mark}`}</p>
+              <p className="alert-time">{alertTimeText(alert, Boolean(videoUrl))}{open ? '' : ` · ${alert.mark}`}</p>
               {readFromHeadShape(alert, events) && <p className="alert-time">Face hidden: read from head shape</p>}
               <div className="alert-still">
                 {alert.still && recordId

@@ -91,6 +91,13 @@ export function formatElapsed(seconds: number): string {
   return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
 }
 
+/** An alert card's time: video times for a recording ("At 12:05"), elapsed time for a camera session ("12:05 in"). */
+export function alertTimeText(alert: { openedAt: number; lastAt: number }, recording: boolean): string {
+  const at = (seconds: number) => recording ? formatElapsed(seconds) : `${formatElapsed(seconds)} in`;
+  const latest = alert.lastAt > alert.openedAt ? ` · latest ${at(alert.lastAt)}` : '';
+  return recording ? `At ${at(alert.openedAt)}${latest}` : `${at(alert.openedAt)}${latest}`;
+}
+
 export function longSessionWarning(sessionTime: number): string | null {
   return sessionTime >= LONG_SESSION_SECONDS ? LONG_SESSION_TEXT : null;
 }
