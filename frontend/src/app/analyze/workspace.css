@@ -488,3 +488,16 @@
 .moment-player-actions button { min-height:40px; font-size:13px; }
 .alert-play:focus-visible, .moment-player button:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
 @media (prefers-reduced-motion: reduce) { .recording-progress::-webkit-progress-value { transition:none; } }
+
+/* Advanced settings reads as a clickable row, like Session details. */
+.camera-advanced summary { min-height:40px; gap:6px; font-size:13px; font-weight:600; color:#1f2c3b; border-radius:6px; }
+.camera-advanced summary span { font-weight:400; color:#545e69; }
+.camera-advanced summary > svg:last-child { color:#545e69; transition:transform .15s; }
+.camera-advanced summary:hover { color:#0f1a26; }
+
+/* Before monitoring, the live view card matches the setup card's height; the camera area fills it. */
+.camera-grid:not(.camera-dashboard) { align-items:stretch; }
+.camera-grid:not(.camera-dashboard) > .camera-output:not([hidden]) { display:flex; flex-direction:column; }
+.camera-grid:not(.camera-dashboard) > .camera-output > .results-body { flex:1; display:flex; flex-direction:column; }
+.camera-grid:not(.camera-dashboard) > .camera-output .camera-processed:not([hidden]) { flex:1; display:flex; flex-direction:column; justify-content:center; }
+.camera-grid:not(.camera-dashboard) > .camera-output .camera-placeholder { flex:1; }
