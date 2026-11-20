@@ -13,6 +13,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, KeepTogether, LongTable, TableStyle, Image, Spacer
 
+from gaze.faculty_pdf import STYLE_CHANGES as FACULTY_STYLES, build_story as faculty_story, validate_faculty, _numbered_canvas
+
 MAX_IMAGES = 200
 MAX_IMAGE_BYTES = 200_000
 IMAGE_WIDTH = 160
@@ -70,6 +72,10 @@ def validate_report(value):
     for text in value['coverage'] + value['limitations']:
         if not isinstance(text, str) or len(text) > 10000:
             raise ValueError('Invalid report text')
+    if value.get('faculty') is not None:
+        if value['mode'] != 'camera':
+            raise ValueError('Only camera reports carry a faculty section')
+        validate_faculty(value['faculty'], lambda relative: resolve_image(value.get('imageRoot'), relative))
     return value
 
 
@@ -110,6 +116,16 @@ def render_incident_pdf(value):
     }.items()}
     para = lambda value, style='body': Paragraph(text(value), styles[style])
     camera = data['mode'] == 'camera'
+    if camera and data.get('faculty') is not None:
+        # The faculty seat check layout: summary, each alert with its photo, blind spots and the faculty review.
+        faculty_styles = {name: ParagraphStyle(f'faculty-{name}', **{**base, **changes}) for name, changes in FACULTY_STYLES.items()}
+        output = BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=A4, rightMargin=44, leftMargin=44, topMargin=44, bottomMargin=52,
+                                title='Seat check review report', author='Ocular', pageCompression=1)
+        story = faculty_story(data['faculty'], lambda markup, style: Paragraph(markup, faculty_styles[style]), text,
+                              lambda relative: resolve_image(data.get('imageRoot'), relative))
+        doc.build(story, canvasmaker=_numbered_canvas(bool(data.get('confidential'))))
+        return output.getvalue()
     if camera:
         # A live-session report shows students' faces, so it is worded as seat-check prompts, never as findings.
         title, heading = 'Seat check review report', 'Seat check\nreview report'

@@ -240,6 +240,24 @@ test('frame validation forwards a boolean setup flag and drops browser open_aler
   assert.throws(() => validateCameraFrame({ ...frame(1, 0), setup: 'yes' }), /setup/);
 });
 
+test('monitor saves the exam details, or empty ones when none are given', async () => withLive(async ({ start }) => {
+  const { live } = await start();
+  await live.frame(frame(1, 1));
+  const { record } = await live.monitor({ ...MONITOR, exam: { title: ' Math 101 Midterm ', room: '204', proctor: 'Prof. Cruz' } });
+  assert.deepEqual(record.settings.exam, { title: 'Math 101 Midterm', room: '204', proctor: 'Prof. Cruz' });
+  await live.stop();
+  const second = await start();
+  await second.live.frame(frame(1, 1));
+  const plain = await second.live.monitor(MONITOR);
+  assert.deepEqual(plain.record.settings.exam, { title: '', room: '', proctor: '' });
+}));
+
+test('monitor refuses exam details that are too long', async () => withLive(async ({ start }) => {
+  const { live } = await start();
+  await live.frame(frame(1, 1));
+  await assert.rejects(live.monitor({ ...MONITOR, exam: { title: 'x'.repeat(121) } }), error => error.status === 400);
+}));
+
 test('monitor creates a record and frames open one alert with a stored still', async () => withLive(async ({ root, start }) => {
   const { live, sent, sessionId } = await start(m => m.id === 2
     ? { events: [turn('left', 1.5, 3, { still: JPEG64 }), turn('left', 1.5, 3.2)] } : {});

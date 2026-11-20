@@ -110,3 +110,12 @@ test('a missing still file is listed as unavailable instead of breaking the repo
   assert.equal(present.items[0].image, 'stills/a1.jpg');
   assert.doesNotMatch(present.items[0].detail, /Still unavailable/);
 });
+
+test('the live session report carries the faculty section for the camera PDF', () => {
+  const report = liveSessionReport(liveRecord(), '/records/live-1');
+  assert.equal(report.mode, 'camera');
+  assert.ok(report.faculty, 'faculty section present');
+  assert.equal(report.faculty.seatsWatched, liveRecord().settings.seats.length);
+  assert.equal(report.faculty.glance.alerts, liveRecord().alerts.length);
+  assert.deepEqual(report.faculty.exam, { title: '', room: '', proctor: '' });
+});

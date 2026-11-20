@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Camera, Check, CircleHelp, LoaderCircle, Play, RefreshCw, Square, Trash2, X } from 'lucide-react';
+import { AlertCircle, Camera, Check, ChevronDown, CircleHelp, LoaderCircle, Play, RefreshCw, Square, Trash2, X } from 'lucide-react';
 import { Button } from './ui/button';
 import type { BackendStatus } from '@/lib/analysis-contract';
 import { cameraWarnings, lowDetailImage } from '@/lib/camera-health';
@@ -29,6 +29,8 @@ import {
 import type { MonitorFrame, Run } from './camera-run';
 import { CameraAlertsPanel, Chime } from './camera-alerts-panel';
 import { CameraGuide } from './camera-guide';
+import { EMPTY_EXAM, MAX_EXAM_TEXT } from '@/lib/exam-details';
+import type { ExamDetails } from '@/lib/exam-details';
 import { CameraSeatGrid, SeatStatusLine } from './camera-seat-grid';
 import type { CameraPhase, MeasuredSpeed, MovementRules } from './camera-setup';
 import { PlainError, cameraProblem, describeProblem } from '@/lib/camera-messages';
@@ -45,6 +47,8 @@ export function CameraWorkspace() {
   const [tileGrid, setTileGrid] = useState(2);
   const [rules, setRules] = useState<MovementRules>(initialRules);
   const [gapOverride, setGapOverride] = useState<number | null>(null);
+  /** Optional exam details printed at the top of the PDF report; blank ones print as lines to fill in by hand. */
+  const [exam, setExam] = useState<ExamDetails>(EMPTY_EXAM);
   const [measured, setMeasured] = useState<MeasuredSpeed | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [device, setDevice] = useState('');
@@ -105,7 +109,9 @@ export function CameraWorkspace() {
   const phaseRef = useRef<CameraPhase>('idle');
   const seatsRef = useRef<ReviewSeat[]>([]);
   const busy = phase !== 'idle' && phase !== 'ended' && phase !== 'interrupted';
-  const ready = !!status?.methods.baseline.ready && !checking;
+  /** The local processor answered ready at the last check (it stays shown while a Recheck runs). */
+  const processorReady = !!status?.methods.baseline.ready;
+  const ready = processorReady && !checking;
   // Interruptions, resume and saved sessions.
   const recovery = useSessionRecovery(() => ({
     run, mounted, phaseRef, seatsRef, recordIdRef, recordStateRef, frameTimes, chime, newChime: () => new Chime(),
@@ -441,7 +447,7 @@ export function CameraWorkspace() {
   function startMonitoring() {
     const current = run.current;
     if (!current || phaseRef.current !== 'found' || requesting || !seats.length || validation) return;
-    const body = JSON.stringify({ seats: seatsForMonitor(seats, mirrored), movement, maxGapAuto: gapOverride === null });
+    const body = JSON.stringify({ seats: seatsForMonitor(seats, mirrored), movement, maxGapAuto: gapOverride === null, exam });
     setRequesting('monitor'); setError('');
     // This click is the user gesture browsers require before the alert sound can play.
     chime.current ??= new Chime(); chime.current.unlock();
@@ -602,11 +608,16 @@ export function CameraWorkspace() {
   return <>
     <div className="camera-screen-bar">
       <p>Live camera: one fixed camera, alerts on this laptop.</p>
-      <Button ref={guideButton} variant="outline" className="camera-guide-button" aria-expanded={guideOpen} aria-controls="camera-guide" onClick={() => setGuideOpen(open => !open)}>
-        <CircleHelp size={16} aria-hidden="true" />How to use</Button>
+      <div className="camera-screen-tools">
+        {processorReady && <span className="camera-ready-chip" role="status"><span className="status-dot" aria-hidden="true" />{checking ? 'Checking…' : 'Ready on this computer'}
+          <button type="button" onClick={check} disabled={busy || checking} aria-label="Recheck local processor" title="Recheck"><RefreshCw size={14} aria-hidden="true" className={checking ? 'spin' : undefined} /></button></span>}
+        <Button ref={guideButton} variant="outline" className="camera-guide-button" aria-haspopup="dialog" onClick={() => setGuideOpen(true)}>
+          <CircleHelp size={16} aria-hidden="true" />How to use</Button>
+      </div>
     </div>
-    <div id="camera-guide"><CameraGuide open={guideOpen} onClose={() => setGuideOpen(false)} returnFocus={guideButton} /></div>
-    <div className={`backend-banner${ready ? ' backend-ready' : ''}`} role="status"><Camera size={20} /><div><strong>{checking ? 'Checking the local processor' : ready ? 'Ocular is ready on this computer' : 'Python setup needed'}</strong><p>{ready ? 'Live alerts can run on this computer.' : status?.methods.baseline.message || 'Use the project README to prepare Python and the models.'}</p></div><button type="button" onClick={check} disabled={busy || checking} aria-label="Recheck local processor"><RefreshCw size={15} /><span>Recheck</span></button></div>
+    <CameraGuide open={guideOpen} onClose={() => setGuideOpen(false)} returnFocus={guideButton} announcement={announcement} />
+    {/* The full banner only when something needs attention; once ready, the small chip above says so. */}
+    {!processorReady && <div className="backend-banner" role="status"><Camera size={20} /><div><strong>{checking ? 'Checking the local processor' : 'Python setup needed'}</strong><p>{checking ? 'Looking for the project environment and the face model.' : status?.methods.baseline.message || 'Use the project README to prepare Python and the models.'}</p></div><button type="button" onClick={check} disabled={busy || checking} aria-label="Recheck local processor"><RefreshCw size={15} /><span>Recheck</span></button></div>}
     <div ref={grid} className={`analysis-grid camera-grid${monitoring ? ' camera-dashboard' : ''}`}>
       <section className="workspace-card camera-setup" aria-labelledby="camera-setup-title"><div className="workspace-card-header"><h2 id="camera-setup-title">Live camera</h2><span>LOCAL CAMERA</span></div><div className="input-card-body" ref={setupBody}>
         <SetupSteps phase={phase} stoppedFrom={stoppedFrom} />
@@ -615,6 +626,18 @@ export function CameraWorkspace() {
         {(phase === 'idle' || phase === 'permission' || phase === 'loading') && <>
           <div className="analysis-settings"><label htmlFor="camera-device">Camera</label><div className="select-wrap"><select id="camera-device" value={device} disabled={busy} onChange={event => { setDevice(event.target.value); writeSavedDevice(event.target.value); }}><option value="">Default camera</option>{devices.filter(item => item.deviceId).map((item, index) => <option key={item.deviceId} value={item.deviceId}>{cameraName(item, index)}</option>)}</select></div>
             <p>Choose the phone or classroom camera. Ocular remembers it for next time.</p></div>
+          <details className="exam-details">
+            <summary>About this exam <span>(optional)</span><ChevronDown size={15} aria-hidden="true" /></summary>
+            <fieldset disabled={busy}>
+              <legend className="sr-only">About this exam</legend>
+              <div className="exam-details-fields">
+                <label htmlFor="camera-exam-title">Exam or class<input id="camera-exam-title" value={exam.title} maxLength={MAX_EXAM_TEXT} onChange={event => setExam(current => ({ ...current, title: event.target.value }))} /></label>
+                <label htmlFor="camera-exam-room">Room<input id="camera-exam-room" value={exam.room} maxLength={MAX_EXAM_TEXT} onChange={event => setExam(current => ({ ...current, room: event.target.value }))} /></label>
+                <label htmlFor="camera-exam-proctor">Proctor<input id="camera-exam-proctor" value={exam.proctor} maxLength={MAX_EXAM_TEXT} onChange={event => setExam(current => ({ ...current, proctor: event.target.value }))} /></label>
+              </div>
+              <p>Printed at the top of the PDF report. Leave blank to write it in by hand.</p>
+            </fieldset>
+          </details>
           <div className="camera-actions"><Button size="lg" className="camera-primary" onClick={start} disabled={busy || !ready} aria-describedby={!busy && notReadyText ? 'camera-start-blocked' : undefined}>{busy ? <LoaderCircle size={16} className="spin" /> : <Play size={16} />}Start</Button></div>
           {!busy && notReadyText && <p className="setup-blocked" id="camera-start-blocked">{notReadyText}</p>}
         </>}

@@ -1,4 +1,6 @@
 import { DIRECTIONS } from './analysis-contract.ts';
+import { facultyReport } from './faculty-report.ts';
+import type { FacultyReport } from './faculty-report.ts';
 import type { Detection } from './analysis-contract.ts';
 import { alertTitle } from './live-alerts.ts';
 import type { LiveSessionRecord } from './live-alerts.ts';
@@ -17,6 +19,8 @@ export interface IncidentReport {
   coverage: string[]; notes: string; reviewer: string; signedOffAt: string | null; limitations: string[];
   /** Absolute session folder that item images are relative to; set with `confidential` for stills. */
   imageRoot?: string; confidential?: boolean;
+  /** Camera sessions only: the faculty seat check layout (structured, already in plain words and clock times). */
+  faculty?: FacultyReport;
 }
 
 export function countDirections(detections: Detection[]) {
@@ -74,6 +78,7 @@ export function liveSessionReport(record: LiveSessionRecord, recordRoot: string,
   const report = baseReport('camera', record.id, 'Local live camera - saved alerts and stills');
   const { settings } = record;
   report.confidential = true; report.imageRoot = recordRoot;
+  report.faculty = facultyReport(record, { hasStill, now: new Date() });
   const alerts = record.alerts.slice(0, MAX_REPORT_ITEMS);
   report.items = alerts.map(alert => {
     const image = alert.still && hasStill(alert.still) ? alert.still : null;

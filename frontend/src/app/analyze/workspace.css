@@ -430,8 +430,21 @@
 .camera-screen-bar p { font-size:13px; color:#4a596c; }
 .camera-guide-button { min-height:44px; height:auto; font-size:14px; }
 .camera-guide-button:focus-visible, .camera-guide button:focus-visible, .recording-link:focus-visible, .recording-bar a:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
-.camera-guide { margin-bottom:22px; border-color:#ccd8bf; }
-.camera-guide h2:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
+.camera-guide { width:min(720px, calc(100vw - 32px)); max-height:calc(100dvh - 48px); margin:auto; padding:0; border:1px solid #ccd8bf; border-radius:17px; background:#fff; color:inherit; box-shadow:0 24px 60px -20px #1f2c3b66; overflow:hidden; }
+.camera-guide[open] { display:flex; flex-direction:column; }
+.camera-guide::backdrop { background:#1f2c3b8c; }
+.camera-guide-inner { display:flex; flex-direction:column; min-height:0; max-height:calc(100dvh - 48px); }
+.camera-guide .workspace-card-header { flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #e3e8ee; }
+.camera-guide .camera-guide-body { overflow-y:auto; max-width:none; }
+.camera-guide-alert { flex-shrink:0; margin:0; padding:10px 23px; background:#f5ed9c; color:#3d3a1c; font-size:14px; font-weight:600; }
+.camera-screen-tools { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; }
+.camera-ready-chip { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 6px 0 14px; border:1px solid #d3e0c4; border-radius:99px; background:#edf3e4; color:#3f5233; font-size:13px; font-weight:500; }
+.camera-ready-chip button { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:0; border-radius:99px; background:transparent; color:#4a596c; cursor:pointer; }
+.camera-ready-chip button:hover { background:#dfe9d3; }
+.camera-ready-chip button:disabled { opacity:.5; cursor:default; }
+.camera-ready-chip button:focus-visible { outline:3px solid #5b6879; outline-offset:2px; }
+@media (max-width: 640px) { .camera-guide { width:100vw; max-width:100vw; max-height:100dvh; border-radius:0; } .camera-guide-inner { max-height:100dvh; } }
+.camera-guide h2:focus, .camera-guide h2:focus-visible { outline:none; }
 .camera-guide-close { min-height:40px; height:auto; font-size:13px; }
 .camera-guide-body { padding:20px 23px; font-size:14px; line-height:1.7; color:#334254; max-width:80ch; }
 .camera-guide-steps { list-style:decimal; padding-left:22px; display:flex; flex-direction:column; gap:8px; }
@@ -448,3 +461,17 @@
 .camera-status:focus-visible { outline:2px solid #5b6879; outline-offset:2px; }
 .monitor-bar .setup-title:focus { outline:none; }
 .monitor-bar .setup-title:focus-visible { outline:3px solid #5b6879; outline-offset:3px; }
+.exam-details { margin:14px 0 4px; }
+.exam-details summary { display:flex; align-items:center; gap:6px; min-height:40px; cursor:pointer; list-style:none; font-size:13px; font-weight:600; color:#1f2c3b; }
+.exam-details summary::-webkit-details-marker { display:none; }
+.exam-details summary span { font-weight:400; color:#545e69; }
+.exam-details summary > svg { margin-left:auto; color:#545e69; }
+.exam-details[open] summary > svg { transform:rotate(180deg); }
+.exam-details summary:focus-visible { outline:3px solid #5b6879; outline-offset:2px; border-radius:6px; }
+.exam-details fieldset { margin:4px 0 0; padding:0; border:0; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.exam-details-fields { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; }
+.exam-details label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:#3f4a56; min-width:0; }
+.exam-details input { min-height:40px; padding:0 10px; border:1px solid #d3d9e0; border-radius:8px; font:inherit; font-size:14px; color:#1f2c3b; background:#fff; min-width:0; }
+.exam-details input:focus-visible { outline:3px solid #5b6879; outline-offset:2px; }
+.exam-details fieldset p { font-size:12px; color:#545e69; }
+@media (max-width: 640px) { .exam-details-fields { grid-template-columns:minmax(0, 1fr); } }
