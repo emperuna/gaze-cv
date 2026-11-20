@@ -27,8 +27,8 @@ export function describeProblem(error: unknown, fallback: string): Problem {
 export function cameraProblem(error: unknown, action: CameraAction = 'Start', screen: CameraScreen = 'setup'): Problem {
   const name = typeof error === 'object' && error !== null && 'name' in error ? String((error as { name: unknown }).name) : '';
   const interrupted = screen === 'interrupted';
-  if (name === 'NotAllowedError') return { text: `Allow camera access in the browser, then press ${action} again.`, detail: '' };
-  if (name === 'NotFoundError') return { text: interrupted ? 'No camera found: reconnect it, or press Back to past sessions to pick another.'
+  if (name === 'NotAllowedError') return { text: `Allow camera access in the browser and computer settings, then press ${action} again.`, detail: '' };
+  if (name === 'NotFoundError') return { text: interrupted ? `No camera found: reconnect it and press ${action}, or press Back to past sessions to pick another.`
     : `No camera found: connect it, then press ${action} again.`, detail: '' };
   if (name === 'NotReadableError') return { text: `The camera is busy: close other apps using it, then press ${action} again.`, detail: '' };
   if (name === 'OverconstrainedError') return { text: interrupted ? 'That camera is unavailable: reconnect it, or press Back to past sessions to pick another.'
