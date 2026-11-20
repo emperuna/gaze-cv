@@ -20,8 +20,9 @@ MAX_SETUP_SAMPLES = 5
 
 
 class CameraProcessor:
-    def __init__(self, pipeline):
+    def __init__(self, pipeline, fallback=None):
         self.pipeline = pipeline
+        self.fallback = fallback
         self.last_timestamp = -1.
         self.live = None
         self.setup_samples = []
@@ -34,7 +35,7 @@ class CameraProcessor:
         config = validate_settings({**settings, 'method': 'baseline'})
         if bool(self.pipeline.metadata.get('mirrored_input', False)) != config['mirrored']:
             raise ValueError('Pipeline mirroring must match seat settings')
-        self.live = LiveSeatMonitor(config, config['mirrored'])
+        self.live = LiveSeatMonitor(config, config['mirrored'], self.fallback)
         return {'configured': True, 'seats': config['seats']}
 
     def suggest(self):
@@ -94,15 +95,17 @@ class CameraProcessor:
         return {tuple(pair) for pair in value}
 
 
-def serve(pipeline, incoming, outgoing):
-    """JSONL transport; EOF shuts down. Never persist camera pixels; seat crops are returned to the caller."""
-    processor = CameraProcessor(pipeline)
+def serve(pipeline, incoming, outgoing, fallback=None):
+    """JSONL transport; EOF shuts down. Never persist camera pixels; seat crops are returned to the caller.
+
+    `fallback` is the optional head-pose pipeline for seats whose face is lost (strong head turns)."""
+    processor = CameraProcessor(pipeline, fallback)
 
     def emit(value):
         outgoing.write(json.dumps(value, allow_nan=False) + '\n')
         outgoing.flush()
 
-    emit({'ready': True, 'pipeline': pipeline.metadata})
+    emit({'ready': True, 'pipeline': pipeline.metadata, 'head_turns': fallback is not None})
     while True:
         line = incoming.readline(MAX_MESSAGE_CHARS + 1)
         if not line:

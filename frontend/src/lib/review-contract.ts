@@ -4,7 +4,7 @@ export interface ReviewSeat { id:string; roi:[number,number,number,number] }
 export const DEFAULT_MOVEMENT={min_duration:2,repetition_count:3,repetition_window:10,repeat_min_duration:.25,max_gap:.25};
 export interface ReviewSettings {method:AnalysisMethod;mirrored:boolean;tileGrid:number;seats:ReviewSeat[];movement:typeof DEFAULT_MOVEMENT}
 export interface SeatState {direction:Direction;reason:string|null;estimation_source:string|null}
-export interface MovementEvent {seat_id:string;event_type:string;direction:Direction;start_time:number;end_time:number;duration:number;observed_at:number;review_required:boolean;review_label:string|null;repetition_count?:number}
+export interface MovementEvent {seat_id:string;event_type:string;direction:Direction;start_time:number;end_time:number;duration:number;observed_at:number;review_required:boolean;review_label:string|null;repetition_count?:number;estimation_source?:string}
 export interface ReviewFrame {frame_index:number;time:number;detections:Detection[];seats:Record<string,SeatState>;review_flags:MovementEvent[]}
 export interface HistorySegment {start:number;end:number;direction:Direction;valid:boolean;reason:string|null}
 export interface ReviewRecord {

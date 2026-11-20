@@ -4,6 +4,9 @@ import type { ExamDetails } from './exam-details.ts';
 import type { LiveAlert, LiveSessionRecord } from './live-alerts.ts';
 import type { MovementEvent } from './review-contract.ts';
 
+/** Added to an alert's rule line when part of the turn was read by the head-pose model. */
+export const HEAD_SHAPE_NOTE = 'The face was turned away, so part of this turn was read from the shape of the head.';
+
 /**
  * The faculty seat check report: everything the PDF's camera layout prints, already in plain words and
  * clock times. Faculty read it after an exam to decide which seats to look at again; it never judges anyone.
@@ -208,7 +211,7 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
       const title = events.length === 1 && !repeated ? `Looked ${alert.direction} for ${number(events[0].duration)} seconds`
         : `Turned ${alert.direction} ${events.reduce((sum, e) => sum + turnsOf(e), 0)} times`;
       const image = alert.still && opts.hasStill(alert.still) ? alert.still : null;
-      return { time: range(clock(alert.openedAt), clock(alert.lastAt)), title, rule: repeated ? repeatedRule : sustainedRule,
+      return { time: range(clock(alert.openedAt), clock(alert.lastAt)), title, rule: (repeated ? repeatedRule : sustainedRule) + (events.some(e => e.estimation_source === 'head_pose_fallback') ? ` ${HEAD_SHAPE_NOTE}` : ''),
         mark: alert.mark, markedAt: alert.markedAt ? markTime(alert.markedAt) : null, note: alert.note,
         image, imageNote: image ? null : 'Photo unavailable' };
     }),

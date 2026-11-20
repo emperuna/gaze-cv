@@ -110,9 +110,10 @@ const RULE_FIELDS = [
   { key: 'repeat_min_duration', label: `${MOVEMENT_LABELS.repeat_min_duration} (s)`, max: 300, step: .05, help: 'How long each turn must last.' },
 ] as const;
 
-export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onMirrored, tileGrid, onTileGrid, rules, onRules, gapOverride, onGapOverride, measured }: {
+export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onMirrored, tileGrid, onTileGrid, headTurns, onHeadTurns, rules, onRules, gapOverride, onGapOverride, measured }: {
   inputLocked: boolean; rulesLocked: boolean;
   mirrored: boolean; onMirrored: (value: boolean) => void; tileGrid: number; onTileGrid: (value: number) => void;
+  headTurns: boolean; onHeadTurns: (value: boolean) => void;
   rules: MovementRules; onRules: (rules: MovementRules) => void;
   gapOverride: number | null; onGapOverride: (value: number | null) => void; measured: MeasuredSpeed | null;
 }) {
@@ -125,6 +126,8 @@ export function CameraAdvancedSettings({ inputLocked, rulesLocked, mirrored, onM
       <p>Turn this on only if the camera app flips the picture like a mirror. Left and right describe the student.</p>
       <label className="tiling-label" htmlFor="camera-tiling">Detector tiling<select id="camera-tiling" value={tileGrid} onChange={event => onTileGrid(Number(event.target.value))}>{[1, 2, 3, 4].map(value => <option key={value} value={value}>{value === 1 ? '1 — full frame' : `${value} — more tiles, slower processing`}</option>)}</select></label>
       <p>More tiles help find small faces at the back of the room but process more slowly.</p>
+      <label className="checkbox-label"><input type="checkbox" checked={headTurns} onChange={event => onHeadTurns(event.target.checked)} />Read strong head turns</label>
+      <p>When a student turns so far that their face is hidden, Ocular reads the turn from the shape of the head. Turn this off if the laptop shows “Running slowly”.</p>
     </fieldset>
     <fieldset disabled={rulesLocked} className="camera-advanced-group"><legend>Movement rules</legend>
       <div className="review-setting-grid">

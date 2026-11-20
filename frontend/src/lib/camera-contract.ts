@@ -2,7 +2,8 @@ import type { Detection, Direction } from './analysis-contract.ts';
 import type { MovementEvent } from './review-contract.ts';
 
 export const MAX_FRAME_BODY = 1_400_000;
-export interface CameraSettings { mirrored: boolean; tileGrid: number }
+/** `headTurns` (camera only): read seats whose face is lost with the head-pose model; on unless turned off. */
+export interface CameraSettings { mirrored: boolean; tileGrid: number; headTurns?: boolean }
 export interface CameraFrame {
   id: number; timestamp_seconds: number; image: string;
   setup?: boolean; open_alerts?: [string, 'left' | 'right'][];
@@ -28,7 +29,9 @@ export function validateCameraSettings(value: unknown): CameraSettings {
   const settings = validateInputSettings(value);
   const { method } = value as { method?: unknown };
   if (method !== undefined && method !== 'baseline') throw new Error('The live camera uses the geometric baseline only.');
-  return settings;
+  const { headTurns = true } = value as { headTurns?: unknown };
+  if (typeof headTurns !== 'boolean') throw new Error('Reading strong head turns must be on or off.');
+  return { ...settings, headTurns };
 }
 
 export function validateCameraFrame(value: unknown): CameraFrame {
