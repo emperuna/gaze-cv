@@ -31,6 +31,8 @@ export interface FacultyReport {
   omittedAlerts: number;
   blindSpots: { what: string; when: string; reason: string }[];
   reviewSeats: string[]; rules: string; sessionLine: string;
+  /** What the PDF calls time the room was not watched; absent for a live camera session ("camera off"). */
+  offLabel?: string;
 }
 
 /** A seat hidden for at least this share of the session is drawn dashed on the seat map. */
@@ -82,6 +84,14 @@ function range(from: string, to: string) {
   return suffix(from) === suffix(to) ? `${from.slice(0, -3)}–${to}` : `${from}–${to}`;
 }
 
+/** A position in a video: "0:35", "12:30", "1:02:03". */
+export function videoTime(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(whole / 3600), m = Math.floor((whole % 3600) / 60), s = whole % 60;
+  return h ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
+}
+const videoRange = (from: string, to: string) => from === to ? from : `${from}–${to}`;
+
 function duration(seconds: number) {
   const hours = Math.floor(seconds / 3600), minutes = Math.round((seconds % 3600) / 60);
   if (!hours) return `${Math.max(minutes, 1)} min`;
@@ -110,13 +120,20 @@ const turnsOf = (event: MovementEvent) => event.event_type === 'repeated_movemen
 export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (still: string) => boolean; now: Date; timeZone?: string }): FacultyReport {
   const { settings } = record;
   const zone = opts.timeZone;
-  const clock = (seconds: number) => clockAt(record, seconds, zone);
-  const total = record.lastTime > 0 ? record.lastTime : 1;
+  const recording = record.source?.kind === 'recording' ? record.source : null;
+  const clock = (seconds: number) => recording ? videoTime(seconds) : clockAt(record, seconds, zone);
+  const timesOf = (from: number, to: number) => recording ? videoRange(videoTime(from), videoTime(to)) : range(clock(from), clock(to));
+  // An interrupted recording keeps its whole length on the timeline; the unreviewed rest is the "off" span.
+  // The length may be an estimate (frames / frame rate), so it never counts as shorter than what was reviewed.
+  const videoLength = recording ? Math.max(recording.durationSeconds, record.lastTime) : 0;
+  const unreviewedFrom = recording && record.state === 'interrupted' && videoLength > record.lastTime ? record.lastTime : null;
+  const timelineEnd = unreviewedFrom !== null ? videoLength : record.lastTime;
+  const total = timelineEnd > 0 ? timelineEnd : 1;
   const eventsOf = (alert: LiveAlert) => alert.eventIndexes.map(index => record.events[index]).filter(Boolean);
 
   // Camera-off gaps, in session seconds: the time between monitored stretches. A resume that never received a
   // frame has no monitored stretch (its end is before its start), and every stretch is clamped to the session.
-  const watched = record.segments.map(segment => ({ start: Math.min(Math.max(segment.offsetSeconds, 0), record.lastTime),
+  const watched = recording ? [] : record.segments.map(segment => ({ start: Math.min(Math.max(segment.offsetSeconds, 0), record.lastTime),
     end: Math.min(segment.endSeconds ?? record.lastTime, record.lastTime) }))
     .filter(span => span.end > span.start).sort((a, b) => a.start - b.start);
   const offGaps: { start: number; end: number }[] = [];
@@ -125,6 +142,8 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
     if (span.start > watchedUntil) offGaps.push({ start: watchedUntil, end: span.start });
     watchedUntil = Math.max(watchedUntil, span.end);
   }
+
+  if (unreviewedFrom !== null) offGaps.push({ start: unreviewedFrom, end: videoLength });
 
   // Seats with alerts, ranked: seats with alerts not dismissed first, then dismissed-only seats.
   const bySeat = new Map<string, LiveAlert[]>();
@@ -147,7 +166,7 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
       saw = `${plural(alerts.length, 'alert')} · turned ${direction} ${events.reduce((sum, e) => sum + turnsOf(e), 0)} times` + (longest ? ` · longest ${number(longest)} s` : '');
     }
     const first = Math.min(...alerts.map(a => a.openedAt)), last = Math.max(...alerts.map(a => a.lastAt));
-    return { seat: seatName(seatId), status, alerts: alerts.length, saw, when: range(clock(first), clock(last)), marks: marksText(alerts) };
+    return { seat: seatName(seatId), status, alerts: alerts.length, saw, when: timesOf(first, last), marks: marksText(alerts) };
   });
 
   const hiddenShare = (seatId: string) => {
@@ -178,7 +197,7 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
 
   const step = total >= 3600 ? 1800 : total >= 1200 ? 600 : 300;
   const ticks = [];
-  for (let at = 0; at <= total + 1e-6; at += step) ticks.push({ at: at / total, label: clock(at).slice(0, -3) });
+  for (let at = 0; at <= total + 1e-6; at += step) ticks.push({ at: at / total, label: recording ? videoTime(at) : clock(at).slice(0, -3) });
   const kindOf = (alert: LiveAlert): MarkKind => alert.mark === 'Checked' ? 'checked' : alert.mark === 'Dismissed' ? 'dismissed' : 'not-reviewed';
   const timeline = {
     ticks,
@@ -211,18 +230,19 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
       const title = events.length === 1 && !repeated ? `Looked ${alert.direction} for ${number(events[0].duration)} seconds`
         : `Turned ${alert.direction} ${events.reduce((sum, e) => sum + turnsOf(e), 0)} times`;
       const image = alert.still && opts.hasStill(alert.still) ? alert.still : null;
-      return { time: range(clock(alert.openedAt), clock(alert.lastAt)), title, rule: (repeated ? repeatedRule : sustainedRule) + (events.some(e => e.estimation_source === 'head_pose_fallback') ? ` ${HEAD_SHAPE_NOTE}` : ''),
+      return { time: timesOf(alert.openedAt, alert.lastAt), title, rule: (repeated ? repeatedRule : sustainedRule) + (events.some(e => e.estimation_source === 'head_pose_fallback') ? ` ${HEAD_SHAPE_NOTE}` : ''),
         mark: alert.mark, markedAt: alert.markedAt ? markTime(alert.markedAt) : null, note: alert.note,
         image, imageNote: image ? null : 'Photo unavailable' };
     }),
   }));
 
   const allBlindSpots = [
-    ...offGaps.map(gap => ({ what: 'Whole room not watched', when: `${range(clock(gap.start), clock(gap.end))} (${duration(gap.end - gap.start)})`, reason: 'Camera stopped; monitoring resumed' })),
+    ...offGaps.map(gap => recording ? ({ what: 'Rest of the video not reviewed', when: `${timesOf(gap.start, gap.end)} (${duration(gap.end - gap.start)})`, reason: 'Review stopped early' })
+      : ({ what: 'Whole room not watched', when: `${timesOf(gap.start, gap.end)} (${duration(gap.end - gap.start)})`, reason: 'Camera stopped; monitoring resumed' })),
     ...settings.seats.map(seat => ({ seat, share: hiddenShare(seat.id) })).filter(item => item.share >= REPORTED_SHARE)
       .sort((a, b) => b.share - a.share).map(({ seat, share }) => {
         const longest = hiddenSpans(seat.id).sort((a, b) => (b.end - b.start) - (a.end - a.start))[0];
-        const when = longest && longest.end - longest.start >= 60 ? range(clock(longest.start), clock(longest.end)) : 'Short moments';
+        const when = longest && longest.end - longest.start >= 60 ? timesOf(longest.start, longest.end) : 'Short moments';
         return { what: `${seatName(seat.id)} hidden`, when: `${when} · ${Math.round(share * 100)}% of the exam`, reason: 'Face not visible' };
       }),
   ];
@@ -236,8 +256,10 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
   const { min_duration: minimum, repetition_count: count, repetition_window: window } = settings.movement;
   return {
     exam: { ...EMPTY_EXAM, ...(settings.exam ?? {}) },
-    date: `${parts.weekday} ${parts.day} ${parts.month} ${parts.year}`,
-    timeRange: record.state === 'monitoring' ? `${start} – now (still running)` : `${range(start, clock(record.lastTime))} (${duration(record.lastTime)})`,
+    date: recording ? `Recording: ${recording.filename}` : `${parts.weekday} ${parts.day} ${parts.month} ${parts.year}`,
+    timeRange: recording ? (unreviewedFrom !== null ? `reviewed ${videoTime(record.lastTime)} of ${videoTime(videoLength)}`
+      : record.lastTime < 60 ? `${Math.max(Math.round(record.lastTime), 1)} s` : duration(record.lastTime))
+      : record.state === 'monitoring' ? `${start} – now (still running)` : `${range(start, clock(record.lastTime))} (${duration(record.lastTime)})`,
     seatsWatched: settings.seats.length,
     glance: { alerts: record.alerts.length, lookAgain: ranked.filter(item => item.status === 'look-again').length,
       notReviewed: record.alerts.filter(alert => alert.mark === null).length,
@@ -245,7 +267,10 @@ export function facultyReport(record: LiveSessionRecord, opts: { hasStill: (stil
     seats, quietSeats, map, timeline, alertGroups, blindSpots,
     omittedAlerts: record.alerts.length - alertGroups.reduce((sum, group) => sum + group.alerts.length, 0),
     reviewSeats: ranked.map(item => seatName(item.seatId)),
-    rules: `An alert means a head in that seat turned left or right for ${number(minimum)} seconds or more, or ${count} times within ${number(window)} seconds. Looking down (writing) never raises an alert. Ocular does not recognise anyone and does not decide whether anyone cheated: you do.`,
-    sessionLine: `Session details for your records: session ${record.id.slice(0, 8)} · camera started ${start} · alert rules: ${number(minimum)} s, ${count} turns in ${number(window)} s.`,
+    rules: `An alert means a head in that seat turned left or right for ${number(minimum)} seconds or more, or ${count} times within ${number(window)} seconds. Looking down (writing) never raises an alert. ${recording ? 'Alert times are in the video. ' : ''}Ocular does not recognise anyone and does not decide whether anyone cheated: you do.`,
+    sessionLine: recording
+      ? `Session details for your records: session ${record.id.slice(0, 8)} · recording ${recording.filename} · alert rules: ${number(minimum)} s, ${count} turns in ${number(window)} s.`
+      : `Session details for your records: session ${record.id.slice(0, 8)} · camera started ${start} · alert rules: ${number(minimum)} s, ${count} turns in ${number(window)} s.`,
+    ...(recording ? { offLabel: 'not reviewed' } : {}),
   };
 }
