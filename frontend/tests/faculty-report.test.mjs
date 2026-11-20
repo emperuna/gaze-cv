@@ -250,3 +250,16 @@ test('an estimated length shorter than the reviewed part never makes a negative 
   assert.deepEqual(report.timeline.off, []);
   assert.equal(report.glance.notWatchedMinutes, 0);
 });
+
+test('a recording whose video stopped decoding early shows the unreached rest as not reviewed', () => {
+  const report = build(recordingOf({ state: 'ended', lastTime: 1500, source: { kind: 'recording', filename: 'midterm.mp4', durationSeconds: 2100, video: 'v' } }));
+  assert.equal(report.timeRange, 'reviewed 25:00 of 35:00');
+  assert.equal(report.glance.notWatchedMinutes, 10);
+  assert.equal(report.timeline.off.length, 1);
+  assert.ok(Math.abs(report.timeline.off[0].from - 1500 / 2100) < 1e-9 && report.timeline.off[0].to === 1);
+  assert.deepEqual(report.blindSpots[0], { what: 'Rest of the video not reviewed', when: '25:00–35:00 (10 min)', reason: 'The video could not be read further' });
+  // A finished review a few seconds short of an estimated length is complete.
+  const near = build(recordingOf({ state: 'ended', lastTime: 2097, source: { kind: 'recording', filename: 'midterm.mp4', durationSeconds: 2100, video: 'v' } }));
+  assert.deepEqual(near.timeline.off, []);
+  assert.doesNotMatch(near.timeRange, /reviewed/);
+});

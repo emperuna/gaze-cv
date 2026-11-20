@@ -278,3 +278,27 @@ test('a recording left monitoring by a server stop reads interrupted and can be 
   assert.equal((await loadRecord(draftId, opts)).state, 'ended');
   acquireProcessingSlot()();
 }));
+
+test('a video that stops decoding early still ends, keeping its length unless the gap is small', async () => withDraft(async ({ opts, draftId, fake }) => {
+  await suggestRecording(draftId, settings, opts);
+  await startRecordingReview(draftId, body, opts);
+  let child = fake.reviews()[0].child;
+  line(child, { t: 60, seats: {}, events: [], duration: 120 });
+  await reached(60);
+  line(child, { done: true, duration: 120 }); child.stdout.end(); child.emit('close', 0);
+  await job()?.finished;
+  let record = await loadRecord(draftId, opts);
+  assert.equal(record.state, 'ended');
+  assert.equal(record.source.durationSeconds, 120);
+
+  await reviewAgain(draftId, opts);
+  child = fake.reviews()[1].child;
+  line(child, { t: 116.5, seats: {}, events: [], duration: 120 });
+  await reached(116.5);
+  line(child, { done: true, duration: 120 }); child.stdout.end(); child.emit('close', 0);
+  await job()?.finished;
+  record = await loadRecord(draftId, opts);
+  assert.equal(record.state, 'ended');
+  assert.equal(record.source.durationSeconds, 116.5);
+  acquireProcessingSlot()();
+}));

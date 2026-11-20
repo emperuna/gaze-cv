@@ -8,7 +8,7 @@ import { Readable } from 'node:stream';
 import { validRunId } from './analysis-contract.ts';
 import type { CameraSettings, LiveEvent, LiveSeatState } from './camera-contract.ts';
 import { validateExamDetails } from './exam-details.ts';
-import { newRecord } from './live-alerts.ts';
+import { newRecord, stoppedShort } from './live-alerts.ts';
 import type { LiveSessionRecord } from './live-alerts.ts';
 import { parseRange } from './media-range.ts';
 import { acquireProcessingSlot } from './processing-slot.ts';
@@ -180,7 +180,12 @@ function runJob(record: LiveSessionRecord, child: ChildProcessWithoutNullStreams
       if (job.cancelled) return;
       const segment = record.segments.at(-1);
       if (segment && segment.endSeconds === null) segment.endSeconds = record.lastTime;
-      if (done) { record.state = 'ended'; record.endedAt = now().toISOString(); }
+      if (done) {
+        record.state = 'ended'; record.endedAt = now().toISOString();
+        // A small shortfall means the length was an estimate; a large one stays, so the report shows the rest as not reviewed.
+        if (record.source && record.lastTime < record.source.durationSeconds && !stoppedShort(record.lastTime, record.source.durationSeconds))
+          record.source.durationSeconds = record.lastTime;
+      }
       else {
         record.state = 'interrupted'; record.interruptedAt = now().toISOString();
         if (stderr) console.error(`Recording ${record.id} worker exited early: ${stderr.slice(-500)}`);
