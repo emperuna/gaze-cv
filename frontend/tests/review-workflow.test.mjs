@@ -1,11 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { promises as fs } from 'node:fs';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
 import { DEFAULT_MOVEMENT } from '../src/lib/review-contract.ts';
 import { emptyWorkflow, groupReviewEvents, seatCoverage, sessionReport, validateWorkflowUpdate } from '../src/lib/review-workflow.ts';
-import { readWorkflowFile, saveWorkflowFile } from '../src/lib/server-review-workflow.ts';
 import { cameraWarnings, lowDetailImage } from '../src/lib/camera-health.ts';
 
 const event = (start, end, changes = {}) => ({ seat_id: 'A', event_type: 'sustained_movement', direction: 'left',
@@ -69,34 +65,6 @@ test('workflow rejects invalid statuses, item IDs, oversized notes and unnamed s
     assert.throws(() => validateWorkflowUpdate({ ...update(workflow), ...change }, input));
   }
   assert.equal(validateWorkflowUpdate({ ...update(workflow), signedOff: true, reviewer: 'Proctor' }, input).signedOff, true);
-});
-
-test('saved decisions survive reopening, stale saves conflict, and sign-off can be cleared', async context => {
-  const root = await fs.mkdtemp(join(tmpdir(), 'ocular-workflow-'));
-  context.after(() => fs.rm(root, { recursive: true, force: true }));
-  const input = record([event(1, 3)]), initial = await readWorkflowFile(root, input);
-  const changed = { ...update(initial), reviewer: 'Proctor One', signedOff: true,
-    items: { 'event-0': { status: 'Follow-up needed', notes: 'Check surrounding footage.' } } };
-  const saved = await saveWorkflowFile(root, input, changed);
-  assert.equal(saved.revision, 1); assert.ok(saved.signedOffAt);
-  assert.deepEqual(await readWorkflowFile(root, input), saved);
-  await assert.rejects(saveWorkflowFile(root, input, changed), error => error.status === 409);
-  const edited = await saveWorkflowFile(root, input, { ...update(saved), proctorNotes: 'Additional context.' });
-  assert.equal(edited.revision, 2); assert.equal(edited.signedOffAt, null);
-  assert.deepEqual((await fs.readdir(root)).sort(), ['review-workflow.json']);
-});
-
-test('save lock prevents concurrent overwrite and invalid saved notes are not replaced', async context => {
-  const root = await fs.mkdtemp(join(tmpdir(), 'ocular-workflow-'));
-  context.after(() => fs.rm(root, { recursive: true, force: true }));
-  const input = record(), initial = emptyWorkflow(input);
-  await fs.writeFile(join(root, 'review-workflow.lock'), '');
-  await assert.rejects(saveWorkflowFile(root, input, update(initial)), error => error.status === 409);
-  await fs.unlink(join(root, 'review-workflow.lock'));
-  await fs.writeFile(join(root, 'review-workflow.json'), 'corrupt');
-  await assert.rejects(saveWorkflowFile(root, input, update(initial)));
-  assert.equal(await fs.readFile(join(root, 'review-workflow.json'), 'utf8'), 'corrupt');
-  assert.deepEqual((await fs.readdir(root)).sort(), ['review-workflow.json']);
 });
 
 test('report includes human decisions, source timestamps, gaps and safely escaped editable text', () => {

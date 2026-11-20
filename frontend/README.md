@@ -75,15 +75,16 @@ Python `requirements.txt`, including ReportLab; it does not require new models.
 The Image and directions-only video workspaces are no longer reachable from
 the website (their code and API routes remain, unused); this section describes
 their outputs for the record. `/analyze` opens the live camera, and the only
-saved-file workflow offered is the seat review below.
+saved-file workflow offered is the recording review below.
 
 ## Live camera
 
 `/analyze` opens the live camera; it is the only main screen. There is no
 source switcher: **Review a recording instead** (below the setup panel) opens
-`/analyze?mode=video`, the Saved video seat review, which has a **Back to live
-camera** link. `?session=<uuid>` still reopens a saved video review. Every other
-`mode` value, including the removed `?mode=image`, opens the camera. The Image
+`/analyze?mode=video`, the recording review, which has a **Back to live
+camera** link. `?recording=<uuid>` reopens a recording from Past sessions. The
+old `?session=<uuid>` bookmarks of the removed Saved video review open the
+camera. Every other `mode` value, including the removed `?mode=image`, opens the camera. The Image
 workspace and its API route stay in the code but no tab, button or link leads
 to them.
 
@@ -172,85 +173,38 @@ The separate output directory protects development artifacts. On PowerShell set
 `$env:NEXT_DIST_DIR` first. The webpack option avoids a Turbopack build-process
 port failure observed in the agent environment.
 
-## Saved-video seat and movement review
-
-The review workspace now includes a grouped **Review queue** with Unreviewed,
-Reviewed and Follow-up needed statuses, per-item notes and surrounding-footage
-playback. **Seat coverage checks** expose unavailable intervals. **Session
-report** provides an editable summary, proctor notes, local human sign-off and a
-saved Markdown download. Save or discard edits before switching sessions or
-sources. Original model records remain unchanged. See [review workload tools](../docs/review-workload.md)
-for grouping rules, storage, limits and conflict recovery.
-
-**Download PDF report** is prominently displayed in the report bar above the
-analysis controls, including before processing. Its helper
-text explains when the download becomes available. Save edited
-notes/statuses before downloading; the PDF uses the latest saved review
-revision, including coverage gaps and local sign-off. An unedited session can
-also export a draft PDF. The editable Markdown download remains available.
+## Recording review
 
 From the camera screen choose **Review a recording instead**
-(`/analyze?mode=video`). Upload an authorized
-browser-playable MP4/WebM from one fixed camera. Video timing is checked
-automatically. Click **Suggest seats**, review the boxes and names, then correct
-missed/incorrect regions with **Add seat**, **Edit region** and Remove. Edit
-region lets you redraw an existing box without creating another seat. Suggestions
-use repeated head detections across up to five frames; they are not identities
-or proof that every occupied seat was detected. Existing manual edits stay
-unchanged unless you explicitly choose **Replace current seats**.
+(`/analyze?mode=video`). Pick a video from one fixed camera (`.mp4`, `.mov`,
+`.webm` or `.m4v`, up to 2 GB and 3 hours); it is stored only on this computer.
+Ocular finds the seats from the first seconds of the video and shows them on
+one frame; **Adjust seats** works as on the camera. **Start review** processes
+the video in a local Python worker (`scripts/recording_worker.py`), sampling a
+frame every 0.1 s of video time, with the camera's fixed movement rules and
+Baseline model. A progress line shows how far it got, and you can leave the page;
+**Cancel** stops and deletes the session.
 
-The default page shows seat names and a plain-language summary of active movement
-rules. **Advanced seat editing** contains optional exact percentage coordinates
-and a numeric Add control for keyboard-accessible setup. Seek the setup frame
-with the slider. Regions cannot overlap and stay fixed during processing.
+When it finishes, the alerts panel matches the live camera: one card per seat
+and direction, a cropped photo, the time in the video, **Play this moment**
+(a short clip from 3 s before the first movement to 3 s after it), Checked and
+Dismissed marks and notes. **Download PDF report** gives the faculty report with
+video times instead of clock times. A review stopped by a server restart is kept
+as interrupted with its alerts so far, and **Review again** reuses the stored
+video. Recordings appear in **Past sessions** as "Recording" and share the
+camera's session folders under ignored `outputs/runs/camera/<uuid>/`; opening
+`/analyze?recording=<uuid>` reopens one without inference. Recording review and
+the camera share one local inference reservation: a second job is refused while
+one runs.
 
-The method is fixed to Baseline, as in live camera mode, so a recording and
-a live session use the same rules; the existing experimental movement rules are
-the defaults. **Advanced settings** contains sustained duration, repetition
-count/window, minimum dwell, maximum gap, mirroring and detector tiling. For mirrored source pixels, the interface maps
-drawn regions into unmirrored configuration coordinates once. Source playback
-itself stays unchanged. Automatic head directions remain camera-relative; these
-regions do not perform neutral/desk calibration.
+Old Saved video reviews under `outputs/runs/review/` are kept on disk but are no
+longer listed or opened by the website, and the `/api/review` routes were
+removed. Their notes, statuses and sign-offs stay in those folders.
 
-Review the boxes, then click **Confirm seats & process**. No frame-rate
-confirmation checkbox is required: both setup and actual processing check every
-decoded presentation timestamp against source FPS, allowing millisecond container
-quantization. Missing/duplicate/variable or inconsistent timestamps are rejected
-with guidance to convert a copy. A timing check is not proof of head/seat accuracy.
-Use **Stop** to cancel; navigating away also aborts the request. A ten-minute
-timeout and forced termination after two seconds bound failed worker shutdown.
-Camera, directions-only uploads and review share the local inference reservation.
-The interface does not estimate a progress percentage.
-
-When complete, play the source video with synchronized seat/detection overlays.
-Filter the movement-event table and click a start time to pause/seek there.
-The observed-at column records when the rule triggered. Inspect per-seat history
-intervals, explicit gaps, settings/source hash and downloadable records. Missing
-or ambiguous observations break continuity and clear active review notices.
-
-Completed sessions reopen from the local session list or their bookmarked
-`/analyze?session=<uuid>` URL without inference. The latest 50 are listed; older
-bookmarks load directly. Each session retains its original source, settings,
-observations, histories, events, summary, compact review JSON and annotated AVI in
-ignored `outputs/runs/review/<uuid>/`. The source is served only through local
-guarded APIs with byte-range support. No database or cloud service is used.
-
-Review limits: 64 MB input, 5 minutes, 18,000 frames, 1920 × 1080 source pixels
-(portrait allowed), 20 seats, 64 MB compact review JSON and 512 MB session outputs.
-Output size is checked periodically; truncated/over-limit clips fail rather than
-publish complete sessions. Failed/cancelled files can remain local and need
-manual cleanup. Agree on source/record access and retention. Supported frame
-rates are up to 240 FPS with decoded timestamp cadence within the recorded
-1.1–2 ms tolerance. Unsupported timing/codecs require conversion before review;
-automatic conversion and global ffmpeg/ffprobe installation are not included.
-
-Video inspection/suggestions use `POST /api/review/prepare`, bounded uploads and
-the shared inference reservation. Temporary setup uploads are removed after the
-subprocess exits, including cancellation/failure. **Stop** also cancels setup.
 Direct CCTV/RTSP/ONVIF connections are not implemented. Suitable exported footage
-from one fixed camera uses the upload path; a changed camera angle/layout needs
-new seat confirmation. The intended interface users are faculty, with technical
-controls available only when needed.
+from one fixed camera uses the upload path; a changed camera angle/layout needs a
+new review. Alerts are prompts for an instructor to look, not proof. The intended
+interface users are faculty, with technical controls available only when needed.
 
 The directions-only video option is no longer offered in the website. The
 existing calibrated head/seat CLI remains available separately. This web review
@@ -394,7 +348,7 @@ deleted with the session; see [Live camera](#live-camera) and the
 - `src/app/api/analyze/` and `src/lib/server-analysis.ts`: local Python invocation and downloads.
 - `src/lib/analysis-contract.ts`: shared formats, limits, types, and request guards.
 - `tests/analysis.test.mjs`: Node tests (run with Node.js 22.18+).
-- `src/components/analysis-modes.tsx`: opens the camera, or Saved video seat review for `?mode=video` / `?session=`.
+- `src/components/analysis-modes.tsx`: opens the camera, or the recording screen for `?mode=video` / `?recording=`.
 - `src/components/camera-workspace.tsx` and the `camera-*` components: the camera screens, alerts, past sessions and the How to use Ocular guide (`camera-guide.tsx`).
 - `src/app/api/camera/`, `src/lib/server-camera.ts`, and `camera-session.ts`: live worker/session lifecycle.
 - `src/lib/camera-client.ts`, `camera-contract.ts`, and `processing-slot.ts`: sequential capture, frame contracts, and inference reservation.

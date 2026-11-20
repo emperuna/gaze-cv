@@ -40,7 +40,7 @@ If a face cannot be observed reliably, the session should show that uncertainty.
 | Entry point | Processing path | Available outputs |
 | --- | --- | --- |
 | Image / directions-only video (routes kept, not reachable from the website since 18 November 2026) | Next.js upload API → `scripts/run.py` → shared head or baseline pipeline | Annotated PNG/AVI, direction counts, JSON/JSONL, run metadata. |
-| Website Saved video: seat review (secondary path, **Review a recording instead**) | Visual seat/settings editor → local review API → `scripts/review_video.py` → shared video/seat/history/event modules | Source-time playback overlays, event seeking, per-seat intervals, raw JSON/AVI downloads and saved-session reopening. |
+| Website recording review (secondary path, **Review a recording instead**) | Upload → local recordings API → seats found from the first seconds → **Start review** → `scripts/recording_worker.py` → shared seat/event modules, grouped like camera alerts | Alerts with **Play this moment** (source-time clip), Checked/Dismissed marks, a session record under `outputs/runs/camera/<id>/` (shared with camera sessions, listed in Past sessions) and the faculty PDF with video times. The old Saved video review was removed; its folders in `outputs/runs/review/` are kept but not listed. |
 | Website Camera (main workflow, pending team agreement) | Browser capture → local camera API → persistent `scripts/camera_worker.py` → fixed Baseline pipeline → automatic seat setup → `SeatAssociator` and `MovementMonitor` → alert grouping and cropped stills | Live preview with seat boxes, per-seat alerts with one cropped still each, Checked/Dismissed marks, session record on disk (`outputs/runs/camera/<id>/session.json` and `stills/`), resume after interruption, Past sessions, PDF with alerts, stills and marks. |
 | Configured saved-video command | `scripts/process_video.py` → selected pipeline → fixed-seat association → histories → optional movement rules | Annotated video, observations, seat histories, settings, and optional movement events. Head mode requires seat-bound neutral calibration. |
 
@@ -84,7 +84,7 @@ coverage from saved observations. Human statuses, notes, report text and local
 sign-off are saved separately with revision checks; they never replace original
 model records. Camera health checks remain transient; camera alerts and marks are saved in the session record.
 
-The website's Camera and Saved video sources offer a PDF observation report (Image had one until 18 November 2026, when its website workflow was removed; its report route remains in the code). A bounded JSON report
+The website's Camera and recording-review sources offer a PDF observation report (Image had one until 18 November 2026, when its website workflow was removed; its report route remains in the code). A bounded JSON report
 passes through `scripts/render_incident_report.py` into the shared ReportLab
 renderer in `src/gaze/incident_pdf.py`; bytes stream back as a local PDF download.
 Image/directions-only runs retain completion metadata for report provenance.
